@@ -196,38 +196,33 @@
                 transform: translateY(0);
             }
 
-            50% {
-                transform: translateY(-20px);
-            }
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        @keyframes float-delayed {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(10px); }
         }
 
-        .hero-logo-container img {
-            width: 100%;
-            height: auto;
-            object-fit: contain;
-            filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.2));
-        }
-
-        /* BUILDVERSE giant name */
         .hero-brand {
             font-family: 'Playfair Display', serif;
-            font-size: clamp(3.5rem, 8vw, 6rem);
+            font-size: clamp(2.5rem, 5vw, 3.8rem);
             font-weight: 900;
             color: #1a1a1a;
-            line-height: 0.95;
+            line-height: 1;
             letter-spacing: -0.02em;
-            margin-bottom: 0.5rem;
+            text-align: center;
         }
 
         .hero-brand .bv-sub {
             font-family: 'Outfit', sans-serif;
-            font-size: clamp(0.7rem, 2vw, 0.9rem);
+            font-size: 0.65rem;
             font-weight: 800;
             letter-spacing: 0.4em;
             text-transform: uppercase;
             color: #C8102E;
             display: block;
-            margin-bottom: 0.8rem;
+            margin-bottom: 0.4rem;
         }
 
         .hero-brand .accent {
@@ -236,19 +231,19 @@
         }
 
         .hero-divider {
-            width: 60px;
+            width: 40px;
             height: 3px;
             background: #C8102E;
-            margin: 1.4rem auto;
+            margin: 1rem auto;
             border-radius: 2px;
         }
 
         .hero-desc {
-            font-size: 0.95rem;
+            font-size: 0.85rem;
             color: #444;
-            line-height: 1.75;
+            line-height: 1.6;
             font-weight: 500;
-            margin-bottom: 2.2rem;
+            margin-bottom: 1.5rem;
             max-width: 500px;
             margin-left: auto;
             margin-right: auto;
@@ -692,14 +687,16 @@
     <!-- HERO -->
     <section class="hero" id="main-hero">
         <div class="hero-content">
-            <div class="hero-logo-container">
-                <img src="assets/Background_less_img.png" alt="BuildVerse Engine">
-            </div>
+            <div class="hero-branding-row">
+                <img src="assets/logo.png" alt="BuildVerse Logo" class="branding-logo-left">
+                
+                <h1 class="hero-brand">
+                    <span class="bv-sub">PROTOTYPING REVOLUTION</span>
+                    Build<span class="accent">Verse</span>
+                </h1>
 
-            <h1 class="hero-brand">
-                <span class="bv-sub">PROTOTYPING REVOLUTION</span>
-                Build<span class="accent">Verse</span>
-            </h1>
+                <img src="assets/pleiades logo black.png" alt="Pleiades" class="branding-logo-right">
+            </div>
 
             <div class="hero-divider"></div>
 
