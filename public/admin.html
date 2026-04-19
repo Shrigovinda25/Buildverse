@@ -60,19 +60,35 @@
             flex-shrink: 0;
         }
         .sidebar-brand {
-            padding: 1.5rem 1rem 2.5rem;
+            padding: 1.5rem 1rem 2rem;
             text-align: center;
             border-bottom: 1px solid #1a1a24;
             margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         .sidebar-brand img {
-            width: 120px;
-            height: 120px;
+            width: 110px;
+            height: 110px;
             object-fit: contain;
             background: #fff;
             border-radius: 50%;
             padding: 5px;
             filter: drop-shadow(0 0 15px rgba(200,16,46,0.2));
+            margin-left: 5px; /* Reduced from 15px as requested */
+        }
+        .brand-title {
+            color: #fff;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 950;
+            letter-spacing: -0.02em;
+            margin-top: 1.2rem;
+            text-transform: uppercase;
+        }
+        .brand-title span {
+            color: #C8102E;
         }
         .sidebar-section-label {
             font-size: 0.58rem; font-weight: 800; letter-spacing: 0.22em;
@@ -239,6 +255,7 @@
         <aside class="sidebar">
             <div class="sidebar-brand">
                 <img src="assets/logo.png" alt="BuildVerse Logo">
+                <p class="brand-title">Build<span>verse</span></p>
             </div>
             <p class="sidebar-section-label">Navigation</p>
             <button class="sidebar-btn active" data-tab="inventory" onclick="switchTab('inventory')">
