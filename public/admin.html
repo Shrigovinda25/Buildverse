@@ -27,20 +27,20 @@
         /* ── TOPBAR ── */
         .admin-topbar {
             background: #fff;
-            height: 64px;
+            height: 90px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 2rem;
+            padding: 0 2.5rem;
             border-bottom: 2px solid #f0f0f0;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
             position: sticky;
             top: 0;
             z-index: 200;
         }
-        .topbar-left { display: flex; align-items: center; gap: 1.2rem; }
-        .topbar-left img { height: 36px; object-fit: contain; }
-        .topbar-sep { width: 1.5px; height: 30px; background: #eee; }
+        .topbar-left { display: flex; align-items: center; gap: 1.8rem; }
+        .topbar-left img { height: 50px; object-fit: contain; }
+        .topbar-sep { width: 2px; height: 40px; background: #eee; }
         .topbar-brand { font-family: 'Outfit', sans-serif; font-size: 1.15rem; font-weight: 900; letter-spacing: -0.02em; color: #111; }
         .topbar-brand span { color: #C8102E; }
         .topbar-badge { background: #C8102E; color: #fff; font-size: 0.55rem; font-weight: 800; letter-spacing: 0.15em; text-transform: uppercase; padding: 0.25rem 0.7rem; border-radius: 50px; }
@@ -50,14 +50,26 @@
 
         /* ── SIDEBAR ── */
         .sidebar {
-            width: 230px;
-            min-height: calc(100vh - 64px);
+            width: 260px;
+            min-height: calc(100vh - 90px);
             background: #0f0f13;
             display: flex;
             flex-direction: column;
-            padding: 1.8rem 1.2rem;
+            padding: 1.2rem;
             gap: 0.3rem;
             flex-shrink: 0;
+        }
+        .sidebar-brand {
+            padding: 1.5rem 1rem 2.5rem;
+            text-align: center;
+            border-bottom: 1px solid #1a1a24;
+            margin-bottom: 1rem;
+        }
+        .sidebar-brand img {
+            width: 160px;
+            height: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 0 15px rgba(200,16,46,0.2));
         }
         .sidebar-section-label {
             font-size: 0.58rem; font-weight: 800; letter-spacing: 0.22em;
@@ -208,8 +220,6 @@
     <!-- TOP BAR -->
     <header class="admin-topbar">
         <div class="topbar-left">
-            <img src="assets/logo.png" alt="BuildVerse" onerror="this.style.display='none'">
-            <div class="topbar-sep"></div>
             <img src="assets/pleiades logo black.png" alt="Pleiades" onerror="this.style.display='none'">
             <div class="topbar-sep"></div>
             <span class="topbar-brand">Build<span>Verse</span></span>
@@ -224,6 +234,9 @@
 
         <!-- SIDEBAR -->
         <aside class="sidebar">
+            <div class="sidebar-brand">
+                <img src="assets/logo.png" alt="BuildVerse Logo">
+            </div>
             <p class="sidebar-section-label">Navigation</p>
             <button class="sidebar-btn active" data-tab="inventory" onclick="switchTab('inventory')">
                 <span class="sb-icon">📦</span> Inventory

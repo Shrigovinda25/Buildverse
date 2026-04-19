@@ -32,19 +32,18 @@
         .main-nav {
             background: rgba(255,255,255,0.97);
             backdrop-filter: blur(12px);
-            padding: 0 2.8rem;
-            height: 90px;
+            padding: 0 4rem;
+            height: 110px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            border-bottom: 1px solid rgba(0,0,0,0.08);
+            border-bottom: 2px solid rgba(0,0,0,0.05);
             position: relative;
             z-index: 100;
-            box-shadow: 0 2px 20px rgba(0,0,0,0.07);
+            box-shadow: 0 4px 30px rgba(0,0,0,0.06);
         }
-        .nav-logo-group { display: flex; align-items: center; gap: 1.4rem; }
-        .nav-logo-group img { height: 56px; object-fit: contain; }
-        .logo-sep { width: 1.5px; height: 42px; background: #ddd; }
+        .nav-logo-group { display: flex; align-items: center; gap: 2rem; }
+        .nav-logo-group img { height: 70px; object-fit: contain; }
 
         .nav-links { display: flex; align-items: center; gap: 2.2rem; }
         .nav-link {
@@ -285,6 +284,43 @@
         }
         .info-title { font-size: 0.62rem; font-weight: 800; letter-spacing: 0.15em; text-transform: uppercase; color: #0047AB; margin-bottom: 0.35rem; }
         .info-text { font-size: 0.78rem; color: #666; font-weight: 500; line-height: 1.6; }
+        /* ── SECTIONS ── */
+        .section-container { padding: 8rem 4rem; max-width: 1400px; margin: 0 auto; }
+        .section-header { text-align: center; margin-bottom: 5rem; }
+        .section-label { font-size: 0.75rem; font-weight: 800; color: #C8102E; text-transform: uppercase; letter-spacing: 0.4em; display: block; margin-bottom: 1rem; }
+        .section-title { font-family: 'Playfair Display', serif; font-size: 3.5rem; font-weight: 900; color: #111; letter-spacing: -0.02em; }
+
+        /* ABOUT */
+        .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6rem; align-items: center; }
+        .about-text { font-size: 1.25rem; line-height: 1.8; color: #444; font-weight: 500; }
+        .about-brand-highlight { color: #C8102E; font-weight: 900; }
+
+        /* INVENTORY MATRIX */
+        .matrix-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2.5rem; }
+        .matrix-card { 
+            background: #fff; border-radius: 24px; padding: 2rem; 
+            border: 1px solid #f0f0f0; transition: all 0.4s;
+            text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1.5rem;
+        }
+        .matrix-card:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(0,0,0,0.05); border-color: rgba(200,16,46,0.1); }
+        .matrix-card img { width: 180px; height: 180px; object-fit: contain; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.05)); }
+        .matrix-name { font-size: 1rem; font-weight: 900; color: #111; text-transform: uppercase; letter-spacing: 0.05em; }
+
+        /* RULES */
+        .rules-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.8rem; }
+        .rule-card { 
+            background: #fff; padding: 2.5rem; border-radius: 24px; 
+            border: 1px solid #f0f0f0; display: flex; gap: 1.5rem; transition: all 0.3s;
+        }
+        .rule-card:hover { background: #fafafa; border-color: #C8102E; }
+        .rule-num { 
+            width: 40px; height: 40px; border-radius: 50%; background: #C8102E; color: #fff;
+            flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+            font-weight: 900; font-size: 1rem; box-shadow: 0 4px 10px rgba(200,16,46,0.3);
+        }
+        .rule-content { font-size: 0.95rem; line-height: 1.6; color: #555; font-weight: 600; }
+
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
@@ -292,20 +328,15 @@
     <!-- NAVBAR -->
     <nav class="main-nav">
         <div class="nav-logo-group">
-            <img src="assets/logo.png" alt="BuildVerse" onerror="this.style.display='none'">
-            <div class="logo-sep"></div>
-            <!-- Pleiades black logo -->
-            <img src="assets/pleiades logo black.png" alt="Pleiades" onerror="this.style.display='none'">
+            <img src="assets/pleiades logo black.png" alt="Pleiades">
         </div>
 
         <div class="nav-links">
-            <a href="#" class="nav-link active">Home</a>
-            <a href="#" class="nav-link">Inventory</a>
-            <a href="#" class="nav-link">About</a>
-            <a href="#" class="nav-link">Rules</a>
+            <a href="#about" class="nav-link">About</a>
+            <a href="#inventory" class="nav-link">Inventory</a>
+            <a href="#rules" class="nav-link">Rules</a>
+            <button class="login-btn" onclick="openLoginModal()">Login →</button>
         </div>
-
-        <button class="login-btn" onclick="openLoginModal()">Login Portal</button>
     </nav>
 
     <!-- HERO -->
@@ -335,6 +366,97 @@
         </div>
     </section>
 
+    <!-- ABOUT SECTION -->
+    <section id="about" class="section-container">
+        <div class="about-grid">
+            <div>
+                <span class="section-label">Our Vision</span>
+                <h2 class="section-title">Redefining Innovation Dynamics</h2>
+            </div>
+            <div class="about-text">
+                <p><span class="about-brand-highlight">BuildVerse</span> is a full-stack, web-based event management platform designed specifically for prototype-building competitions. We digitize the entire event lifecycle—from team registration and QR-based check-in to real-time component inventory management and point tracking. Our mission is to eliminate logistical friction, allowing engineers to focus entirely on building the future.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- INVENTORY SECTION -->
+    <section id="inventory" class="section-container" style="background: #fafafa;">
+        <div class="section-header">
+            <span class="section-label">Resource Matrix</span>
+            <h2 class="section-title">Hardware Arsenal</h2>
+        </div>
+        <div id="public-matrix" class="matrix-grid">
+            <!-- Loaded dynamically -->
+            <p class="text-center col-span-full py-10 font-bold text-slate-400">CONNECTING TO REPOSITORY...</p>
+        </div>
+    </section>
+
+    <!-- RULES SECTION -->
+    <section id="rules" class="section-container">
+        <div class="section-header">
+            <span class="section-label">Requisition Protocol</span>
+            <h2 class="section-title">Rules of Engagement</h2>
+        </div>
+        <div class="rules-grid">
+            <div class="rule-card">
+                <div class="rule-num">1</div>
+                <div class="rule-content">Teams must register before the specified deadline to participate in the event.</div>
+            </div>
+            <div class="rule-card">
+                <div class="rule-num">2</div>
+                <div class="rule-content">Each team must consist of the approved number of members; no changes allowed once the event begins.</div>
+            </div>
+            <div class="rule-card">
+                <div class="rule-num">3</div>
+                <div class="rule-content">Participants are allowed to be part of only one team.</div>
+            </div>
+            <div class="rule-card">
+                <div class="rule-num">4</div>
+                <div class="rule-content">Strict adherence to instructions provided by the organizers throughout the event.</div>
+            </div>
+            <div class="rule-card">
+                <div class="rule-num">5</div>
+                <div class="rule-content">Only components purchased through the official points-based system may be used for building.</div>
+            </div>
+            <div class="rule-card">
+                <div class="rule-num">6</div>
+                <div class="rule-content">Use of external or pre-owned components is strictly prohibited.</div>
+            </div>
+            <div class="rule-card">
+                <div class="rule-num">7</div>
+                <div class="rule-content">Teams must manage their allocated points efficiently; overspending may impact evaluation.</div>
+            </div>
+            <div class="rule-card">
+                <div class="rule-num">8</div>
+                <div class="rule-content">Exchange or sharing of components between teams is not allowed under any circumstances.</div>
+            </div>
+            <div class="rule-card">
+                <div class="rule-num">9</div>
+                <div class="rule-content">Any damage caused to components or equipment due to negligence may result in penalties.</div>
+            </div>
+            <div class="rule-card">
+                <div class="rule-num">10</div>
+                <div class="rule-content">Participants must handle all materials responsibly and return unused components.</div>
+            </div>
+            <div class="rule-card">
+                <div class="rule-num">11</div>
+                <div class="rule-content">Completion of prototype must be within the allocated time limits for each round.</div>
+            </div>
+            <div class="rule-card">
+                <div class="rule-num">12</div>
+                <div class="rule-content">Maintain discipline and follow all safety guidelines during the entire event.</div>
+            </div>
+            <div class="rule-card">
+                <div class="rule-num">13</div>
+                <div class="rule-content">The decisions made by the judges and organizing committee will be final and binding.</div>
+            </div>
+            <div class="rule-card">
+                <div class="rule-num">14</div>
+                <div class="rule-content">Organizers reserve the right to modify rules to ensure smooth execution of the event.</div>
+            </div>
+        </div>
+    </section>
+
     <!-- FOOTER -->
     <div class="footer-bar">
         &copy; 2026 BuildVerse &nbsp;·&nbsp; Pleiades Innovation Lab &nbsp;·&nbsp; All Rights Reserved
@@ -345,9 +467,7 @@
         <div class="modal-box">
             <div class="modal-header">
                 <div class="modal-logos">
-                    <img src="assets/logo.png" alt="BuildVerse" onerror="this.style.display='none'">
-                    <div class="modal-logo-sep"></div>
-                    <img src="assets/pleiades logo black.png" alt="Pleiades" onerror="this.style.display='none'">
+                    <img src="assets/pleiades logo black.png" alt="Pleiades" style="height:40px;">
                 </div>
                 <button class="modal-close" onclick="closeLoginModal()">✕</button>
             </div>
@@ -399,6 +519,23 @@
         function handleBackdrop(e) {
             if (e.target === document.getElementById('login-modal')) closeLoginModal();
         }
+
+        // DYNAMIC INVENTORY
+        const firestore = firebase.firestore();
+        firestore.collection('components').onSnapshot(snapshot => {
+            const grid = document.getElementById('public-matrix');
+            grid.innerHTML = '';
+            snapshot.forEach(doc => {
+                const comp = doc.data();
+                const card = `
+                    <div class="matrix-card">
+                        <img src="${comp.image || 'https://via.placeholder.com/150'}" alt="${comp.name}">
+                        <div class="matrix-name">${comp.name}</div>
+                    </div>
+                `;
+                grid.insertAdjacentHTML('beforeend', card);
+            });
+        });
     </script>
     <script src="js/auth.js?v=2.1"></script>
 </body>
