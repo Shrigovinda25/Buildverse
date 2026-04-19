@@ -1,13 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BUILDVERSE | Hardware Inventory Platform</title>
     <link rel="icon" type="image/png" href="assets/logo.png">
-    <meta name="description" content="BuildVerse — Real-time hardware inventory and component management for engineering innovation events.">
+    <meta name="description"
+        content="BuildVerse — Real-time hardware inventory and component management for engineering innovation events.">
     <link rel="stylesheet" href="css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,800&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,800&family=Outfit:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -23,10 +27,26 @@
         }
     </script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Outfit', sans-serif; height: 100vh; overflow: hidden; }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-thumb { background: #C8102E; border-radius: 10px; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #C8102E;
+            border-radius: 10px;
+        }
 
         /* top-bar removed */
 
@@ -39,41 +59,113 @@
             align-items: center;
             justify-content: space-between;
             position: fixed;
-            top: 0; left: 0; right: 0;
+            top: 0;
+            left: 0;
+            right: 0;
             z-index: 200;
             transition: all 0.4s;
         }
-        .main-nav.scrolled { background: rgba(255,255,255,0.95); backdrop-filter: blur(15px); height: 90px; box-shadow: 0 4px 30px rgba(0,0,0,0.05); }
-        .nav-logo-group { display: flex; align-items: center; gap: 2rem; }
-        .nav-logo-group img { height: 70px; object-fit: contain; }
-        .logo-text { font-weight: 900; font-size: 1.2rem; color: #111; letter-spacing: -0.02em; }
-        .logo-text span { color: #C8102E; }
 
-        .nav-links { display: flex; align-items: center; gap: 1rem; }
-        .nav-link {
-            font-size: 0.78rem; font-weight: 800; color: #111;
-            text-decoration: none; letter-spacing: 0.08em; text-transform: uppercase;
-            padding: 0.6rem 1.2rem; border-radius: 50px;
-            transition: all 0.2s; cursor: pointer; border: none; background: transparent;
+        .main-nav.scrolled {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            height: 90px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
         }
-        .nav-link:hover { background: rgba(200,16,46,0.1); color: #C8102E; }
-        .nav-link.active { background: #C8102E; color: #fff; }
 
-        .login-btn {
-            background: transparent;
-            border: 2px solid #222;
-            color: #222;
+        .nav-logo-group {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .nav-logo-group img {
+            height: 70px;
+            object-fit: contain;
+        }
+
+        .logo-text {
+            font-weight: 900;
+            font-size: 1.2rem;
+            color: #111;
+            letter-spacing: -0.02em;
+        }
+
+        .logo-text span {
+            color: #C8102E;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .hero-branding-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2.5rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .branding-logo-main {
+            width: 140px;
+            height: 140px;
+            background: #fff;
+            border-radius: 50%;
+            padding: 10px;
+            object-fit: contain;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            filter: drop-shadow(0 0 10px rgba(255,255,255,0.2));
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .branding-chip-main {
+            width: 180px;
+            height: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 20px 40px rgba(0,0,0,0.15));
+            animation: float-delayed 6.2s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-12px); }
+        }
+        @keyframes float-delayed {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(12px); }
+        }
+
+        /* BUILDVERSE giant name */
+        .hero-brand {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(3rem, 7vw, 4.8rem);
+            font-weight: 900;
+            color: #1a1a1a;
+            line-height: 0.95;
+            letter-spacing: -0.02em;
+            text-align: center;
+        }
+        .hero-brand .bv-sub {
             font-family: 'Outfit', sans-serif;
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             font-weight: 800;
-            letter-spacing: 0.08em;
+            letter-spacing: 0.4em;
             text-transform: uppercase;
-            padding: 0.55rem 1.6rem;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: all 0.25s;
+            color: #C8102E;
+            display: block;
+            margin-bottom: 0.7rem;
         }
-        .login-btn:hover { background: #C8102E; border-color: #C8102E; color: #fff; }
+        .hero-brand .accent { color: #C8102E; font-style: italic; }
+
+        .login-btn:hover {
+            background: #C8102E;
+            border-color: #C8102E;
+            color: #fff;
+        }
 
         /* ── HERO ── */
         .hero {
@@ -88,63 +180,84 @@
             position: relative;
             transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
-        .hero.blurred { filter: blur(30px); transform: scale(1.1); }
+
+        .hero.blurred {
+            filter: blur(30px);
+            transform: scale(1.1);
+        }
 
         /* Subtle dark overlay so text stays readable without killing the image */
         .hero::before {
             content: '';
             position: absolute;
             inset: 0;
-            background: rgba(255,255,255,0.35);
+            background: rgba(255, 255, 255, 0.35);
         }
 
-        .hero-brand-wrapper {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 2rem;
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
+        .hero-content {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            max-width: 720px;
+            padding: 2.5rem 2rem;
         }
+
         .hero-logo-container {
-            width: 250px;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto 2rem;
             animation: float 6s ease-in-out infinite;
         }
+
         @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-15px); }
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
         }
+
         .hero-logo-container img {
             width: 100%;
             height: auto;
             object-fit: contain;
-            filter: drop-shadow(0 20px 40px rgba(0,0,0,0.15));
+            filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.2));
         }
 
         /* BUILDVERSE giant name */
         .hero-brand {
             font-family: 'Playfair Display', serif;
-            font-size: clamp(3rem, 6vw, 4.5rem);
+            font-size: clamp(3.5rem, 8vw, 6rem);
             font-weight: 900;
             color: #1a1a1a;
-            line-height: 1;
+            line-height: 0.95;
             letter-spacing: -0.02em;
-            text-align: left;
+            margin-bottom: 0.5rem;
         }
+
         .hero-brand .bv-sub {
             font-family: 'Outfit', sans-serif;
-            font-size: 0.8rem;
+            font-size: clamp(0.7rem, 2vw, 0.9rem);
             font-weight: 800;
             letter-spacing: 0.4em;
             text-transform: uppercase;
             color: #C8102E;
             display: block;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.8rem;
         }
-        .hero-brand .accent { color: #C8102E; font-style: italic; }
+
+        .hero-brand .accent {
+            color: #C8102E;
+            font-style: italic;
+        }
 
         .hero-divider {
-            width: 60px; height: 3px;
+            width: 60px;
+            height: 3px;
             background: #C8102E;
             margin: 1.4rem auto;
             border-radius: 2px;
@@ -160,9 +273,17 @@
             margin-left: auto;
             margin-right: auto;
         }
-        .hero-desc strong { color: #1a1a1a; }
 
-        .hero-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+        .hero-desc strong {
+            color: #1a1a1a;
+        }
+
+        .hero-btns {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
 
         .btn-red {
             background: #C8102E;
@@ -177,9 +298,14 @@
             border: none;
             cursor: pointer;
             transition: all 0.25s;
-            box-shadow: 0 8px 28px rgba(200,16,46,0.35);
+            box-shadow: 0 8px 28px rgba(200, 16, 46, 0.35);
         }
-        .btn-red:hover { background: #a80d25; transform: translateY(-2px); box-shadow: 0 14px 36px rgba(200,16,46,0.4); }
+
+        .btn-red:hover {
+            background: #a80d25;
+            transform: translateY(-2px);
+            box-shadow: 0 14px 36px rgba(200, 16, 46, 0.4);
+        }
 
         .btn-ghost {
             background: transparent;
@@ -195,7 +321,12 @@
             cursor: pointer;
             transition: all 0.25s;
         }
-        .btn-ghost:hover { background: #1a1a1a; color: #fff; transform: translateY(-2px); }
+
+        .btn-ghost:hover {
+            background: #1a1a1a;
+            color: #fff;
+            transform: translateY(-2px);
+        }
 
         /* ── FOOTER ── */
         .footer-bar {
@@ -210,8 +341,9 @@
 
         /* ── LOGIN MODAL ── */
         .modal-backdrop {
-            position: fixed; inset: 0;
-            background: rgba(10,10,10,0.6);
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 10, 10, 0.6);
             backdrop-filter: blur(12px);
             z-index: 9999;
             display: none;
@@ -219,8 +351,21 @@
             justify-content: center;
             padding: 1.5rem;
         }
-        .modal-backdrop.open { display: flex; animation: fadeIn 0.2s ease; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .modal-backdrop.open {
+            display: flex;
+            animation: fadeIn 0.2s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
 
         .modal-box {
             background: #fff;
@@ -228,12 +373,20 @@
             width: 100%;
             max-width: 430px;
             overflow: hidden;
-            animation: popIn 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards;
-            box-shadow: 0 40px 80px rgba(0,0,0,0.25);
+            animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.25);
         }
+
         @keyframes popIn {
-            from { opacity: 0; transform: scale(0.88) translateY(24px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
+            from {
+                opacity: 0;
+                transform: scale(0.88) translateY(24px);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
         }
 
         .modal-header {
@@ -244,48 +397,105 @@
             justify-content: space-between;
             border-bottom: 2px solid #f0f0f0;
         }
-        .modal-logos { display: flex; align-items: center; gap: 1.4rem; }
-        .modal-logos img {
-            height: 56px; object-fit: contain;
-        }
-        .modal-logo-sep { width: 1.5px; height: 42px; background: #eee; }
-        .modal-close {
-            background: rgba(0,0,0,0.05); border: none; color: #555;
-            width: 34px; height: 34px; border-radius: 50%;
-            font-size: 1rem; cursor: pointer; display: flex;
-            align-items: center; justify-content: center; transition: background 0.2s;
-        }
-        .modal-close:hover { background: rgba(0,0,0,0.1); color: #000; }
 
-        .modal-body { padding: 2rem 2.2rem 2.4rem; }
-        .modal-sub {
-            font-size: 0.63rem; font-weight: 800;
-            letter-spacing: 0.2em; text-transform: uppercase;
-            color: #aaa; margin-bottom: 0.3rem;
+        .modal-logos {
+            display: flex;
+            align-items: center;
+            gap: 1.4rem;
         }
+
+        .modal-logos img {
+            height: 56px;
+            object-fit: contain;
+        }
+
+        .modal-logo-sep {
+            width: 1.5px;
+            height: 42px;
+            background: #eee;
+        }
+
+        .modal-close {
+            background: rgba(0, 0, 0, 0.05);
+            border: none;
+            color: #555;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .modal-close:hover {
+            background: rgba(0, 0, 0, 0.1);
+            color: #000;
+        }
+
+        .modal-body {
+            padding: 2rem 2.2rem 2.4rem;
+        }
+
+        .modal-sub {
+            font-size: 0.63rem;
+            font-weight: 800;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: #aaa;
+            margin-bottom: 0.3rem;
+        }
+
         .modal-title {
             font-family: 'Playfair Display', serif;
-            font-size: 1.8rem; font-weight: 800; color: #1a1a1a;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #1a1a1a;
             margin-bottom: 1.8rem;
         }
+
         .form-label {
-            display: block; font-size: 0.65rem; font-weight: 800;
-            letter-spacing: 0.15em; text-transform: uppercase;
-            color: #999; margin-bottom: 0.45rem; margin-left: 0.3rem;
+            display: block;
+            font-size: 0.65rem;
+            font-weight: 800;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: #999;
+            margin-bottom: 0.45rem;
+            margin-left: 0.3rem;
         }
+
         .form-input {
-            width: 100%; padding: 0.88rem 1.3rem;
-            background: #f5f5f5; border: 1.5px solid #ebebeb;
-            border-radius: 50px; font-family: 'Outfit', sans-serif;
-            font-size: 0.88rem; font-weight: 600; color: #333; outline: none;
-            transition: all 0.2s; margin-bottom: 1.1rem;
+            width: 100%;
+            padding: 0.88rem 1.3rem;
+            background: #f5f5f5;
+            border: 1.5px solid #ebebeb;
+            border-radius: 50px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: #333;
+            outline: none;
+            transition: all 0.2s;
+            margin-bottom: 1.1rem;
         }
-        .form-input:focus { background: #fff; border-color: #C8102E; box-shadow: 0 0 0 4px rgba(200,16,46,0.09); }
+
+        .form-input:focus {
+            background: #fff;
+            border-color: #C8102E;
+            box-shadow: 0 0 0 4px rgba(200, 16, 46, 0.09);
+        }
 
         .info-box {
-            background: #f7f7f7; border: 1.5px dashed #e2e2e2;
-            border-radius: 14px; padding: 0.9rem 1.1rem; margin-top: 1.2rem;
+            background: #f7f7f7;
+            border: 1.5px dashed #e2e2e2;
+            border-radius: 14px;
+            padding: 0.9rem 1.1rem;
+            margin-top: 1.2rem;
         }
+
         /* ── CONTENT OVERLAYS ── */
         .content-panel {
             position: fixed;
@@ -297,60 +507,195 @@
             overflow-y: auto;
             padding: 8rem 2rem 4rem;
         }
-        .content-panel.active { display: block; animation: panelIn 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
-        @keyframes panelIn {
-            from { opacity: 0; transform: scale(1.05); filter: blur(10px); }
-            to { opacity: 1; transform: scale(1); filter: blur(0); }
-        }
-        .panel-close {
-            position: fixed; top: 110px; right: 4rem; width: 50px; height: 50px;
-            background: #111; color: #fff; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.2rem; cursor: pointer; border: none; z-index: 160;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1); transition: all 0.2s;
-        }
-        .panel-close:hover { background: #C8102E; transform: rotate(90px); }
 
-        .section-container { padding: 4rem 2rem; max-width: 1200px; margin: 0 auto; }
-        .section-header { text-align: center; margin-bottom: 5rem; }
-        .section-label { font-size: 0.75rem; font-weight: 800; color: #C8102E; text-transform: uppercase; letter-spacing: 0.4em; display: block; margin-bottom: 1rem; }
-        .section-title { font-family: 'Playfair Display', serif; font-size: 3.5rem; font-weight: 900; color: #111; letter-spacing: -0.02em; }
+        .content-panel.active {
+            display: block;
+            animation: panelIn 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+
+        @keyframes panelIn {
+            from {
+                opacity: 0;
+                transform: scale(1.05);
+                filter: blur(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+                filter: blur(0);
+            }
+        }
+
+        .panel-close {
+            position: fixed;
+            top: 110px;
+            right: 4rem;
+            width: 50px;
+            height: 50px;
+            background: #111;
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            border: none;
+            z-index: 160;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s;
+        }
+
+        .panel-close:hover {
+            background: #C8102E;
+            transform: rotate(90px);
+        }
+
+        .section-container {
+            padding: 4rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 5rem;
+        }
+
+        .section-label {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: #C8102E;
+            text-transform: uppercase;
+            letter-spacing: 0.4em;
+            display: block;
+            margin-bottom: 1rem;
+        }
+
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem;
+            font-weight: 900;
+            color: #111;
+            letter-spacing: -0.02em;
+        }
 
         /* ABOUT */
-        .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6rem; align-items: center; }
-        .about-text { font-size: 1.25rem; line-height: 1.8; color: #444; font-weight: 500; }
-        .about-brand-highlight { color: #C8102E; font-weight: 900; }
+        .about-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6rem;
+            align-items: center;
+        }
+
+        .about-text {
+            font-size: 1.25rem;
+            line-height: 1.8;
+            color: #444;
+            font-weight: 500;
+        }
+
+        .about-brand-highlight {
+            color: #C8102E;
+            font-weight: 900;
+        }
 
         /* INVENTORY MATRIX */
-        .matrix-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2.5rem; }
-        .matrix-card { 
-            background: #fff; border-radius: 24px; padding: 2rem; 
-            border: 1px solid #f0f0f0; transition: all 0.4s;
-            text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1.5rem;
+        .matrix-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2.5rem;
         }
-        .matrix-card:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(0,0,0,0.05); border-color: rgba(200,16,46,0.1); }
-        .matrix-card img { width: 180px; height: 180px; object-fit: contain; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.05)); }
-        .matrix-name { font-size: 1rem; font-weight: 900; color: #111; text-transform: uppercase; letter-spacing: 0.05em; }
+
+        .matrix-card {
+            background: #fff;
+            border-radius: 24px;
+            padding: 2rem;
+            border: 1px solid #f0f0f0;
+            transition: all 0.4s;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .matrix-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+            border-color: rgba(200, 16, 46, 0.1);
+        }
+
+        .matrix-card img {
+            width: 180px;
+            height: 180px;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.05));
+        }
+
+        .matrix-name {
+            font-size: 1rem;
+            font-weight: 900;
+            color: #111;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
 
         /* RULES */
-        .rules-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.8rem; }
-        .rule-card { 
-            background: #fff; padding: 2.5rem; border-radius: 24px; 
-            border: 1px solid #f0f0f0; display: flex; gap: 1.5rem; transition: all 0.3s;
+        .rules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.8rem;
         }
-        .rule-card:hover { background: #fafafa; border-color: #C8102E; }
-        .rule-num { 
-            width: 40px; height: 40px; border-radius: 50%; background: #C8102E; color: #fff;
-            flex-shrink: 0; display: flex; align-items: center; justify-content: center;
-            font-weight: 900; font-size: 1rem; box-shadow: 0 4px 10px rgba(200,16,46,0.3);
-        }
-        .rule-content { font-size: 0.95rem; line-height: 1.6; color: #555; font-weight: 600; }
 
-        .hidden { display: none !important; }
+        .rule-card {
+            background: #fff;
+            padding: 2.5rem;
+            border-radius: 24px;
+            border: 1px solid #f0f0f0;
+            display: flex;
+            gap: 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .rule-card:hover {
+            background: #fafafa;
+            border-color: #C8102E;
+        }
+
+        .rule-num {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #C8102E;
+            color: #fff;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 1rem;
+            box-shadow: 0 4px 10px rgba(200, 16, 46, 0.3);
+        }
+
+        .rule-content {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #555;
+            font-weight: 600;
+        }
+
+        .hidden {
+            display: none !important;
+        }
     </style>
 </head>
+
 <body>
 
+    <!-- NAVBAR -->
+    <nav class="main-nav">
     <!-- NAVBAR -->
     <nav class="main-nav">
         <div class="nav-links ml-auto">
@@ -363,16 +708,17 @@
 
     <!-- HERO -->
     <section class="hero" id="main-hero">
-        <div class="hero-content text-center">
+        <div class="hero-content">
             
-            <div class="hero-brand-wrapper">
+            <div class="hero-branding-row">
+                <img src="assets/logo.png" alt="BuildVerse Logo" class="branding-logo-main">
+                
                 <h1 class="hero-brand">
                     <span class="bv-sub">PROTOTYPING REVOLUTION</span>
                     Build<span class="accent">Verse</span>
                 </h1>
-                <div class="hero-logo-container">
-                    <img src="assets/Background_less_img.png" alt="BuildVerse Engine">
-                </div>
+
+                <img src="assets/Background_less_img.png" alt="Hardware Engine" class="branding-chip-main">
             </div>
 
             <div class="hero-divider"></div>
@@ -400,7 +746,11 @@
                     <h2 class="section-title">Redefining Innovation Dynamics</h2>
                 </div>
                 <div class="about-text">
-                    <p><span class="about-brand-highlight">BuildVerse</span> is a full-stack, web-based event management platform designed specifically for prototype-building competitions. We digitize the entire event lifecycle—from team registration and QR-based check-in to real-time component inventory management and point tracking. Our mission is to eliminate logistical friction, allowing engineers to focus entirely on building the future.</p>
+                    <p><span class="about-brand-highlight">BuildVerse</span> is a full-stack, web-based event management
+                        platform designed specifically for prototype-building competitions. We digitize the entire event
+                        lifecycle—from team registration and QR-based check-in to real-time component inventory
+                        management and point tracking. Our mission is to eliminate logistical friction, allowing
+                        engineers to focus entirely on building the future.</p>
                 </div>
             </div>
         </section>
@@ -430,25 +780,73 @@
             <div class="rules-grid">
                 <div class="rule-card">
                     <div class="rule-num">1</div>
-                    <div class="rule-content">Teams must register before the specified deadline to participate in the event.</div>
+                    <div class="rule-content">Teams must register before the specified deadline to participate in the
+                        event.</div>
                 </div>
                 <div class="rule-card">
                     <div class="rule-num">2</div>
-                    <div class="rule-content">Each team must consist of the approved number of members; no changes allowed once the event begins.</div>
+                    <div class="rule-content">Each team must consist of the approved number of members; no changes
+                        allowed once the event begins.</div>
                 </div>
                 <!-- ... other rules ... -->
-                <div class="rule-card"><div class="rule-num">3</div><div class="rule-content">Participants are allowed to be part of only one team.</div></div>
-                <div class="rule-card"><div class="rule-num">4</div><div class="rule-content">Strict adherence to instructions provided by the organizers throughout the event.</div></div>
-                <div class="rule-card"><div class="rule-num">5</div><div class="rule-content">Only components purchased through the official points-based system may be used for building.</div></div>
-                <div class="rule-card"><div class="rule-num">6</div><div class="rule-content">Use of external or pre-owned components is strictly prohibited.</div></div>
-                <div class="rule-card"><div class="rule-num">7</div><div class="rule-content">Teams must manage their allocated points efficiently; overspending may impact evaluation.</div></div>
-                <div class="rule-card"><div class="rule-num">8</div><div class="rule-content">Exchange or sharing of components between teams is not allowed under any circumstances.</div></div>
-                <div class="rule-card"><div class="rule-num">9</div><div class="rule-content">Any damage caused to components or equipment due to negligence may result in penalties.</div></div>
-                <div class="rule-card"><div class="rule-num">10</div><div class="rule-content">Participants must handle all materials responsibly and return unused components.</div></div>
-                <div class="rule-card"><div class="rule-num">11</div><div class="rule-content">Completion of prototype must be within the allocated time limits for each round.</div></div>
-                <div class="rule-card"><div class="rule-num">12</div><div class="rule-content">Maintain discipline and follow all safety guidelines during the entire event.</div></div>
-                <div class="rule-card"><div class="rule-num">13</div><div class="rule-content">The decisions made by the judges and organizing committee will be final and binding.</div></div>
-                <div class="rule-card"><div class="rule-num">14</div><div class="rule-content">Organizers reserve the right to modify rules to ensure smooth execution of the event.</div></div>
+                <div class="rule-card">
+                    <div class="rule-num">3</div>
+                    <div class="rule-content">Participants are allowed to be part of only one team.</div>
+                </div>
+                <div class="rule-card">
+                    <div class="rule-num">4</div>
+                    <div class="rule-content">Strict adherence to instructions provided by the organizers throughout the
+                        event.</div>
+                </div>
+                <div class="rule-card">
+                    <div class="rule-num">5</div>
+                    <div class="rule-content">Only components purchased through the official points-based system may be
+                        used for building.</div>
+                </div>
+                <div class="rule-card">
+                    <div class="rule-num">6</div>
+                    <div class="rule-content">Use of external or pre-owned components is strictly prohibited.</div>
+                </div>
+                <div class="rule-card">
+                    <div class="rule-num">7</div>
+                    <div class="rule-content">Teams must manage their allocated points efficiently; overspending may
+                        impact evaluation.</div>
+                </div>
+                <div class="rule-card">
+                    <div class="rule-num">8</div>
+                    <div class="rule-content">Exchange or sharing of components between teams is not allowed under any
+                        circumstances.</div>
+                </div>
+                <div class="rule-card">
+                    <div class="rule-num">9</div>
+                    <div class="rule-content">Any damage caused to components or equipment due to negligence may result
+                        in penalties.</div>
+                </div>
+                <div class="rule-card">
+                    <div class="rule-num">10</div>
+                    <div class="rule-content">Participants must handle all materials responsibly and return unused
+                        components.</div>
+                </div>
+                <div class="rule-card">
+                    <div class="rule-num">11</div>
+                    <div class="rule-content">Completion of prototype must be within the allocated time limits for each
+                        round.</div>
+                </div>
+                <div class="rule-card">
+                    <div class="rule-num">12</div>
+                    <div class="rule-content">Maintain discipline and follow all safety guidelines during the entire
+                        event.</div>
+                </div>
+                <div class="rule-card">
+                    <div class="rule-num">13</div>
+                    <div class="rule-content">The decisions made by the judges and organizing committee will be final
+                        and binding.</div>
+                </div>
+                <div class="rule-card">
+                    <div class="rule-num">14</div>
+                    <div class="rule-content">Organizers reserve the right to modify rules to ensure smooth execution of
+                        the event.</div>
+                </div>
             </div>
         </section>
     </div>
@@ -488,7 +886,8 @@
                 <div class="info-box">
                     <p class="info-title">Participant Access Protocol</p>
                     <p class="info-text">
-                        Use the <strong>Identity</strong> and <strong>Passkey</strong> provided by the Admin during registration. Keep your credentials secure at all times.
+                        Use the <strong>Identity</strong> and <strong>Passkey</strong> provided by the Admin during
+                        registration. Keep your credentials secure at all times.
                     </p>
                 </div>
             </div>
@@ -544,7 +943,6 @@
         }
 
         // DYNAMIC INVENTORY
-        // Removed firestore redeclaration - now using from auth.js
         if (typeof firestore !== 'undefined') {
             firestore.collection('components').onSnapshot(snapshot => {
             const grid = document.getElementById('public-matrix');
@@ -565,4 +963,5 @@
         });
     </script>
 </body>
+
 </html>
