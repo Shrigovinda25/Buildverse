@@ -263,11 +263,6 @@ function openCartModal() {
                 <p class="text-[10px] font-black text-bvRed uppercase tracking-widest">Protocol Cost</p>
                 <p class="text-3xl font-black text-bvRed italic" id="calc-total">${totalPts} PTS</p>
             </div>
-
-            <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-2">Identity Verification (Representative Name)</label>
-                <input type="text" id="order-rep-verify" class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-[24px] focus:ring-4 focus:ring-bvRed/10 focus:border-bvRed outline-none transition-all font-bold text-slate-700" placeholder="Enter Team Representative Name">
-            </div>
         </div>
     `;
 
@@ -289,18 +284,9 @@ function logout() {
 }
 
 document.getElementById('modal-submit').onclick = async () => {
-    const verifyInput = document.getElementById('order-rep-verify');
-    if (!verifyInput || Object.keys(cart).length === 0) return;
-    
-    const verifyName = verifyInput.value.trim();
+    if (Object.keys(cart).length === 0) return;
     
     try {
-        const liveUser = JSON.parse(localStorage.getItem('bv_user_live') || '{}');
-        if (verifyName.toLowerCase() !== liveUser.representativeName?.toLowerCase()) {
-            alert('IDENTITY_ERROR: Verification Name does not match Registered Representative.');
-            return;
-        }
-
         document.getElementById('modal-submit').textContent = 'Processing...';
         document.getElementById('modal-submit').disabled = true;
 
