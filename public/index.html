@@ -563,19 +563,108 @@
             letter-spacing: -0.02em;
         }
 
-        /* ABOUT */
-        .about-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 6rem;
+        /* ABOUT REDESIGN */
+        .prize-hero-banner {
+            background: linear-gradient(135deg, #C8102E, #8B0000);
+            padding: 3rem 4rem;
+            border-radius: 32px;
+            color: #fff;
+            text-align: center;
+            margin-bottom: 4rem;
+            box-shadow: 0 20px 50px rgba(200, 16, 46, 0.25);
+            display: flex;
             align-items: center;
+            justify-content: center;
+            gap: 4rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s;
         }
 
-        .about-text {
-            font-size: 1.25rem;
-            line-height: 1.8;
-            color: #444;
-            font-weight: 500;
+        .prize-hero-banner:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 60px rgba(200, 16, 46, 0.3);
+        }
+
+        .prize-info h3 {
+            font-size: 0.75rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.4em;
+            opacity: 0.8;
+            margin-bottom: 0.5rem;
+        }
+
+        .prize-amount {
+            font-size: 4.5rem;
+            font-weight: 900;
+            line-height: 1;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .about-pillar-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .pillar-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 2.5rem;
+            border-radius: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .pillar-card:hover {
+            background: #fff;
+            transform: translateY(-12px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+            border-color: #C8102E;
+        }
+
+        .pillar-head {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .pillar-num {
+            font-size: 0.9rem;
+            font-weight: 900;
+            color: #C8102E;
+            font-family: 'Outfit', sans-serif;
+            opacity: 0.4;
+        }
+
+        .pillar-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #111;
+        }
+
+        .pillar-body {
+            font-size: 0.95rem;
+            line-height: 1.7;
+            color: #555;
+            font-weight: 600;
+        }
+
+        .about-mission-footer {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+            padding: 2.5rem;
+            border-top: 2px solid #f0f0f0;
+            font-style: italic;
+            color: #777;
+            font-size: 1.1rem;
         }
 
         .about-brand-highlight {
@@ -670,6 +759,103 @@
         .hidden {
             display: none !important;
         }
+
+        /* ── MOBILE RESPONSIVENESS ── */
+        @media (max-width: 768px) {
+            /* Nav */
+            .main-nav {
+                padding: 0 1.5rem;
+                height: 80px;
+            }
+            .nav-links {
+                gap: 0.5rem;
+            }
+            .nav-link {
+                padding: 0.5rem 0.8rem;
+                font-size: 0.7rem;
+            }
+            .login-btn {
+                display: none; /* Hide login button in nav on mobile to save space */
+            }
+
+            /* Hero */
+            .hero-content {
+                padding: 1.5rem;
+            }
+            .hero-branding-row {
+                gap: 1.5rem;
+            }
+            .branding-logo-left {
+                width: 70px;
+                height: 70px;
+            }
+            .branding-logo-right {
+                height: 60px;
+            }
+            .hero-brand {
+                font-size: 3rem;
+            }
+            .hero-brand .bv-sub {
+                letter-spacing: 0.3em;
+                font-size: 0.8rem;
+            }
+            .hero-btns {
+                flex-direction: column;
+                gap: 1rem;
+                width: 100%;
+            }
+            .btn-red, .btn-ghost {
+                width: 100%;
+                text-align: center;
+            }
+
+            /* Panels */
+            .content-panel {
+                padding: 6rem 1.5rem 2rem;
+            }
+            .section-title {
+                font-size: 2.2rem;
+            }
+
+            /* About Section */
+            .prize-hero-banner {
+                flex-direction: column;
+                padding: 2.5rem 2rem;
+                gap: 2rem;
+                margin-bottom: 2rem;
+            }
+            .prize-amount {
+                font-size: 3rem;
+            }
+            .prize-hero-banner .w-px {
+                width: 50px;
+                height: 2px;
+            }
+            .about-pillar-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            .pillar-card {
+                padding: 1.8rem;
+            }
+            .about-mission-footer {
+                padding: 1.5rem;
+                font-size: 0.95rem;
+            }
+
+            /* Inventory */
+            .matrix-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 1rem;
+            }
+            .matrix-card {
+                padding: 1rem;
+            }
+            .matrix-card img {
+                width: 100px;
+                height: 100px;
+            }
+        }
     </style>
 </head>
 
@@ -717,31 +903,57 @@
     <!-- ABOUT PANEL -->
     <div id="about" class="content-panel">
         <section class="section-container">
-            <div class="about-grid">
-                <div>
-                    <span class="section-label">Participant Guide</span>
-                    <h2 class="section-title">Engineers' Workflow</h2>
+            <!-- PRIZE HERO -->
+            <div class="prize-hero-banner">
+                <div class="prize-info">
+                    <h3>The Rewards Matrix</h3>
+                    <div class="prize-amount">₹24,000</div>
+                    <p class="uppercase tracking-[0.4em] font-black opacity-80 mt-2 text-[0.6rem]">Total Prize Repository</p>
                 </div>
-                <div class="about-text">
-                    <ul class="space-y-4">
-                        <li>
-                            <strong class="text-white">🚀 Real-time Inventory Matrix</strong><br>
-                            <span class="text-slate-300 text-sm">Browse the entire BuildVerse hardware repository with live stock levels and technical specifications.</span>
-                        </li>
-                        <li>
-                            <strong class="text-white">💳 Dynamic Requisition System</strong><br>
-                            <span class="text-slate-300 text-sm">Securely acquire sensors, actuators, and controllers using your team's allocated innovation points.</span>
-                        </li>
-                        <li>
-                            <strong class="text-white">📊 Transaction Intelligence</strong><br>
-                            <span class="text-slate-300 text-sm">Monitor your team's requisition history and track your remaining point balance in real-time throughout the event.</span>
-                        </li>
-                        <li>
-                            <strong class="text-white">📜 Protocol Central</strong><br>
-                            <span class="text-slate-300 text-sm">Access the official Rules of Engagement and safety protocols to ensure a streamlined prototyping experience.</span>
-                        </li>
-                    </ul>
+                <div class="w-px h-24 bg-white/20"></div>
+                <div class="text-left max-w-xs">
+                    <p class="text-sm font-bold leading-relaxed opacity-90">Experience the high-performance hardware ecosystem where innovation meets precision.</p>
                 </div>
+            </div>
+
+            <!-- CORE PILLARS -->
+            <div class="about-pillar-grid">
+                <!-- CARD 1 -->
+                <div class="pillar-card">
+                    <div class="pillar-head">
+                        <span class="pillar-num">01</span>
+                        <h3 class="pillar-title">Conceptual Framework</h3>
+                    </div>
+                    <p class="pillar-body">
+                        Buildverse is an engineering innovation challenge designed to test creativity, technical skills, and strategic thinking under real-world constraints. Transform ideas into functional prototypes using a dynamic points-based repository.
+                    </p>
+                </div>
+
+                <!-- CARD 2 -->
+                <div class="pillar-card">
+                    <div class="pillar-head">
+                        <span class="pillar-num">02</span>
+                        <h3 class="pillar-title">Operational Pipeline</h3>
+                    </div>
+                    <p class="pillar-body">
+                        Engage in a multi-stage process: component analysis, strategic planning, procurement, and iterative optimization. Mirroring real-world product development environments for rapid problem-solving.
+                    </p>
+                </div>
+
+                <!-- CARD 3 -->
+                <div class="pillar-card">
+                    <div class="pillar-head">
+                        <span class="pillar-num">03</span>
+                        <h3 class="pillar-title">Design Optimization</h3>
+                    </div>
+                    <p class="pillar-body">
+                        Balance innovation with cost-efficiency. Prototypes are evaluated based on engineering design, functionality, and efficient resource management during structured evaluation cycles.
+                    </p>
+                </div>
+            </div>
+
+            <div class="about-mission-footer">
+                Buildverse provides a hands-on platform for aspiring engineers to ideate, engineer, and optimize solutions, fostering practical skills and teamwork essential for modern engineering challenges.
             </div>
         </section>
     </div>
