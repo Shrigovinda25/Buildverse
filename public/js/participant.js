@@ -2,9 +2,11 @@ const user = checkAuth('participant');
 if (user) {
     document.getElementById('welcome-msg').textContent = `WELCOME, ${user.username.toUpperCase()}`;
     setupUserListener(user.username);
-    const sessionId = localStorage.getItem('bv_sessionId');
+const sessionId = localStorage.getItem('bv_sessionId');
     startSessionHeartbeat(user.username, sessionId);
 }
+
+let cart = {};
 
 // ----------------------------------------------------------------------------
 // Categorical Sorting Logic
@@ -37,9 +39,9 @@ function switchTab(tab) {
     document.getElementById(`${tab}-tab`).classList.remove('hidden');
     
     // Update Floating Pill Nav
-    document.querySelectorAll('.pill-nav-link').forEach(t => {
+    document.querySelectorAll('.sidebar-btn[data-tab]').forEach(t => {
         t.classList.remove('active');
-        if (t.dataset.tab === tab || (tab === 'my-orders' && t.dataset.tab === 'orders')) {
+        if (t.dataset.tab === tab) {
             t.classList.add('active');
         }
     });
@@ -110,12 +112,21 @@ function renderCatalog() {
                         <div class="h-full bg-bvYellow transition-all duration-700" style="width: ${(item.availableQuantity/item.totalQuantity)*100}%"></div>
                     </div>
                     
-                    <button class="w-full py-4 rounded-3xl font-black text-xs uppercase tracking-[0.2em] transition-all
-                        ${canOrder ? 'bg-bvYellow text-bvRed shadow-xl shadow-yellow-100 hover:scale-105 active:scale-95' : 'bg-slate-100 text-slate-300 cursor-not-allowed'}"
-                        ${!canOrder ? 'disabled' : ''} 
-                        onclick="openOrderModal('${item.id}', '${item.name}', ${item.price})">
-                        ${liveUser.orderingEnabled ? (item.availableQuantity > 0 ? 'Acquire_Resource' : 'Depleted') : 'Locked'}
-                    </button>
+                    ${(canOrder && item.availableQuantity > 0) ? `
+                        <div class="flex items-center justify-between w-full mt-2 bg-slate-50 rounded-[20px] p-1.5 border border-slate-100">
+                            <button class="w-10 h-10 rounded-[14px] bg-white text-slate-400 hover:text-bvRed shadow-sm transition-all flex items-center justify-center" onclick="updateCartItem('${item.id}', '${item.name.replace(/'/g, "\\'")}', ${item.price}, -1)">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>
+                            </button>
+                            <span class="font-black text-lg italic w-10 text-center text-slate-700" id="cart-qty-${item.id}">${cart[item.id]?.qty || 0}</span>
+                            <button class="w-10 h-10 rounded-[14px] bg-bvYellow text-bvRed shadow-sm transition-all shadow-yellow-100/50 hover:scale-105 active:scale-95 flex items-center justify-center" onclick="updateCartItem('${item.id}', '${item.name.replace(/'/g, "\\'")}', ${item.price}, 1)">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                            </button>
+                        </div>
+                    ` : `
+                        <button class="w-full py-4 rounded-3xl font-black text-xs uppercase tracking-[0.2em] transition-all bg-slate-100 text-slate-300 cursor-not-allowed" disabled>
+                            ${!liveUser.orderingEnabled ? 'Locked' : 'Depleted'}
+                        </button>
+                    `}
                 </div>
             </div>
         `;
@@ -190,48 +201,81 @@ firestore.collection('orders').orderBy('timestamp', 'asc').onSnapshot(snapshot =
 });
 
 // ----------------------------------------------------------------------------
-// Modals & Acquisition
+// Cart & Checkout
 // ----------------------------------------------------------------------------
-let selectedComp = null;
-
-function openOrderModal(id, name, price) {
-    selectedComp = { id, name, price };
-    const content = document.getElementById('modal-content');
+function updateCartItem(id, name, price, delta) {
+    if (!cart[id]) cart[id] = { name, price, qty: 0 };
     
+    cart[id].qty += delta;
+    if (cart[id].qty <= 0) {
+        delete cart[id];
+        document.getElementById(`cart-qty-${id}`).textContent = '0';
+    } else {
+        document.getElementById(`cart-qty-${id}`).textContent = cart[id].qty;
+    }
+    
+    updateCartUI();
+}
+
+function updateCartUI() {
+    const totalItems = Object.values(cart).reduce((sum, item) => sum + item.qty, 0);
+    const floatBtn = document.getElementById('floating-cart-btn');
+    if (!floatBtn) return;
+    
+    if (totalItems > 0) {
+        const totalPts = Object.values(cart).reduce((sum, item) => sum + (item.price * item.qty), 0);
+        floatBtn.classList.remove('hidden');
+        floatBtn.innerHTML = `🛒 View Cart (${totalItems}) &nbsp;•&nbsp; ${totalPts} PTS`;
+    } else {
+        floatBtn.classList.add('hidden');
+        closeModal();
+    }
+}
+
+function openCartModal() {
+    const content = document.getElementById('modal-content');
+    if (Object.keys(cart).length === 0) return;
+
+    let itemsHtml = '';
+    let totalPts = 0;
+    
+    Object.keys(cart).forEach(id => {
+        const item = cart[id];
+        totalPts += item.qty * item.price;
+        itemsHtml += `
+            <div class="flex justify-between items-center bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <div>
+                    <p class="font-black text-slate-800 text-sm italic uppercase">${item.name}</p>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">${item.price} PTS / EA</p>
+                </div>
+                <div class="font-black text-bvRed text-lg italic tracking-tighter">x${item.qty}</div>
+            </div>
+        `;
+    });
+
     content.innerHTML = `
-        <div class="space-y-8">
-            <div class="p-6 bg-slate-50 rounded-[24px] border border-slate-100">
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Target Resource</p>
-                <p class="text-2xl font-black text-slate-800 uppercase tracking-tight italic">${name}</p>
+        <div class="space-y-6">
+            <div class="max-h-[30vh] overflow-y-auto space-y-3 pr-2">
+                ${itemsHtml}
             </div>
             
-            <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-2">Quantity Assessment</label>
-                <div class="flex items-center gap-6 mb-8">
-                    <input type="number" id="order-qty" value="1" min="1" class="flex-1 px-6 py-4 bg-slate-50 border border-slate-100 rounded-[20px] focus:ring-4 focus:ring-bvRed/10 focus:border-bvRed outline-none transition-all font-black text-lg" oninput="updateCalculation()">
-                    <div class="text-right">
-                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Protocol Cost</p>
-                        <p class="text-2xl font-black text-bvRed italic" id="calc-total">${price} PTS</p>
-                    </div>
-                </div>
+            <div class="flex justify-between items-center p-6 bg-red-50 rounded-[24px] border border-red-100 shadow-sm">
+                <p class="text-[10px] font-black text-bvRed uppercase tracking-widest">Protocol Cost</p>
+                <p class="text-3xl font-black text-bvRed italic" id="calc-total">${totalPts} PTS</p>
+            </div>
 
-                <div>
-                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-2">Identity Verification (Representative Name)</label>
-                    <input type="text" id="order-rep-verify" class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-[24px] focus:ring-4 focus:ring-bvRed/10 focus:border-bvRed outline-none transition-all font-bold text-slate-700" placeholder="Enter Team Representative Name">
-                </div>
+            <div>
+                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-2">Identity Verification (Representative Name)</label>
+                <input type="text" id="order-rep-verify" class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-[24px] focus:ring-4 focus:ring-bvRed/10 focus:border-bvRed outline-none transition-all font-bold text-slate-700" placeholder="Enter Team Representative Name">
             </div>
         </div>
     `;
 
+    document.getElementById('modal-title').textContent = 'Review Processing Queue';
+    document.getElementById('modal-submit').textContent = 'Confirm Order';
+
     document.getElementById('modal-backdrop').classList.remove('hidden');
     document.getElementById('modal-backdrop').classList.add('flex');
-}
-
-function updateCalculation() {
-    const qtyInput = document.getElementById('order-qty');
-    if (!qtyInput) return;
-    const qty = parseInt(qtyInput.value) || 0;
-    document.getElementById('calc-total').textContent = (qty * selectedComp.price) + ' PTS';
 }
 
 function closeModal() {
@@ -245,11 +289,9 @@ function logout() {
 }
 
 document.getElementById('modal-submit').onclick = async () => {
-    const qtyInput = document.getElementById('order-qty');
     const verifyInput = document.getElementById('order-rep-verify');
-    if (!qtyInput || !verifyInput) return;
+    if (!verifyInput || Object.keys(cart).length === 0) return;
     
-    const qty = parseInt(qtyInput.value);
     const verifyName = verifyInput.value.trim();
     
     try {
@@ -259,19 +301,38 @@ document.getElementById('modal-submit').onclick = async () => {
             return;
         }
 
-        await firestore.collection('orders').add({
-            username: user.username,
-            componentId: selectedComp.id,
-            componentName: selectedComp.name,
-            quantity: qty,
-            pricePerUnit: selectedComp.price,
-            totalCost: qty * selectedComp.price,
-            status: 'Pending',
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
+        document.getElementById('modal-submit').textContent = 'Processing...';
+        document.getElementById('modal-submit').disabled = true;
+
+        const batch = firestore.batch();
         
+        for (const [id, item] of Object.entries(cart)) {
+            const newOrderRef = firestore.collection('orders').doc();
+            batch.set(newOrderRef, {
+                username: user.username,
+                componentId: id,
+                componentName: item.name,
+                quantity: item.qty,
+                pricePerUnit: item.price,
+                totalCost: item.qty * item.price,
+                status: 'Pending',
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        }
+        
+        await batch.commit();
+        
+        cart = {}; 
+        updateCartUI(); 
+        document.querySelectorAll('[id^="cart-qty-"]').forEach(el => el.textContent = '0');
         closeModal();
+        
     } catch (e) {
         alert('Error: ' + e.message);
+    } finally {
+        document.getElementById('modal-submit').textContent = 'Confirm Order';
+        document.getElementById('modal-submit').disabled = false;
     }
 };
+
+window.openCartModal = openCartModal;

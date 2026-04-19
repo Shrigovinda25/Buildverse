@@ -40,8 +40,10 @@ if (loginForm) {
             // 3. SECURE SESSION CHECK (Concurrent Login Prevention)
             const currentTime = Date.now();
             const lastHeartbeat = userData.lastHeartbeat || 0;
-            // 45 second grace period
-            if (currentTime - lastHeartbeat < 45000) {
+            const existingSessionId = localStorage.getItem('bv_sessionId');
+            
+            // 45 second grace period, bypass if they are the SAME browser reclaiming their session
+            if (currentTime - lastHeartbeat < 45000 && userData.activeSessionId !== existingSessionId) {
                 throw new Error('SECURITY_ALERT: ACCOUNT_IN_USE. Please wait 60s or log out from other devices.');
             }
 
@@ -140,18 +142,18 @@ function startSessionHeartbeat(username, sessionId) {
 
 // Check session
 function checkAuth(roleRequired) {
-    const user = JSON.parse(localStorage.getItem('bv_user'));
+    const user = JSON.parse(localStorage.getItem('bv_user') || 'null');
     const token = getAuthToken();
 
     if (!token || !user) {
         window.location.href = 'index.html';
-        return;
+        return null;
     }
 
-    if (roleRequired && user.role !== roleRequired) {
-        alert('Unauthorized access');
+    if (roleRequired && user.role.toLowerCase() !== roleRequired.toLowerCase()) {
+        console.error('Role Mismatch:', user.role, 'expected', roleRequired);
         window.location.href = 'index.html';
-        return;
+        return null;
     }
 
     return user;

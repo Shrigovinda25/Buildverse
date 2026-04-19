@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BUILDVERSE | Login</title>
+    <title>BUILDVERSE | Hardware Inventory Platform</title>
+    <link rel="icon" type="image/png" href="assets/logo.png">
+    <meta name="description" content="BuildVerse — Real-time hardware inventory and component management for engineering innovation events.">
     <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,800&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -19,60 +22,384 @@
             }
         }
     </script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Outfit', sans-serif; overflow-x: hidden; }
+
+        /* top-bar removed */
+
+        /* ── MAIN NAV ── */
+        .main-nav {
+            background: rgba(255,255,255,0.97);
+            backdrop-filter: blur(12px);
+            padding: 0 2.8rem;
+            height: 90px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+            position: relative;
+            z-index: 100;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.07);
+        }
+        .nav-logo-group { display: flex; align-items: center; gap: 1.4rem; }
+        .nav-logo-group img { height: 56px; object-fit: contain; }
+        .logo-sep { width: 1.5px; height: 42px; background: #ddd; }
+
+        .nav-links { display: flex; align-items: center; gap: 2.2rem; }
+        .nav-link {
+            font-size: 0.8rem; font-weight: 700; color: #555;
+            text-decoration: none; letter-spacing: 0.04em;
+            padding: 0.35rem 0.9rem; border-radius: 50px;
+            transition: all 0.2s;
+        }
+        .nav-link:hover { color: #C8102E; background: rgba(200,16,46,0.06); }
+        .nav-link.active { color: #C8102E; background: rgba(200,16,46,0.09); }
+
+        .login-btn {
+            background: transparent;
+            border: 2px solid #222;
+            color: #222;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 0.55rem 1.6rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+        .login-btn:hover { background: #C8102E; border-color: #C8102E; color: #fff; }
+
+        /* ── HERO ── */
+        .hero {
+            min-height: calc(100vh - 100px);
+            background-image: url('assets/background.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* Subtle dark overlay so text stays readable without killing the image */
+        .hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(255,255,255,0.35);
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            max-width: 720px;
+            padding: 2.5rem 2rem;
+        }
+
+        /* Pill badge */
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            background: rgba(200,16,46,0.1);
+            border: 1px solid rgba(200,16,46,0.25);
+            color: #C8102E;
+            font-size: 0.65rem;
+            font-weight: 800;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            padding: 0.4rem 1.2rem;
+            border-radius: 50px;
+            margin-bottom: 1.6rem;
+        }
+
+        /* BUILDVERSE giant name */
+        .hero-brand {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(4rem, 10vw, 8rem);
+            font-weight: 900;
+            color: #1a1a1a;
+            line-height: 0.95;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+        }
+        .hero-brand .bv-sub {
+            font-family: 'Outfit', sans-serif;
+            font-size: clamp(0.8rem, 2vw, 1.1rem);
+            font-weight: 700;
+            letter-spacing: 0.35em;
+            text-transform: uppercase;
+            color: #C8102E;
+            display: block;
+            margin-bottom: 0.6rem;
+        }
+        .hero-brand .accent { color: #C8102E; font-style: italic; }
+
+        .hero-divider {
+            width: 60px; height: 3px;
+            background: #C8102E;
+            margin: 1.4rem auto;
+            border-radius: 2px;
+        }
+
+        .hero-desc {
+            font-size: 0.95rem;
+            color: #444;
+            line-height: 1.75;
+            font-weight: 500;
+            margin-bottom: 2.2rem;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .hero-desc strong { color: #1a1a1a; }
+
+        .hero-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+        .btn-red {
+            background: #C8102E;
+            color: #fff;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            padding: 0.95rem 2.4rem;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.25s;
+            box-shadow: 0 8px 28px rgba(200,16,46,0.35);
+        }
+        .btn-red:hover { background: #a80d25; transform: translateY(-2px); box-shadow: 0 14px 36px rgba(200,16,46,0.4); }
+
+        .btn-ghost {
+            background: transparent;
+            color: #1a1a1a;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            padding: 0.93rem 2.4rem;
+            border-radius: 50px;
+            border: 2px solid #1a1a1a;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+        .btn-ghost:hover { background: #1a1a1a; color: #fff; transform: translateY(-2px); }
+
+        /* ── FOOTER ── */
+        .footer-bar {
+            background: #1e1e1e;
+            color: #666;
+            text-align: center;
+            padding: 1.1rem 2rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+        }
+
+        /* ── LOGIN MODAL ── */
+        .modal-backdrop {
+            position: fixed; inset: 0;
+            background: rgba(10,10,10,0.6);
+            backdrop-filter: blur(12px);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+        .modal-backdrop.open { display: flex; animation: fadeIn 0.2s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .modal-box {
+            background: #fff;
+            border-radius: 32px;
+            width: 100%;
+            max-width: 430px;
+            overflow: hidden;
+            animation: popIn 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards;
+            box-shadow: 0 40px 80px rgba(0,0,0,0.25);
+        }
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.88) translateY(24px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .modal-header {
+            background: #fff;
+            padding: 1.8rem 2.2rem 1.6rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        .modal-logos { display: flex; align-items: center; gap: 1.4rem; }
+        .modal-logos img {
+            height: 56px; object-fit: contain;
+        }
+        .modal-logo-sep { width: 1.5px; height: 42px; background: #eee; }
+        .modal-close {
+            background: rgba(0,0,0,0.05); border: none; color: #555;
+            width: 34px; height: 34px; border-radius: 50%;
+            font-size: 1rem; cursor: pointer; display: flex;
+            align-items: center; justify-content: center; transition: background 0.2s;
+        }
+        .modal-close:hover { background: rgba(0,0,0,0.1); color: #000; }
+
+        .modal-body { padding: 2rem 2.2rem 2.4rem; }
+        .modal-sub {
+            font-size: 0.63rem; font-weight: 800;
+            letter-spacing: 0.2em; text-transform: uppercase;
+            color: #aaa; margin-bottom: 0.3rem;
+        }
+        .modal-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem; font-weight: 800; color: #1a1a1a;
+            margin-bottom: 1.8rem;
+        }
+        .form-label {
+            display: block; font-size: 0.65rem; font-weight: 800;
+            letter-spacing: 0.15em; text-transform: uppercase;
+            color: #999; margin-bottom: 0.45rem; margin-left: 0.3rem;
+        }
+        .form-input {
+            width: 100%; padding: 0.88rem 1.3rem;
+            background: #f5f5f5; border: 1.5px solid #ebebeb;
+            border-radius: 50px; font-family: 'Outfit', sans-serif;
+            font-size: 0.88rem; font-weight: 600; color: #333; outline: none;
+            transition: all 0.2s; margin-bottom: 1.1rem;
+        }
+        .form-input:focus { background: #fff; border-color: #C8102E; box-shadow: 0 0 0 4px rgba(200,16,46,0.09); }
+
+        .info-box {
+            background: #f7f7f7; border: 1.5px dashed #e2e2e2;
+            border-radius: 14px; padding: 0.9rem 1.1rem; margin-top: 1.2rem;
+        }
+        .info-title { font-size: 0.62rem; font-weight: 800; letter-spacing: 0.15em; text-transform: uppercase; color: #0047AB; margin-bottom: 0.35rem; }
+        .info-text { font-size: 0.78rem; color: #666; font-weight: 500; line-height: 1.6; }
+    </style>
 </head>
-<body class="hero-gradient min-h-screen flex items-center justify-center p-6">
-    <div class="max-w-md w-full fade-in-down">
-        <div class="ultra-card overflow-hidden">
-            <!-- Header -->
-            <div class="bg-bvRed p-10 text-center">
-                <div class="flex justify-center mb-6">
-                    <img src="assets/logo.png" alt="BUILDVERSE" class="h-20" onerror="this.outerHTML='<h1 class=\'text-5xl font-black text-white tracking-tighter\'>BUILDVERSE</h1>'">
-                </div>
-                <p class="text-white/80 text-xs font-black tracking-[0.2em] uppercase mt-2">Security Clearance Required</p>
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="main-nav">
+        <div class="nav-logo-group">
+            <img src="assets/logo.png" alt="BuildVerse" onerror="this.style.display='none'">
+            <div class="logo-sep"></div>
+            <!-- Pleiades black logo -->
+            <img src="assets/pleiades logo black.png" alt="Pleiades" onerror="this.style.display='none'">
+        </div>
+
+        <div class="nav-links">
+            <a href="#" class="nav-link active">Home</a>
+            <a href="#" class="nav-link">Inventory</a>
+            <a href="#" class="nav-link">About</a>
+            <a href="#" class="nav-link">Rules</a>
+        </div>
+
+        <button class="login-btn" onclick="openLoginModal()">Login Portal</button>
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-badge">
+                ⚡ Pleiades Innovation Lab Presents
             </div>
-            
-            <!-- Form -->
-            <div class="p-12">
-                <form id="login-form" class="space-y-8">
-                    <div>
-                        <label class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-3 ml-2" for="username">Access Identity</label>
-                        <input type="text" id="username" class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-3xl focus:ring-4 focus:ring-bvRed/10 focus:border-bvRed outline-none transition-all font-bold text-slate-700" placeholder="Username" required>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-3 ml-2" for="password">Passkey Code</label>
-                        <input type="password" id="password" class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-3xl focus:ring-4 focus:ring-bvRed/10 focus:border-bvRed outline-none transition-all font-bold text-slate-700" placeholder="••••••••" required>
-                    </div>
-                    <button type="submit" class="w-full bg-bvYellow hover:bg-yellow-400 text-bvRed font-black py-5 rounded-3xl shadow-xl shadow-yellow-200/50 transition-all active:scale-95 uppercase tracking-[0.2em] text-sm">
+
+            <h1 class="hero-brand">
+                <span class="bv-sub">Welcome to</span>
+                Build<span class="accent">Verse</span>
+            </h1>
+
+            <div class="hero-divider"></div>
+
+            <p class="hero-desc">
+                A <strong>real-time hardware inventory</strong> ecosystem where teams explore, 
+                request, and track components — powering innovation at every stage 
+                of your engineering journey.
+            </p>
+
+            <div class="hero-btns">
+                <button class="btn-red" onclick="openLoginModal()">Access Portal</button>
+                <button class="btn-ghost" onclick="openLoginModal()">View Inventory</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <div class="footer-bar">
+        &copy; 2026 BuildVerse &nbsp;·&nbsp; Pleiades Innovation Lab &nbsp;·&nbsp; All Rights Reserved
+    </div>
+
+    <!-- LOGIN MODAL -->
+    <div class="modal-backdrop" id="login-modal" onclick="handleBackdrop(event)">
+        <div class="modal-box">
+            <div class="modal-header">
+                <div class="modal-logos">
+                    <img src="assets/logo.png" alt="BuildVerse" onerror="this.style.display='none'">
+                    <div class="modal-logo-sep"></div>
+                    <img src="assets/pleiades logo black.png" alt="Pleiades" onerror="this.style.display='none'">
+                </div>
+                <button class="modal-close" onclick="closeLoginModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-sub">Security Clearance Required</p>
+                <h2 class="modal-title">Access Portal</h2>
+
+                <form id="login-form" autocomplete="off">
+                    <label class="form-label" for="username">Access Identity</label>
+                    <input type="text" id="username" class="form-input" placeholder="Username" required>
+
+                    <label class="form-label" for="password">Passkey Code</label>
+                    <input type="password" id="password" class="form-input" placeholder="••••••••" required>
+
+                    <button type="submit" class="btn-red" style="width:100%;padding:1rem 0;margin-top:0.4rem;">
                         Initialize Session
                     </button>
                 </form>
-                <p id="error-message" class="mt-8 text-center text-red-600 text-sm font-black uppercase tracking-wider hidden"></p>
 
-                <!-- Access Protocol Hint -->
-                <div class="mt-12 p-6 bg-slate-50 rounded-[32px] border border-slate-100 border-dashed">
-                    <p class="text-xs font-black text-bvBlue uppercase tracking-widest mb-3">Participant Access Protocol</p>
-                    <p class="text-sm leading-relaxed text-slate-600 font-bold">
-                        Participants must use the <span class="text-slate-900 italic">Identity</span> and <span class="text-slate-900 italic">Passkey</span> provided by the Admin during Registration. If you are a Team Representative, ensure your credentials are kept secure.
+                <p id="error-message" class="mt-4 text-center text-red-600 text-sm font-bold hidden"></p>
+
+                <div class="info-box">
+                    <p class="info-title">Participant Access Protocol</p>
+                    <p class="info-text">
+                        Use the <strong>Identity</strong> and <strong>Passkey</strong> provided by the Admin during registration. Keep your credentials secure at all times.
                     </p>
                 </div>
             </div>
         </div>
-        <p class="text-center mt-12 text-slate-400 text-xs font-black tracking-[0.3em] uppercase tracking-widest">&copy; 2026 BuildVerse Nexus</p>
     </div>
 
+    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-    
-    <!-- Bcrypt JS for Browser -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.4.3/bcrypt.min.js"></script>
     <script>
-        // Fallback for different CDN builds
         if (typeof bcrypt === 'undefined' && typeof dcodeIO !== 'undefined') {
             window.bcrypt = dcodeIO.bcrypt;
         }
+        function openLoginModal() {
+            document.getElementById('login-modal').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeLoginModal() {
+            document.getElementById('login-modal').classList.remove('open');
+            document.body.style.overflow = '';
+        }
+        function handleBackdrop(e) {
+            if (e.target === document.getElementById('login-modal')) closeLoginModal();
+        }
     </script>
-    
-    <script src="js/auth.js"></script>
+    <script src="js/auth.js?v=2.1"></script>
 </body>
 </html>

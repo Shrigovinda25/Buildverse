@@ -12,7 +12,7 @@ function switchTab(tab) {
     document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
     document.getElementById(`${tab}-tab`).classList.remove('hidden');
     
-    document.querySelectorAll('.pill-nav-link').forEach(t => {
+    document.querySelectorAll('.sidebar-btn[data-tab]').forEach(t => {
         t.classList.remove('active');
         if (t.dataset.tab === tab) t.classList.add('active');
     });
@@ -143,54 +143,58 @@ firestore.collection('components').onSnapshot(snapshot => {
     // document.getElementById('stat-total-items').textContent = totalStock;
 });
 
-// 2. Listen for Orders (Queue)
+// 2. Listen for Orders (Queue) (Grouped by Team)
+let globalOrders = [];
+let currentModalTeam = null;
+
 firestore.collection('orders').orderBy('timestamp', 'asc').onSnapshot(snapshot => {
     const list = document.getElementById('orders-list');
     let pendingCount = 0;
     list.innerHTML = '';
     
-    const pendingOrders = snapshot.docs
-        .map(doc => ({id: doc.id, ...doc.data()}))
-        .filter(o => o.status === 'Pending');
+    globalOrders = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+    
+    const queueGroups = {};
 
-    snapshot.forEach((doc, index) => {
-        const order = doc.data();
-        if (order.status === 'Given') return;
-        let pos = '-';
-        if (order.status === 'Pending') {
-            const idx = pendingOrders.findIndex(p => p.id === doc.id);
-            pos = idx + 1;
-            pendingCount++;
+    globalOrders.forEach(o => {
+        if (o.status === 'Given') return;
+        if (!queueGroups[o.username]) {
+            queueGroups[o.username] = { username: o.username, timestamp: o.timestamp, pendingCount: 0, approvedCount: 0, otherCount: 0, total: 0 };
         }
+        queueGroups[o.username].total++;
+        if (o.status === 'Pending') { queueGroups[o.username].pendingCount++; pendingCount++; }
+        else if (o.status === 'Approved') queueGroups[o.username].approvedCount++;
+        else queueGroups[o.username].otherCount++;
+    });
 
-        const date = order.timestamp ? new Date(order.timestamp.seconds * 1000).toLocaleTimeString() : '...';
+    const sortedGroups = Object.values(queueGroups).sort((a,b) => {
+         const timeA = a.timestamp ? a.timestamp.seconds : 9999999999;
+         const timeB = b.timestamp ? b.timestamp.seconds : 9999999999;
+         return timeA - timeB;
+    });
+
+    sortedGroups.forEach((group, index) => {
+        const pos = index + 1;
+        const date = group.timestamp ? new Date(group.timestamp.seconds * 1000).toLocaleTimeString() : '...';
         
+        let statusBadge = '';
+        if (group.pendingCount > 0) statusBadge = `<span class="inline-flex items-center px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.15em] border shadow-sm bg-orange-50 text-orange-600 border-orange-200">⟳ ${group.pendingCount} PENDING</span>`;
+        else if (group.approvedCount > 0) statusBadge = `<span class="inline-flex items-center px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.15em] border shadow-sm bg-emerald-50 text-emerald-700 border-emerald-100">✓ READY</span>`;
+        else statusBadge = `<span class="inline-flex items-center px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.15em] border shadow-sm bg-slate-50 text-slate-500 border-slate-200">WAITING</span>`;
+
         const row = `
             <tr class="hover:bg-slate-50 transition-colors group">
                 <td class="px-2 py-6">
-                    ${order.status === 'Pending' ? `<div class="w-10 h-10 rounded-2xl bg-bvRed text-white flex items-center justify-center font-black text-sm shadow-xl shadow-red-100 italic transition-transform group-hover:scale-110">${pos}</div>` : `<span class="text-slate-300 ml-4">-</span>`}
+                    <div class="w-10 h-10 rounded-2xl bg-slate-100 text-slate-500 flex items-center justify-center font-black text-sm transition-all group-hover:bg-bvRed group-hover:text-white group-hover:scale-110 italic shadow-sm">${pos}</div>
                 </td>
                 <td class="px-2 py-6">
-                    <p class="font-black text-slate-800 text-sm italic uppercase tracking-tighter">${order.username}</p>
+                    <p class="font-black text-slate-800 text-lg italic uppercase tracking-tighter">${group.username}</p>
                     <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">${date}</p>
                 </td>
-                <td class="px-2 py-6 font-black text-slate-600 text-sm uppercase">${order.componentName}</td>
-                <td class="px-2 py-6 font-black text-bvRed text-lg italic">x${order.quantity}</td>
-                <td class="px-2 py-6">
-                    <span class="inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.1em] border shadow-sm status-${order.status}">${order.status}</span>
-                </td>
-                <td class="px-2 py-6 text-right space-x-2">
-                    ${order.status === 'Pending' ? `
-                        <button class="bg-bvBlue hover:bg-emerald-600 text-white p-2.5 rounded-2xl shadow-xl shadow-blue-100/50 transition-all active:scale-90" onclick="processOrder('${doc.id}', 'approve')">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                        </button>
-                        <button class="bg-red-500 hover:bg-red-600 text-white p-2.5 rounded-2xl shadow-xl shadow-red-100/50 transition-all active:scale-90" onclick="processOrder('${doc.id}', 'reject')">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                        </button>
-                    ` : ''}
-                    ${order.status === 'Approved' ? `
-                        <button class="bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-2.5 rounded-full font-black text-[10px] shadow-xl shadow-emerald-100 transition-all active:scale-95 uppercase tracking-widest" onclick="processOrder('${doc.id}', 'give')">Validate_Handoff</button>
-                    ` : ''}
+                <td class="px-2 py-6 font-black text-bvBlue text-xl italic">${group.total} <span class="text-[10px] uppercase text-slate-400 not-italic tracking-widest">items</span></td>
+                <td class="px-2 py-6">${statusBadge}</td>
+                <td class="px-2 py-6 text-right">
+                    <button class="bg-bvBlue hover:bg-slate-800 text-white px-6 py-3 rounded-full font-black text-[11px] shadow-xl shadow-blue-100 transition-all active:scale-95 uppercase tracking-widest" onclick="openTeamReqModal('${group.username}')">Review Request</button>
                 </td>
             </tr>
         `;
@@ -198,8 +202,146 @@ firestore.collection('orders').orderBy('timestamp', 'asc').onSnapshot(snapshot =
     });
 
     document.getElementById('stat-pending-orders').textContent = pendingCount;
+    
+    // Re-render modal silently if it's open for a team
+    if (currentModalTeam && !document.getElementById('modal-backdrop').classList.contains('hidden')) {
+        renderTeamReqModalContent(currentModalTeam);
+    }
 });
 
+window.openTeamReqModal = (username) => {
+    currentModalTeam = username;
+    document.getElementById('modal-title').textContent = `${username} | REQUISITIONS`;
+    
+    // Check if there are pendings right now
+    const pendings = globalOrders.filter(o => o.username === username && o.status === 'Pending');
+    
+    const ftr = document.querySelector('.modal-ftr');
+    ftr.innerHTML = `
+        <button class="btn btn-ghost" onclick="closeTeamModal()">Close</button>
+        ${pendings.length > 0 ? `<button class="btn btn-yellow" id="approve-all-btn" onclick="approveAllPending('${username}')">Approve All Pending</button>` : ''}
+    `;
+    
+    document.getElementById('modal-container').style.maxWidth = '800px';
+    document.getElementById('modal-backdrop').classList.remove('hidden');
+    
+    renderTeamReqModalContent(username);
+};
+
+window.closeTeamModal = () => {
+    currentModalTeam = null;
+    document.getElementById('modal-container').style.maxWidth = '500px';
+    closeModal();
+};
+
+window.renderTeamReqModalContent = (username) => {
+    const content = document.getElementById('modal-content');
+    const teamOrders = globalOrders.filter(o => o.username === username && o.status !== 'Given');
+    if (teamOrders.length === 0) {
+        content.innerHTML = `<p class="text-center font-black text-slate-400 uppercase tracking-widest py-10">NO ACTIVE REQUESTS</p>`;
+        // Hide approve all btn if visible
+        const btn = document.getElementById('approve-all-btn');
+        if (btn) btn.style.display = 'none';
+        return;
+    }
+
+    let rows = teamOrders.map((order, i) => `
+        <tr class="hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-0">
+            <td class="px-4 py-4 font-black text-slate-800 text-sm uppercase">${order.componentName}</td>
+            <td class="px-4 py-4 font-black text-bvRed text-lg italic tracking-tighter">x${order.quantity}</td>
+            <td class="px-4 py-4">
+                <span class="inline-flex items-center px-3 py-1.5 rounded-full text-[8px] font-black uppercase tracking-[0.15em] border status-${order.status}">${order.status}</span>
+            </td>
+            <td class="px-4 py-4 text-right space-x-1.5">
+                ${order.status === 'Pending' ? `
+                    <button class="bg-bvBlue hover:bg-emerald-600 text-white p-2.5 rounded-xl shadow-lg shadow-blue-100/50 transition-all active:scale-90 tooltip-src" title="Approve Item" onclick="processOrder('${order.id}', 'approve')">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    </button>
+                    <button class="bg-red-50 hover:bg-red-500 text-slate-400 hover:text-white p-2.5 rounded-xl shadow-sm transition-all active:scale-90 tooltip-src" title="Reject Item" onclick="processOrder('${order.id}', 'reject')">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                ` : ''}
+                ${order.status === 'Approved' ? `
+                    <button class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2.5 rounded-xl font-black text-[9px] shadow-lg shadow-emerald-100 transition-all active:scale-95 uppercase tracking-widest" onclick="processOrder('${order.id}', 'give')">Validate Handoff</button>
+                ` : ''}
+            </td>
+        </tr>
+    `).join('');
+
+    content.innerHTML = `
+        <div class="table-scroll rounded-2xl border border-slate-100 max-h-[500px] overflow-y-auto">
+            <table class="w-full text-left bg-white">
+                <thead class="bg-slate-50 sticky top-0 z-10 shadow-sm">
+                    <tr>
+                        <th class="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Resource</th>
+                        <th class="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Qty</th>
+                        <th class="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
+                        <th class="px-4 py-4 text-right text-[10px] font-black text-slate-400 uppercase tracking-widest">Action</th>
+                    </tr>
+                </thead>
+                <tbody>${rows}</tbody>
+            </table>
+        </div>
+    `;
+};
+
+window.approveAllPending = async (username) => {
+    const pendings = globalOrders.filter(o => o.username === username && o.status === 'Pending');
+    if (pendings.length === 0) return;
+    
+    // Confirm with admin
+    if (!confirm(`Are you sure you want to authorize all ${pendings.length} pending items for ${username} at once?`)) return;
+
+    const btn = document.getElementById('approve-all-btn');
+    if (btn) { btn.innerHTML = 'Processing...'; btn.disabled = true; }
+
+    let failures = 0;
+    for (let order of pendings) {
+        try {
+            await firestore.runTransaction(async (t) => {
+                const orderRef = firestore.collection('orders').doc(order.id);
+                const orderDoc = await t.get(orderRef);
+                if (!orderDoc.exists) throw new Error('Order not found');
+                const orderData = orderDoc.data();
+                if (orderData.status !== 'Pending') return; // skip if already processed
+
+                const compRef = firestore.collection('components').doc(orderData.componentId);
+                const userRef = firestore.collection('users').doc(orderData.username);
+                const compDoc = await t.get(compRef);
+                const userDoc = await t.get(userRef);
+                
+                const compData = compDoc.data();
+                const userData = userDoc.data();
+                const totalCost = compData.price * orderData.quantity;
+
+                if (compData.availableQuantity < orderData.quantity) throw new Error('Insufficient stock');
+                if (userData.points < totalCost) throw new Error('Insufficient points');
+
+                t.update(compRef, { availableQuantity: compData.availableQuantity - orderData.quantity });
+                t.update(userRef, { points: userData.points - totalCost });
+                t.update(orderRef, { status: 'Approved' });
+
+                const transRef = firestore.collection('transactions').doc();
+                t.set(transRef, {
+                    username: orderData.username,
+                    type: 'debit',
+                    amount: totalCost,
+                    reason: `Purchase: ${orderData.quantity}x ${compData.name} (Batch)`,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            });
+        } catch (e) {
+            console.error('Failed to approve', order.componentName, e);
+            failures++;
+        }
+    }
+
+    if (failures > 0) {
+        alert(`${failures} items could not be approved (likely due to insufficient stock or points).`);
+    }
+    
+    if (btn) { btn.innerHTML = 'Approve All Pending'; btn.disabled = false; }
+};
 // 3. Listen for Entities
 firestore.collection('users').where('role', '==', 'participant').onSnapshot(snapshot => {
     const list = document.getElementById('teams-list');
@@ -233,6 +375,9 @@ firestore.collection('users').where('role', '==', 'participant').onSnapshot(snap
                     </button>
                     <button class="p-2 hover:bg-slate-100 rounded-xl text-slate-400 hover:text-bvRed transition-all" title="Toggle Access" onclick="toggleOrdering('${team.username}')">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                    </button>
+                    <button class="p-2 hover:bg-slate-100 rounded-xl text-slate-400 hover:text-orange-500 transition-all" title="Force Logout" onclick="forceLogout('${team.username}')">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
                     </button>
                     <button class="p-2 hover:bg-red-50 rounded-xl text-slate-400 hover:text-red-600 transition-all" title="Delete Team" onclick="deleteTeam('${team.username}')">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
@@ -576,6 +721,16 @@ async function deleteTeam(username) {
     if (!confirm(`Permanently terminate Entity [${username}]?`)) return;
     try {
         await firestore.collection('users').doc(username).delete();
+    } catch (e) { alert(e.message); }
+}
+
+async function forceLogout(username) {
+    if (!confirm(`Force logout participant [${username}] from all devices?`)) return;
+    try {
+        await firestore.collection('users').doc(username).update({
+            activeSessionId: null,
+            lastHeartbeat: 0
+        });
     } catch (e) { alert(e.message); }
 }
 
