@@ -101,65 +101,45 @@
             gap: 1rem;
         }
 
-        .hero-branding-row {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 2.5rem;
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
-        }
-
-        .branding-logo-main {
-            width: 140px;
-            height: 140px;
-            background: #fff;
-            border-radius: 50%;
-            padding: 10px;
-            object-fit: contain;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            filter: drop-shadow(0 0 10px rgba(255,255,255,0.2));
-            animation: float 6s ease-in-out infinite;
-        }
-
-        .branding-chip-main {
-            width: 180px;
-            height: auto;
-            object-fit: contain;
-            filter: drop-shadow(0 20px 40px rgba(0,0,0,0.15));
-            animation: float-delayed 6.2s ease-in-out infinite;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-12px); }
-        }
-        @keyframes float-delayed {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(12px); }
-        }
-
-        /* BUILDVERSE giant name */
-        .hero-brand {
-            font-family: 'Playfair Display', serif;
-            font-size: clamp(3rem, 7vw, 4.8rem);
-            font-weight: 900;
-            color: #1a1a1a;
-            line-height: 0.95;
-            letter-spacing: -0.02em;
-            text-align: center;
-        }
-        .hero-brand .bv-sub {
-            font-family: 'Outfit', sans-serif;
-            font-size: 0.72rem;
+        .nav-link {
+            font-size: 0.78rem;
             font-weight: 800;
-            letter-spacing: 0.4em;
+            color: #111;
+            text-decoration: none;
+            letter-spacing: 0.08em;
             text-transform: uppercase;
-            color: #C8102E;
-            display: block;
-            margin-bottom: 0.7rem;
+            padding: 0.6rem 1.2rem;
+            border-radius: 50px;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+            background: transparent;
         }
-        .hero-brand .accent { color: #C8102E; font-style: italic; }
+
+        .nav-link:hover {
+            background: rgba(200, 16, 46, 0.1);
+            color: #C8102E;
+        }
+
+        .nav-link.active {
+            background: #C8102E;
+            color: #fff;
+        }
+
+        .login-btn {
+            background: transparent;
+            border: 2px solid #222;
+            color: #222;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 0.55rem 1.6rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
 
         .login-btn:hover {
             background: #C8102E;
@@ -696,9 +676,12 @@
 
     <!-- NAVBAR -->
     <nav class="main-nav">
-    <!-- NAVBAR -->
-    <nav class="main-nav">
-        <div class="nav-links ml-auto">
+        <div class="nav-logo-group">
+            <img src="assets/pleiades logo black.png" alt="Pleiades">
+            <p class="logo-text">Build<span>Verse</span></p>
+        </div>
+
+        <div class="nav-links">
             <button class="nav-link" onclick="toggleSection('about')">About</button>
             <button class="nav-link" onclick="toggleSection('inventory')">Inventory</button>
             <button class="nav-link" onclick="toggleSection('rules')">Rules</button>
@@ -709,17 +692,14 @@
     <!-- HERO -->
     <section class="hero" id="main-hero">
         <div class="hero-content">
-            
-            <div class="hero-branding-row">
-                <img src="assets/logo.png" alt="BuildVerse Logo" class="branding-logo-main">
-                
-                <h1 class="hero-brand">
-                    <span class="bv-sub">PROTOTYPING REVOLUTION</span>
-                    Build<span class="accent">Verse</span>
-                </h1>
-
-                <img src="assets/Background_less_img.png" alt="Hardware Engine" class="branding-chip-main">
+            <div class="hero-logo-container">
+                <img src="assets/Background_less_img.png" alt="BuildVerse Engine">
             </div>
+
+            <h1 class="hero-brand">
+                <span class="bv-sub">PROTOTYPING REVOLUTION</span>
+                Build<span class="accent">Verse</span>
+            </h1>
 
             <div class="hero-divider"></div>
 
@@ -960,7 +940,8 @@
                 `;
                 grid.insertAdjacentHTML('beforeend', card);
             });
-        });
+            });
+        }
     </script>
 </body>
 
