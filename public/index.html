@@ -519,24 +519,29 @@
         function handleBackdrop(e) {
             if (e.target === document.getElementById('login-modal')) closeLoginModal();
         }
-
-        // DYNAMIC INVENTORY
-        const firestore = firebase.firestore();
-        firestore.collection('components').onSnapshot(snapshot => {
-            const grid = document.getElementById('public-matrix');
-            grid.innerHTML = '';
-            snapshot.forEach(doc => {
-                const comp = doc.data();
-                const card = `
-                    <div class="matrix-card">
-                        <img src="${comp.image || 'https://via.placeholder.com/150'}" alt="${comp.name}">
-                        <div class="matrix-name">${comp.name}</div>
-                    </div>
-                `;
-                grid.insertAdjacentHTML('beforeend', card);
-            });
-        });
     </script>
+
     <script src="js/auth.js?v=2.1"></script>
+
+    <script>
+        // DYNAMIC INVENTORY - Uses firestore from auth.js
+        if (typeof firestore !== 'undefined') {
+            firestore.collection('components').onSnapshot(snapshot => {
+                const grid = document.getElementById('public-matrix');
+                if (!grid) return;
+                grid.innerHTML = '';
+                snapshot.forEach(doc => {
+                    const comp = doc.data();
+                    const card = `
+                        <div class="matrix-card">
+                            <img src="${comp.image || 'https://via.placeholder.com/150'}" alt="${comp.name}">
+                            <div class="matrix-name">${comp.name}</div>
+                        </div>
+                    `;
+                    grid.insertAdjacentHTML('beforeend', card);
+                });
+            });
+        }
+    </script>
 </body>
 </html>
