@@ -98,50 +98,48 @@
             background: rgba(255,255,255,0.35);
         }
 
-        .hero-content {
-            position: relative;
-            z-index: 10;
-            text-align: center;
-            max-width: 720px;
-            padding: 2.5rem 2rem;
+        .hero-brand-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
         }
-
         .hero-logo-container {
-            width: 100%;
-            max-width: 500px;
-            margin: 0 auto 2rem;
+            width: 250px;
             animation: float 6s ease-in-out infinite;
         }
         @keyframes float {
             0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
+            50% { transform: translateY(-15px); }
         }
         .hero-logo-container img {
             width: 100%;
             height: auto;
             object-fit: contain;
-            filter: drop-shadow(0 20px 40px rgba(0,0,0,0.2));
+            filter: drop-shadow(0 20px 40px rgba(0,0,0,0.15));
         }
 
         /* BUILDVERSE giant name */
         .hero-brand {
             font-family: 'Playfair Display', serif;
-            font-size: clamp(3.5rem, 8vw, 6rem);
+            font-size: clamp(3rem, 6vw, 4.5rem);
             font-weight: 900;
             color: #1a1a1a;
-            line-height: 0.95;
+            line-height: 1;
             letter-spacing: -0.02em;
-            margin-bottom: 0.5rem;
+            text-align: left;
         }
         .hero-brand .bv-sub {
             font-family: 'Outfit', sans-serif;
-            font-size: clamp(0.7rem, 2vw, 0.9rem);
+            font-size: 0.8rem;
             font-weight: 800;
             letter-spacing: 0.4em;
             text-transform: uppercase;
             color: #C8102E;
             display: block;
-            margin-bottom: 0.8rem;
+            margin-bottom: 0.5rem;
         }
         .hero-brand .accent { color: #C8102E; font-style: italic; }
 
@@ -355,12 +353,7 @@
 
     <!-- NAVBAR -->
     <nav class="main-nav">
-        <div class="nav-logo-group">
-            <img src="assets/pleiades logo black.png" alt="Pleiades">
-            <p class="logo-text">Build<span>Verse</span></p>
-        </div>
-
-        <div class="nav-links">
+        <div class="nav-links ml-auto">
             <button class="nav-link" onclick="toggleSection('about')">About</button>
             <button class="nav-link" onclick="toggleSection('inventory')">Inventory</button>
             <button class="nav-link" onclick="toggleSection('rules')">Rules</button>
@@ -370,15 +363,17 @@
 
     <!-- HERO -->
     <section class="hero" id="main-hero">
-        <div class="hero-content">
-            <div class="hero-logo-container">
-                <img src="assets/Background_less_img.png" alt="BuildVerse Engine">
+        <div class="hero-content text-center">
+            
+            <div class="hero-brand-wrapper">
+                <h1 class="hero-brand">
+                    <span class="bv-sub">PROTOTYPING REVOLUTION</span>
+                    Build<span class="accent">Verse</span>
+                </h1>
+                <div class="hero-logo-container">
+                    <img src="assets/Background_less_img.png" alt="BuildVerse Engine">
+                </div>
             </div>
-
-            <h1 class="hero-brand">
-                <span class="bv-sub">PROTOTYPING REVOLUTION</span>
-                Build<span class="accent">Verse</span>
-            </h1>
 
             <div class="hero-divider"></div>
 
@@ -549,8 +544,9 @@
         }
 
         // DYNAMIC INVENTORY
-        const firestore = firebase.firestore();
-        firestore.collection('components').onSnapshot(snapshot => {
+        // Removed firestore redeclaration - now using from auth.js
+        if (typeof firestore !== 'undefined') {
+            firestore.collection('components').onSnapshot(snapshot => {
             const grid = document.getElementById('public-matrix');
             if (!grid) return;
             grid.innerHTML = '';
