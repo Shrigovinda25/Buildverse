@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BUILDVERSE | Admin Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bvRed: '#C8102E',
+                        bvYellow: '#FFD700',
+                        bvBlue: '#0047AB'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="hero-gradient min-h-screen pt-32 pb-12">
+    <!-- Floating Pill Nav -->
+    <nav class="pill-nav">
+        <a href="#" class="pill-nav-link active" data-tab="inventory" onclick="switchTab('inventory')">Inventory</a>
+        <a href="#" class="pill-nav-link" data-tab="orders" onclick="switchTab('orders')">Queue</a>
+        <a href="#" class="pill-nav-link" data-tab="teams" onclick="switchTab('teams')">Teams</a>
+        <div class="h-6 w-px bg-slate-200 mx-2"></div>
+        <button onclick="logout()" class="text-[10px] font-black uppercase text-slate-400 hover:text-bvRed transition-colors">Exit</button>
+    </nav>
+
+    <main class="max-w-6xl mx-auto px-6">
+        <!-- Hero Header -->
+        <div class="text-center mb-16 fade-in-down">
+            <h1 class="text-6xl font-black text-slate-800 tracking-tighter mb-2">BuildVerse Nexus</h1>
+            <p class="text-xs font-black text-slate-400 uppercase tracking-[0.4em]">Central Command Authority</p>
+        </div>
+
+        <div class="ultra-card p-12 mb-12">
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                <div class="text-center p-8 bg-red-50 rounded-[32px] border border-red-100">
+                    <p class="text-[10px] font-black text-bvRed uppercase tracking-widest mb-2">Pending Requests</p>
+                    <p class="text-4xl font-black text-bvRed" id="stat-pending-orders">0</p>
+                </div>
+                <div class="text-center p-8 bg-blue-50 rounded-[32px] border border-blue-100">
+                    <p class="text-[10px] font-black text-bvBlue uppercase tracking-widest mb-2">Active Entities</p>
+                    <p class="text-4xl font-black text-bvBlue" id="stat-total-teams">0</p>
+                </div>
+            </div>
+
+            <!-- Inventory Tab -->
+            <section id="inventory-tab" class="fade-in">
+                <div class="flex justify-between items-end mb-8">
+                    <div>
+                        <h2 class="text-3xl font-black text-slate-800 tracking-tight leading-none mb-1">Resource Repository</h2>
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Global Stock Control</p>
+                    </div>
+                    <div class="flex gap-4">
+                        <button class="bg-slate-50 text-slate-600 border border-slate-100 px-6 py-4 rounded-full font-black text-xs uppercase tracking-widest transition-all active:scale-90 hover:bg-slate-100" onclick="deduplicateComponents()">
+                            De-duplicate
+                        </button>
+                        <button class="bg-red-50 text-red-600 border border-red-100 px-6 py-4 rounded-full font-black text-xs uppercase tracking-widest transition-all active:scale-90 hover:bg-red-100" onclick="purgeComponents()">
+                            Purge Repository
+                        </button>
+                        <button class="bg-bvRed text-white px-8 py-4 rounded-full font-black text-xs uppercase tracking-widest shadow-xl shadow-red-100 transition-all active:scale-90" onclick="openModal('addComponent')">
+                            + Add Resource
+                        </button>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="text-[10px] font-black uppercase text-slate-400 border-b border-slate-100">
+                            <tr>
+                                <th class="px-2 py-6">Resource Name</th>
+                                <th class="px-2 py-6">Price</th>
+                                <th class="px-2 py-6">Inventory Status</th>
+                                <th class="px-2 py-6 text-right">Manage</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventory-list" class="divide-y divide-slate-50 text-sm">
+                            <!-- Loaded dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Orders Tab -->
+            <section id="orders-tab" class="hidden fade-in">
+                <div class="mb-8 flex justify-between items-end">
+                    <div>
+                        <h2 class="text-3xl font-black text-slate-800 tracking-tight leading-none mb-1">Acquisition Queue</h2>
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">FIFO Protocol Processing</p>
+                    </div>
+                    <button class="bg-red-50 text-red-600 border border-red-100 px-6 py-4 rounded-full font-black text-xs uppercase tracking-widest transition-all active:scale-90 hover:bg-red-100" onclick="clearProcessedOrders()">
+                        Clear Passed
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="text-[10px] font-black uppercase text-slate-400 border-b border-slate-100">
+                            <tr>
+                                <th class="px-2 py-6">Rank</th>
+                                <th class="px-2 py-6">Entity</th>
+                                <th class="px-2 py-6">Target</th>
+                                <th class="px-2 py-6">Qty</th>
+                                <th class="px-2 py-6">Protocol Status</th>
+                                <th class="px-2 py-6 text-right">Authorization</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orders-list" class="divide-y divide-slate-50 text-sm">
+                            <!-- Loaded dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Teams Tab -->
+            <section id="teams-tab" class="hidden fade-in">
+                <div class="flex justify-between items-end mb-8">
+                    <div>
+                        <h2 class="text-3xl font-black text-slate-800 tracking-tight leading-none mb-1">Entity Registry</h2>
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Authorized Team Records</p>
+                    </div>
+                    <button class="bg-bvBlue text-white px-8 py-4 rounded-full font-black text-xs uppercase tracking-widest shadow-xl shadow-blue-100 transition-all active:scale-95" onclick="openModal('addTeam')">
+                        + Register Entity
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="text-[10px] font-black uppercase text-slate-400 border-b border-slate-100">
+                            <tr>
+                                <th class="px-2 py-6">Team ID</th>
+                                <th class="px-2 py-6">Team Name</th>
+                                <th class="px-2 py-6">Points</th>
+                                <th class="px-2 py-6">Ordering Status</th>
+                                <th class="px-2 py-6 text-right">Management</th>
+                            </tr>
+                        </thead>
+                        <tbody id="teams-list" class="divide-y divide-slate-50 text-sm">
+                            <!-- Loaded dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Modal System -->
+    <div id="modal-backdrop" class="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[2000] hidden flex items-center justify-center p-6">
+        <div id="modal-container" class="bg-white w-full max-w-xl rounded-[40px] shadow-2xl overflow-hidden scale-in">
+            <div class="bg-slate-50 px-10 py-8 border-b border-slate-100 flex justify-between items-center">
+                <h3 id="modal-title" class="text-2xl font-black text-slate-800 tracking-tighter uppercase">Protocol Action</h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-bvRed transition-colors">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div id="modal-content" class="px-10 py-10 space-y-8">
+                <!-- Loaded dynamically -->
+            </div>
+            <div class="bg-slate-50 px-10 py-8 flex justify-end gap-4 border-t border-slate-100">
+                <button class="px-8 py-4 rounded-full font-black text-xs text-slate-400 hover:text-slate-600 transition-colors uppercase tracking-widest" onclick="closeModal()">Dismiss</button>
+                <button class="bg-bvYellow text-bvRed px-10 py-4 rounded-full font-black text-xs shadow-xl shadow-yellow-100 transition-all active:scale-95 uppercase tracking-widest" id="modal-submit">Confirm Executive Action</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    
+    <!-- Bcrypt JS for Browser -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.4.3/bcrypt.min.js"></script>
+    <script>
+        // Fallback for different CDN builds
+        if (typeof bcrypt === 'undefined' && typeof dcodeIO !== 'undefined') {
+            window.bcrypt = dcodeIO.bcrypt;
+        }
+    </script>
+    
+    <script src="js/auth.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>

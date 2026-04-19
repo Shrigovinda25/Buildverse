@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BUILDVERSE | Login</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bvRed: '#C8102E',
+                        bvYellow: '#FFD700',
+                        bvBlue: '#0047AB'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="hero-gradient min-h-screen flex items-center justify-center p-6">
+    <div class="max-w-md w-full fade-in-down">
+        <div class="ultra-card overflow-hidden">
+            <!-- Header -->
+            <div class="bg-bvRed p-10 text-center">
+                <div class="flex justify-center mb-6">
+                    <img src="assets/logo.png" alt="BUILDVERSE" class="h-20" onerror="this.outerHTML='<h1 class=\'text-5xl font-black text-white tracking-tighter\'>BUILDVERSE</h1>'">
+                </div>
+                <p class="text-white/80 text-xs font-black tracking-[0.2em] uppercase mt-2">Security Clearance Required</p>
+            </div>
+            
+            <!-- Form -->
+            <div class="p-12">
+                <form id="login-form" class="space-y-8">
+                    <div>
+                        <label class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-3 ml-2" for="username">Access Identity</label>
+                        <input type="text" id="username" class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-3xl focus:ring-4 focus:ring-bvRed/10 focus:border-bvRed outline-none transition-all font-bold text-slate-700" placeholder="Username" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-3 ml-2" for="password">Passkey Code</label>
+                        <input type="password" id="password" class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-3xl focus:ring-4 focus:ring-bvRed/10 focus:border-bvRed outline-none transition-all font-bold text-slate-700" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="w-full bg-bvYellow hover:bg-yellow-400 text-bvRed font-black py-5 rounded-3xl shadow-xl shadow-yellow-200/50 transition-all active:scale-95 uppercase tracking-[0.2em] text-sm">
+                        Initialize Session
+                    </button>
+                </form>
+                <p id="error-message" class="mt-8 text-center text-red-600 text-sm font-black uppercase tracking-wider hidden"></p>
+
+                <!-- Access Protocol Hint -->
+                <div class="mt-12 p-6 bg-slate-50 rounded-[32px] border border-slate-100 border-dashed">
+                    <p class="text-xs font-black text-bvBlue uppercase tracking-widest mb-3">Participant Access Protocol</p>
+                    <p class="text-sm leading-relaxed text-slate-600 font-bold">
+                        Participants must use the <span class="text-slate-900 italic">Identity</span> and <span class="text-slate-900 italic">Passkey</span> provided by the Admin during Registration. If you are a Team Representative, ensure your credentials are kept secure.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <p class="text-center mt-12 text-slate-400 text-xs font-black tracking-[0.3em] uppercase tracking-widest">&copy; 2026 BuildVerse Nexus</p>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    
+    <!-- Bcrypt JS for Browser -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.4.3/bcrypt.min.js"></script>
+    <script>
+        // Fallback for different CDN builds
+        if (typeof bcrypt === 'undefined' && typeof dcodeIO !== 'undefined') {
+            window.bcrypt = dcodeIO.bcrypt;
+        }
+    </script>
+    
+    <script src="js/auth.js"></script>
+</body>
+</html>

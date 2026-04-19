@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BUILDVERSE | Participant Portal</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bvRed: '#C8102E',
+                        bvYellow: '#FFD700',
+                        bvBlue: '#0047AB'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="hero-gradient min-h-screen pt-32 pb-12 font-['Montserrat']">
+    <!-- Floating Pill Nav -->
+    <nav class="pill-nav">
+        <a href="#" class="pill-nav-link active" data-tab="catalog" onclick="switchTab('catalog')">Catalog</a>
+        <a href="#" class="pill-nav-link" data-tab="my-orders" onclick="switchTab('my-orders')">Orders</a>
+        <a href="#" class="pill-nav-link" data-tab="held" onclick="switchTab('held')">Possessions</a>
+        <div class="h-6 w-px bg-slate-200 mx-2"></div>
+        <button onclick="logout()" class="text-[10px] font-black uppercase text-slate-400 hover:text-bvRed transition-colors">Exit</button>
+    </nav>
+
+    <main class="max-w-6xl mx-auto px-6">
+        <!-- Hero Header -->
+        <div class="text-center mb-16 fade-in-down">
+            <h1 class="text-6xl font-black text-slate-800 tracking-tighter mb-2 uppercase" id="welcome-msg">Entity Portal</h1>
+            <p class="text-xs font-black text-slate-400 uppercase tracking-[0.4em]">Resource distribution channel</p>
+        </div>
+
+        <div id="ordering-status-banner" class="hidden mb-12 bg-red-50 border border-red-100 p-8 rounded-[40px] text-bvRed text-center font-black uppercase tracking-widest text-sm shadow-xl shadow-red-100/20">
+            Operation Suspended by Admin Control
+        </div>
+
+        <div class="ultra-card p-12 mb-12">
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                <div class="text-center p-8 bg-blue-50 rounded-[32px] border border-blue-100">
+                    <p class="text-[10px] font-black text-bvBlue uppercase tracking-widest mb-2">Credit Pool</p>
+                    <p class="text-4xl font-black text-bvBlue" id="user-points-val">0</p>
+                </div>
+                <div class="text-center p-8 bg-red-50 rounded-[32px] border border-red-100">
+                    <p class="text-[10px] font-black text-bvRed uppercase tracking-widest mb-2">Queue Rank</p>
+                    <p class="text-4xl font-black text-bvRed" id="stat-active-reqs">0</p>
+                </div>
+            </div>
+
+            <!-- Catalog Tab -->
+            <section id="catalog-tab" class="fade-in">
+                <div class="mb-10">
+                    <h2 class="text-3xl font-black text-slate-800 tracking-tight leading-none mb-1">Resource Catalog</h2>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Available inventory for acquisition</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="catalog-list">
+                    <!-- Loaded dynamically -->
+                </div>
+            </section>
+
+            <!-- My Orders Tab -->
+            <section id="my-orders-tab" class="hidden fade-in">
+                <div class="mb-10">
+                    <h2 class="text-3xl font-black text-slate-800 tracking-tight leading-none mb-1">Operation Status</h2>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tracking resource distribution protocol</p>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="text-[10px] font-black uppercase text-slate-400 border-b border-slate-100">
+                            <tr>
+                                <th class="px-2 py-6">Resource ID</th>
+                                <th class="px-2 py-6">Qty</th>
+                                <th class="px-2 py-6">Protocol Status</th>
+                                <th class="px-2 py-6 text-right">Queue Rank</th>
+                            </tr>
+                        </thead>
+                        <tbody id="my-orders-list" class="divide-y divide-slate-50 text-sm font-bold">
+                            <!-- Loaded dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- My Components Tab -->
+            <section id="held-tab" class="hidden fade-in">
+                <div class="mb-10">
+                    <h2 class="text-3xl font-black text-slate-800 tracking-tight leading-none mb-1">My Components</h2>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Hardware Currently in Possession</p>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="text-[10px] font-black uppercase text-slate-400 border-b border-slate-100">
+                            <tr>
+                                <th class="px-2 py-6">Resource Name</th>
+                                <th class="px-2 py-6">Total Held</th>
+                                <th class="px-2 py-6">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="held-components-list" class="divide-y divide-slate-50 text-sm font-bold">
+                            <!-- Loaded dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Acquisition Modal -->
+    <div id="modal-backdrop" class="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-[2000] hidden flex items-center justify-center p-6">
+        <div class="bg-white w-full max-w-md rounded-[40px] shadow-2xl overflow-hidden scale-in">
+            <div class="bg-slate-50 px-10 py-8 border-b border-slate-100 flex justify-between items-center">
+                <h3 id="modal-title" class="text-2xl font-black text-slate-800 tracking-tighter uppercase">Acquire Resource</h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-bvRed transition-colors">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div id="modal-content" class="px-10 py-10 space-y-8">
+                <!-- Loaded dynamically -->
+            </div>
+            <div class="bg-slate-50 px-10 py-8 flex justify-end gap-4 border-t border-slate-100">
+                <button class="px-8 py-4 rounded-full font-black text-xs text-slate-400 hover:text-slate-600 transition-colors uppercase tracking-widest" onclick="closeModal()">Dismiss</button>
+                <button class="bg-bvYellow text-bvRed px-10 py-4 rounded-full font-black text-xs shadow-xl shadow-yellow-100 transition-all active:scale-95 uppercase tracking-widest" id="modal-submit">Acquire Now</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    
+    <script src="js/auth.js"></script>
+    <script src="js/participant.js"></script>
+</body>
+</html>
