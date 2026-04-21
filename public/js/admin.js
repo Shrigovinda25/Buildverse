@@ -109,7 +109,7 @@ firestore.collection('components').onSnapshot(snapshot => {
             <tr class="hover:bg-slate-50 transition-colors group">
                 <td class="px-2 py-6">
                     <div class="flex items-center gap-4">
-                        <img src="${item.imageUrl || `assets/components/${item.name.replace('/', ' ')}.jpg`}" onerror="this.outerHTML='<div class=\\'w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-[8px] text-slate-300 font-black\\'>N/A</div>'" class="w-12 h-12 object-contain rounded-xl border border-slate-100 bg-white shadow-sm mix-blend-multiply" alt="${item.name}">
+                        <img src="${item.imageUrl || `assets/components/${item.name.replace(/\//g, ' ')}.jpg`}" onerror="this.outerHTML='<div class=\\'w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-[8px] text-slate-300 font-black\\'>N/A</div>'" class="w-12 h-12 object-contain rounded-xl border border-slate-100 bg-white shadow-sm mix-blend-multiply" alt="${item.name}">
                         <div class="flex flex-col">
                             <span class="text-[9px] font-black text-bvBlue uppercase tracking-widest mb-1 opacity-60">${item.category || 'RESOURCES'}</span>
                             <p class="font-black text-slate-800 text-lg uppercase tracking-tight leading-none">${item.name}</p>

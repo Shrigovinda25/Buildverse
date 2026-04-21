@@ -263,6 +263,51 @@
         }
 
         .hidden { display: none !important; }
+
+        /* ── MOBILE RESPONSIVE ── */
+        .sidebar { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .sidebar-toggle { 
+            display: none; 
+            width: 44px; height: 44px; 
+            border-radius: 12px; 
+            background: #f8fafc; 
+            border: 1px solid #e2e8f0; 
+            align-items: center; justify-content: center; 
+            cursor: pointer; color: #1e293b;
+            transition: all 0.2s;
+        }
+        .sidebar-toggle:hover { background: #f1f5f9; }
+        .sidebar-overlay { 
+            position: fixed; inset: 0; background: rgba(15, 15, 19, 0.4); 
+            backdrop-filter: blur(4px); z-index: 900; 
+            display: none; opacity: 0; transition: opacity 0.3s ease;
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar-toggle { display: flex; }
+            .sidebar {
+                position: fixed; left: 0; top: 0; bottom: 0;
+                z-index: 1000; transform: translateX(-100%);
+                height: 100vh; width: 280px; box-shadow: 20px 0 50px rgba(0,0,0,0.1);
+            }
+            .sidebar.open { transform: translateX(0); }
+            .sidebar-overlay.show { display: block; opacity: 1; }
+            .admin-topbar { padding: 0 1.5rem; height: 75px; }
+            .topbar-sep { height: 30px; }
+            .admin-main { padding: 1.5rem; }
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .page-header h1 { font-size: 1.6rem; }
+            .section-card-header { padding: 1.2rem 1.5rem; flex-direction: column; align-items: flex-start; gap: 1rem; }
+            .btn { width: 100%; justify-content: center; }
+            .stat-value { font-size: 1.8rem; }
+            .topbar-brand { font-size: 1rem; }
+            .topbar-left { gap: 1rem; }
+            .topbar-left img { height: 35px; }
+            #welcome-msg { font-size: 0.5rem; }
+        }
     </style>
     <link rel="stylesheet" href="css/style.css">
 </head>
@@ -271,6 +316,9 @@
     <!-- TOP BAR -->
     <header class="admin-topbar">
         <div class="topbar-left">
+            <button class="sidebar-toggle" id="mobile-toggle">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+            </button>
             <img src="assets/pleiades logo black.png" alt="Pleiades" onerror="this.style.display='none'">
             <div class="topbar-sep"></div>
             <span class="topbar-brand">Build<span>Verse</span></span>
@@ -279,6 +327,9 @@
             <span class="topbar-badge" id="welcome-msg">Entity Portal</span>
         </div>
     </header>
+
+    <!-- SIDEBAR OVERLAY (Mobile) -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
     <!-- LAYOUT -->
     <div class="admin-layout">
@@ -427,5 +478,28 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
     <script src="js/auth.js?v=2.1"></script>
     <script src="js/participant.js?v=2.0"></script>
+    <script>
+        // Sidebar Toggle Logic
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        const toggleBtn = document.getElementById('mobile-toggle');
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('show');
+        }
+
+        toggleBtn.addEventListener('click', toggleSidebar);
+        overlay.addEventListener('click', toggleSidebar);
+
+        // Close sidebar when clicking a nav button on mobile
+        document.querySelectorAll('.sidebar-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (window.innerWidth <= 1024) {
+                    toggleSidebar();
+                }
+            });
+        });
+    </script>
 </body>
 </html>
