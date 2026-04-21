@@ -7,6 +7,8 @@ const sessionId = localStorage.getItem('bv_sessionId');
 }
 
 let cart = {};
+let orderedCounts = {}; // Track items already ordered/held by the team
+
 
 // ----------------------------------------------------------------------------
 // Categorical Sorting Logic
@@ -87,7 +89,13 @@ function renderCatalog() {
     list.innerHTML = '';
 
     components.forEach((item, index) => {
-        const canOrder = liveUser.orderingEnabled && item.availableQuantity > 0;
+        const alreadyCount = orderedCounts[item.id] || 0;
+        const cartCount = cart[item.id]?.qty || 0;
+        const totalTeamCount = alreadyCount + cartCount;
+        const limitReached = item.maxPerTeam && totalTeamCount >= item.maxPerTeam;
+        
+        const canOrder = liveUser.orderingEnabled && item.availableQuantity > 0 && !limitReached;
+        
         const card = `
             <div class="bg-white rounded-[32px] shadow-sm border border-slate-100 overflow-hidden flex flex-col p-8 h-full transition-all hover:shadow-xl hover:-translate-y-1 group">
                 <div class="mb-6 rounded-2xl bg-stone-50 p-4 h-36 flex items-center justify-center overflow-hidden">
@@ -97,6 +105,7 @@ function renderCatalog() {
                     <div class="flex flex-col">
                         <span class="text-[9px] font-black text-bvBlue uppercase tracking-widest mb-1 opacity-60">${item.category || 'RESOURCES'}</span>
                         <h3 class="font-black text-slate-800 text-xl leading-tight uppercase tracking-tight italic">${item.name}</h3>
+                        ${item.maxPerTeam ? `<p class="text-[9px] font-bold text-bvRed uppercase tracking-widest mt-1 opacity-80">LIMIT: ${item.maxPerTeam} PER TEAM</p>` : ''}
                     </div>
                     <div class="bg-red-50 text-bvRed px-3 py-1.5 rounded-2xl text-xs font-black italic shadow-sm">
                         ${item.price} <span class="not-italic text-[10px] opacity-60">PTS</span>
@@ -112,16 +121,19 @@ function renderCatalog() {
                         <div class="h-full bg-bvYellow transition-all duration-700" style="width: ${(item.availableQuantity/item.totalQuantity)*100}%"></div>
                     </div>
                     
-                    ${(canOrder && item.availableQuantity > 0) ? `
+                    ${(liveUser.orderingEnabled && item.availableQuantity > 0) ? `
                         <div class="flex items-center justify-between w-full mt-2 bg-slate-50 rounded-[20px] p-1.5 border border-slate-100">
                             <button class="w-10 h-10 rounded-[14px] bg-white text-slate-400 hover:text-bvRed shadow-sm transition-all flex items-center justify-center" onclick="updateCartItem('${item.id}', '${item.name.replace(/'/g, "\\'")}', ${item.price}, -1)">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>
                             </button>
-                            <span class="font-black text-lg italic w-10 text-center text-slate-700" id="cart-qty-${item.id}">${cart[item.id]?.qty || 0}</span>
-                            <button class="w-10 h-10 rounded-[14px] bg-bvYellow text-bvRed shadow-sm transition-all shadow-yellow-100/50 hover:scale-105 active:scale-95 flex items-center justify-center" onclick="updateCartItem('${item.id}', '${item.name.replace(/'/g, "\\'")}', ${item.price}, 1)">
+                            <span class="font-black text-lg italic w-10 text-center text-slate-700" id="cart-qty-${item.id}">${cartCount}</span>
+                            <button class="w-10 h-10 rounded-[14px] ${limitReached ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-bvYellow text-bvRed shadow-yellow-100/50 hover:scale-105'} shadow-sm transition-all active:scale-95 flex items-center justify-center" 
+                                    ${limitReached ? 'disabled' : ''}
+                                    onclick="updateCartItem('${item.id}', '${item.name.replace(/'/g, "\\'")}', ${item.price}, 1)">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                             </button>
                         </div>
+                        ${limitReached ? `<p class="text-center text-[8px] font-black text-bvRed uppercase mt-3 tracking-widest animate-pulse">Team quota reached</p>` : ''}
                     ` : `
                         <button class="w-full py-4 rounded-3xl font-black text-xs uppercase tracking-[0.2em] transition-all bg-slate-100 text-slate-300 cursor-not-allowed" disabled>
                             ${!liveUser.orderingEnabled ? 'Locked' : 'Depleted'}
@@ -143,6 +155,7 @@ firestore.collection('orders').orderBy('timestamp', 'asc').onSnapshot(snapshot =
     
     let activeReqs = 0;
     let heldItemsCount = 0;
+    const newOrderedCounts = {};
 
     const allPending = snapshot.docs
         .map(doc => ({ id: doc.id, ...doc.data() }))
@@ -151,6 +164,11 @@ firestore.collection('orders').orderBy('timestamp', 'asc').onSnapshot(snapshot =
     snapshot.docs.forEach((doc, index) => {
         const order = doc.data();
         if (order.username !== user.username) return;
+
+        // Track items for limits (count Pending, Approved, and Given)
+        if (['Pending', 'Approved', 'Given'].includes(order.status)) {
+            newOrderedCounts[order.componentId] = (newOrderedCounts[order.componentId] || 0) + order.quantity;
+        }
 
         if (order.status === 'Pending') activeReqs++;
         if (order.status === 'Given') heldItemsCount += order.quantity;
@@ -196,6 +214,9 @@ firestore.collection('orders').orderBy('timestamp', 'asc').onSnapshot(snapshot =
         }
     });
 
+    orderedCounts = newOrderedCounts;
+    renderCatalog();
+
     document.getElementById('stat-active-reqs').textContent = activeReqs;
     // document.getElementById('stat-held-items').textContent = heldItems;
 });
@@ -206,15 +227,31 @@ firestore.collection('orders').orderBy('timestamp', 'asc').onSnapshot(snapshot =
 function updateCartItem(id, name, price, delta) {
     if (!cart[id]) cart[id] = { name, price, qty: 0 };
     
+    // Check per-team limit
+    if (delta > 0) {
+        const component = components.find(c => c.id === id);
+        if (component && component.maxPerTeam) {
+            const alreadyCount = orderedCounts[id] || 0;
+            const currentCartQty = cart[id].qty;
+            if (alreadyCount + currentCartQty + delta > component.maxPerTeam) {
+                // Limit exceeded
+                return;
+            }
+        }
+    }
+
     cart[id].qty += delta;
     if (cart[id].qty <= 0) {
         delete cart[id];
-        document.getElementById(`cart-qty-${id}`).textContent = '0';
+        const el = document.getElementById(`cart-qty-${id}`);
+        if (el) el.textContent = '0';
     } else {
-        document.getElementById(`cart-qty-${id}`).textContent = cart[id].qty;
+        const el = document.getElementById(`cart-qty-${id}`);
+        if (el) el.textContent = cart[id].qty;
     }
     
     updateCartUI();
+    renderCatalog(); // Re-render to update add button state
 }
 
 function updateCartUI() {
