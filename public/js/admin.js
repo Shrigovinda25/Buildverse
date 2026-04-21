@@ -399,11 +399,26 @@ function openModal(type, data = {}) {
     const container = document.getElementById('modal-container');
     const content = document.getElementById('modal-content');
     const title = document.getElementById('modal-title');
+    const ftr = document.querySelector('.modal-ftr');
+
+    // Restore default footer buttons if they were overwritten (e.g. by openTeamReqModal)
+    if (ftr) {
+        ftr.innerHTML = `
+            <button class="btn btn-ghost" onclick="closeModal()">Dismiss</button>
+            <button class="btn btn-yellow" id="modal-submit">Confirm Action</button>
+        `;
+    }
+
     const submitBtn = document.getElementById('modal-submit');
     
     // Reset width and buttons
-    container.className = 'bg-white w-full max-w-xl rounded-[40px] shadow-2xl overflow-hidden scale-in';
-    submitBtn.classList.remove('hidden');
+    if (container) {
+        container.className = 'bg-white w-full max-w-xl rounded-[40px] shadow-2xl overflow-hidden scale-in';
+    }
+    
+    if (submitBtn) {
+        submitBtn.classList.remove('hidden');
+    }
     
     if (type === 'teamDetail') {
         container.classList.remove('max-w-xl');
