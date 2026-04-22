@@ -44,7 +44,10 @@
 
         <div class="space-y-4">
             <button id="seed-admin-btn" class="w-full py-5 rounded-full bg-bvRed text-white font-black uppercase tracking-[0.2em] shadow-2xl shadow-red-100 transition-all active:scale-95 hover:bg-slate-900">
-                Register Admin Node
+                Register Admin Node 1 — Buildverse
+            </button>
+            <button id="seed-admin2-btn" class="w-full py-5 rounded-full bg-bvBlue text-white font-black uppercase tracking-[0.2em] shadow-2xl shadow-blue-100 transition-all active:scale-95 hover:bg-slate-900">
+                Register Admin Node 2 — Shrigovinda
             </button>
             <button id="seed-items-btn" class="w-full py-5 rounded-full bg-bvYellow text-bvRed font-black uppercase tracking-[0.2em] shadow-2xl shadow-yellow-100 transition-all active:scale-95 hover:brightness-110">
                 Inject Resource Matrix
@@ -126,7 +129,7 @@
 
         document.getElementById('seed-admin-btn').onclick = async () => {
             try {
-                log('Initiating Admin registration...');
+                log('Initiating Admin Node 1 registration...');
                 const salt = dcodeIO.bcrypt.genSaltSync(10);
                 const hashedPassword = dcodeIO.bcrypt.hashSync('shri25', salt);
                 
@@ -140,7 +143,27 @@
                     orderingEnabled: true
                 });
 
-                log('SUCCESS: Admin Node established.', 'success');
+                log('SUCCESS: Admin Node 1 [Buildverse] established.', 'success');
+            } catch (e) { log('ERR: ' + e.message, 'error'); }
+        };
+
+        document.getElementById('seed-admin2-btn').onclick = async () => {
+            try {
+                log('Initiating Admin Node 2 registration...');
+                const salt = dcodeIO.bcrypt.genSaltSync(10);
+                const hashedPassword = dcodeIO.bcrypt.hashSync('8618104226', salt);
+                
+                await db.collection('users').doc('shrigovinda').set({
+                    username: 'shrigovinda',
+                    password: hashedPassword,
+                    role: 'admin',
+                    activeSessionId: null,
+                    lastHeartbeat: 0,
+                    points: 0,
+                    orderingEnabled: true
+                });
+
+                log('SUCCESS: Admin Node 2 [shrigovinda] established.', 'success');
             } catch (e) { log('ERR: ' + e.message, 'error'); }
         };
 
