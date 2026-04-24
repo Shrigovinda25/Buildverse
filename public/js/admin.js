@@ -43,7 +43,7 @@ function sortComponents(array) {
 }
 
 const PREDEFINED_COMPONENTS = [
-    { category: "Controller", name: "ESP32 Controller + USB Cable", totalQuantity: 20, price: 175 },
+    { category: "Controller", name: "ESP32 Controller + USB Cable", totalQuantity: 25, price: 175 },
     { category: "Sensor", name: "Ultrasonic Sensor", totalQuantity: 30, price: 30 },
     { category: "Sensor", name: "IR Sensor", totalQuantity: 40, price: 20 },
     { category: "Sensor", name: "LDR Sensor", totalQuantity: 20, price: 15 },
@@ -68,17 +68,18 @@ const PREDEFINED_COMPONENTS = [
     { category: "Input", name: "Potentiometer", totalQuantity: 20, price: 15 },
     { category: "Hardware", name: "Breadboard (800 pts)", totalQuantity: 20, price: 40 },
     { category: "Hardware", name: "1in L Clamp", totalQuantity: 40, price: 5 },
-    { category: "Hardware", name: "1 by 2 in L clamp", totalQuantity: 40, price: 10 },
-    { category: "Hardware", name: "Jumper Wires (set)", totalQuantity: 20, price: 30 },
+    { category: "Hardware", name: "½in L Clamp", totalQuantity: 40, price: 10 },
+    { category: "Hardware", name: "Female to Female Jumper wire", totalQuantity: 100, price: 1 },
+    { category: "Hardware", name: "Male to Female Jumper wire", totalQuantity: 100, price: 1 },
     { category: "Hardware", name: "Resistor Pack", totalQuantity: 20, price: 10 },
 
     { category: "Power", name: "12V Power Adapter", totalQuantity: 20, price: 100 },
     { category: "Power", name: "5V Power Adapter", totalQuantity: 20, price: 80 },
-    { category: "Power", name: "Male & Female Jack", totalQuantity: 20, price: 15 },
+    { category: "Power", name: "Male & Female Jack", totalQuantity: 20, price: 20 },
     { category: "Power", name: "Single Strand Wire (1m)", totalQuantity: 10, price: 5 },
-    { category: "Miscellaneous", name: "5mm Foam Board", totalQuantity: 40, price: 20, maxPerTeam: 1 },
-    { category: "Miscellaneous", name: "3mm Foam Board", totalQuantity: 40, price: 20, maxPerTeam: 1 },
-    { category: "Miscellaneous", name: "Wire Stripper", totalQuantity: 10, price: 50 }
+    { category: "Miscellaneous", name: "5mm Foam Board", totalQuantity: 40, price: 60, maxPerTeam: 1 },
+    { category: "Miscellaneous", name: "3mm Foam Board", totalQuantity: 40, price: 50, maxPerTeam: 1 },
+    { category: "Miscellaneous", name: "Wire Stripper", totalQuantity: 10, price: 30 }
 ];
 
 // ----------------------------------------------------------------------------
