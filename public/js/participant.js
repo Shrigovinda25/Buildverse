@@ -2,7 +2,7 @@ const user = checkAuth('participant');
 if (user) {
     document.getElementById('welcome-msg').textContent = `WELCOME, ${user.username.toUpperCase()}`;
     setupUserListener(user.username);
-const sessionId = localStorage.getItem('bv_sessionId');
+    const sessionId = localStorage.getItem('bv_sessionId');
     startSessionHeartbeat(user.username, sessionId);
 }
 
@@ -39,7 +39,7 @@ function sortComponents(array) {
 function switchTab(tab) {
     document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
     document.getElementById(`${tab}-tab`).classList.remove('hidden');
-    
+
     // Update Floating Pill Nav
     document.querySelectorAll('.sidebar-btn[data-tab]').forEach(t => {
         t.classList.remove('active');
@@ -58,18 +58,18 @@ function setupUserListener(username) {
     firestore.collection('users').doc(username).onSnapshot(doc => {
         const data = doc.data();
         if (!data) return;
-        
+
         document.getElementById('user-points-val').textContent = data.points;
-        
+
         const banner = document.getElementById('ordering-status-banner');
         if (!data.orderingEnabled) {
             banner.classList.remove('hidden');
         } else {
             banner.classList.add('hidden');
         }
-        
+
         // document.getElementById('stat-held-items').textContent = heldItems;
-        
+
         localStorage.setItem('bv_user_live', JSON.stringify(data));
         renderCatalog();
     });
@@ -93,13 +93,13 @@ function renderCatalog() {
         const cartCount = cart[item.id]?.qty || 0;
         const totalTeamCount = alreadyCount + cartCount;
         const limitReached = item.maxPerTeam && totalTeamCount >= item.maxPerTeam;
-        
+
         const canOrder = liveUser.orderingEnabled && item.availableQuantity > 0 && !limitReached;
-        
+
         const card = `
             <div class="bg-white rounded-[32px] shadow-sm border border-slate-100 overflow-hidden flex flex-col p-8 h-full transition-all hover:shadow-xl hover:-translate-y-1 group">
                 <div class="mb-6 rounded-2xl bg-stone-50 p-4 h-36 flex items-center justify-center overflow-hidden">
-                     <img src="${item.imageUrl || `assets/components/${item.name.replace(/\//g, ' ')}.jpg`}" onerror="this.parentElement.style.display='none'" class="max-h-full object-contain mix-blend-multiply transition-transform group-hover:scale-110" alt="${item.name}">
+                     <img src="${item.imageUrl || `assets/components/${item.name.replace(/\//g, ' ').replace(' (5mm 2ft X 1ft)', '')}.jpg`}" onerror="this.parentElement.style.display='none'" class="max-h-full object-contain mix-blend-multiply transition-transform group-hover:scale-110" alt="${item.name}">
                 </div>
                 <div class="flex justify-between items-start mb-6">
                     <div class="flex flex-col">
@@ -118,7 +118,7 @@ function renderCatalog() {
                         <span class="${item.availableQuantity < 5 ? 'text-bvRed' : 'text-slate-500'} italic font-black">${item.availableQuantity} UNITS</span>
                     </div>
                     <div class="h-1.5 bg-slate-50 rounded-full overflow-hidden mb-8">
-                        <div class="h-full bg-bvYellow transition-all duration-700" style="width: ${(item.availableQuantity/item.totalQuantity)*100}%"></div>
+                        <div class="h-full bg-bvYellow transition-all duration-700" style="width: ${(item.availableQuantity / item.totalQuantity) * 100}%"></div>
                     </div>
                     
                     ${(liveUser.orderingEnabled && item.availableQuantity > 0) ? `
@@ -152,7 +152,7 @@ firestore.collection('orders').orderBy('timestamp', 'asc').onSnapshot(snapshot =
     const heldList = document.getElementById('held-components-list');
     list.innerHTML = '';
     heldList.innerHTML = '';
-    
+
     let activeReqs = 0;
     let heldItemsCount = 0;
     const newOrderedCounts = {};
@@ -177,6 +177,7 @@ firestore.collection('orders').orderBy('timestamp', 'asc').onSnapshot(snapshot =
             <tr class="hover:bg-slate-50 transition-colors group">
                 <td class="px-2 py-6">
                     <p class="font-black text-slate-800 text-lg uppercase tracking-tight italic">${order.componentName}</p>
+                    ${order.status === 'Rejected' ? `<p class="text-[8px] text-red-500 font-bold mt-1 uppercase tracking-widest animate-pulse">This component is rejected</p>` : ''}
                 </td>
                 <td class="px-2 py-6">
                     <span class="font-black text-bvRed text-xl italic">x${order.quantity}</span>
@@ -186,10 +187,10 @@ firestore.collection('orders').orderBy('timestamp', 'asc').onSnapshot(snapshot =
                 </td>
                 <td class="px-2 py-6 text-right">
                     ${order.status === 'Pending' ? (() => {
-                        const idx = allPending.findIndex(o => o.id === doc.id);
-                        const pos = idx + 1;
-                        return `<div class="w-10 h-10 rounded-2xl bg-bvRed text-white flex items-center justify-center font-black text-sm shadow-xl shadow-red-100 ml-auto italic transition-transform group-hover:scale-110">${pos}</div>`;
-                    })() : '-'}
+                const idx = allPending.findIndex(o => o.id === doc.id);
+                const pos = idx + 1;
+                return `<div class="w-10 h-10 rounded-2xl bg-bvRed text-white flex items-center justify-center font-black text-sm shadow-xl shadow-red-100 ml-auto italic transition-transform group-hover:scale-110">${pos}</div>`;
+            })() : '-'}
                 </td>
             </tr>
         `;
@@ -226,7 +227,7 @@ firestore.collection('orders').orderBy('timestamp', 'asc').onSnapshot(snapshot =
 // ----------------------------------------------------------------------------
 function updateCartItem(id, name, price, delta) {
     if (!cart[id]) cart[id] = { name, price, qty: 0 };
-    
+
     // Check per-team limit
     if (delta > 0) {
         const component = components.find(c => c.id === id);
@@ -249,7 +250,7 @@ function updateCartItem(id, name, price, delta) {
         const el = document.getElementById(`cart-qty-${id}`);
         if (el) el.textContent = cart[id].qty;
     }
-    
+
     updateCartUI();
     renderCatalog(); // Re-render to update add button state
 }
@@ -258,7 +259,7 @@ function updateCartUI() {
     const totalItems = Object.values(cart).reduce((sum, item) => sum + item.qty, 0);
     const floatBtn = document.getElementById('floating-cart-btn');
     if (!floatBtn) return;
-    
+
     if (totalItems > 0) {
         const totalPts = Object.values(cart).reduce((sum, item) => sum + (item.price * item.qty), 0);
         floatBtn.classList.remove('hidden');
@@ -275,7 +276,7 @@ function openCartModal() {
 
     let itemsHtml = '';
     let totalPts = 0;
-    
+
     Object.keys(cart).forEach(id => {
         const item = cart[id];
         totalPts += item.qty * item.price;
@@ -322,14 +323,18 @@ function logout() {
 
 document.getElementById('modal-submit').onclick = async () => {
     if (Object.keys(cart).length === 0) return;
-    
+
     try {
         document.getElementById('modal-submit').textContent = 'Processing...';
         document.getElementById('modal-submit').disabled = true;
 
         const batch = firestore.batch();
-        
+
         for (const [id, item] of Object.entries(cart)) {
+            const compDoc = await firestore.collection('components').doc(id).get();
+            if (!compDoc.exists || compDoc.data().availableQuantity < item.qty) {
+                throw new Error(`Insufficient stock for ${item.name}. Update your cart.`);
+            }
             const newOrderRef = firestore.collection('orders').doc();
             batch.set(newOrderRef, {
                 username: user.username,
@@ -342,14 +347,14 @@ document.getElementById('modal-submit').onclick = async () => {
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             });
         }
-        
+
         await batch.commit();
-        
-        cart = {}; 
-        updateCartUI(); 
+
+        cart = {};
+        updateCartUI();
         document.querySelectorAll('[id^="cart-qty-"]').forEach(el => el.textContent = '0');
         closeModal();
-        
+
     } catch (e) {
         alert('Error: ' + e.message);
     } finally {

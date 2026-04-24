@@ -11,7 +11,7 @@ if (user) {
 function switchTab(tab) {
     document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
     document.getElementById(`${tab}-tab`).classList.remove('hidden');
-    
+
     document.querySelectorAll('.sidebar-btn[data-tab]').forEach(t => {
         t.classList.remove('active');
         if (t.dataset.tab === tab) t.classList.add('active');
@@ -82,7 +82,7 @@ const PREDEFINED_COMPONENTS = [
 function switchTab(tab) {
     document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
     document.getElementById(`${tab}-tab`).classList.remove('hidden');
-    
+
     // Update Floating Pill Nav
     document.querySelectorAll('.pill-nav-link').forEach(t => {
         t.classList.remove('active');
@@ -101,18 +101,18 @@ firestore.collection('components').onSnapshot(snapshot => {
     const list = document.getElementById('inventory-list');
     let totalStock = 0;
     list.innerHTML = '';
-    
+
     let items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     items = sortComponents(items);
 
     items.forEach((item) => {
         totalStock += item.availableQuantity;
-        
+
         const row = `
             <tr class="hover:bg-slate-50 transition-colors group">
                 <td class="px-2 py-6">
                     <div class="flex items-center gap-4">
-                        <img src="${item.imageUrl || `assets/components/${item.name.replace(/\//g, ' ')}.jpg`}" onerror="this.outerHTML='<div class=\\'w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-[8px] text-slate-300 font-black\\'>N/A</div>'" class="w-12 h-12 object-contain rounded-xl border border-slate-100 bg-white shadow-sm mix-blend-multiply" alt="${item.name}">
+                        <img src="${item.imageUrl || `assets/components/${item.name.replace(/\//g, ' ').replace(' (5mm 2ft X 1ft)', '')}.jpg`}" onerror="this.outerHTML='<div class=\\'w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-[8px] text-slate-300 font-black\\'>N/A</div>'" class="w-12 h-12 object-contain rounded-xl border border-slate-100 bg-white shadow-sm mix-blend-multiply" alt="${item.name}">
                         <div class="flex flex-col">
                             <span class="text-[9px] font-black text-bvBlue uppercase tracking-widest mb-1 opacity-60">${item.category || 'RESOURCES'}</span>
                             <p class="font-black text-slate-800 text-lg uppercase tracking-tight leading-none">${item.name}</p>
@@ -125,7 +125,7 @@ firestore.collection('components').onSnapshot(snapshot => {
                 <td class="px-2 py-6">
                     <div class="flex items-center gap-4">
                         <div class="h-1 w-24 bg-slate-100 rounded-full overflow-hidden">
-                            <div class="h-full bg-bvRed transition-all duration-700" style="width: ${(item.availableQuantity/item.totalQuantity)*100}%"></div>
+                            <div class="h-full bg-bvRed transition-all duration-700" style="width: ${(item.availableQuantity / item.totalQuantity) * 100}%"></div>
                         </div>
                         <span class="text-[10px] font-black text-slate-500 uppercase">${item.availableQuantity} / ${item.totalQuantity}</span>
                     </div>
@@ -154,9 +154,9 @@ firestore.collection('orders').orderBy('timestamp', 'asc').onSnapshot(snapshot =
     const list = document.getElementById('orders-list');
     let pendingCount = 0;
     list.innerHTML = '';
-    
-    globalOrders = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
-    
+
+    globalOrders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
     const queueGroups = {};
 
     globalOrders.forEach(o => {
@@ -170,16 +170,16 @@ firestore.collection('orders').orderBy('timestamp', 'asc').onSnapshot(snapshot =
         else queueGroups[o.username].otherCount++;
     });
 
-    const sortedGroups = Object.values(queueGroups).sort((a,b) => {
-         const timeA = a.timestamp ? a.timestamp.seconds : 9999999999;
-         const timeB = b.timestamp ? b.timestamp.seconds : 9999999999;
-         return timeA - timeB;
+    const sortedGroups = Object.values(queueGroups).sort((a, b) => {
+        const timeA = a.timestamp ? a.timestamp.seconds : 9999999999;
+        const timeB = b.timestamp ? b.timestamp.seconds : 9999999999;
+        return timeA - timeB;
     });
 
     sortedGroups.forEach((group, index) => {
         const pos = index + 1;
         const date = group.timestamp ? new Date(group.timestamp.seconds * 1000).toLocaleTimeString() : '...';
-        
+
         let statusBadge = '';
         if (group.pendingCount > 0) statusBadge = `<span class="inline-flex items-center px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.15em] border shadow-sm bg-orange-50 text-orange-600 border-orange-200">⟳ ${group.pendingCount} PENDING</span>`;
         else if (group.approvedCount > 0) statusBadge = `<span class="inline-flex items-center px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.15em] border shadow-sm bg-emerald-50 text-emerald-700 border-emerald-100">✓ READY</span>`;
@@ -205,7 +205,7 @@ firestore.collection('orders').orderBy('timestamp', 'asc').onSnapshot(snapshot =
     });
 
     document.getElementById('stat-pending-orders').textContent = pendingCount;
-    
+
     // Re-render modal silently if it's open for a team
     if (currentModalTeam && !document.getElementById('modal-backdrop').classList.contains('hidden')) {
         renderTeamReqModalContent(currentModalTeam);
@@ -215,19 +215,19 @@ firestore.collection('orders').orderBy('timestamp', 'asc').onSnapshot(snapshot =
 window.openTeamReqModal = (username) => {
     currentModalTeam = username;
     document.getElementById('modal-title').textContent = `${username} | REQUISITIONS`;
-    
+
     // Check if there are pendings right now
     const pendings = globalOrders.filter(o => o.username === username && o.status === 'Pending');
-    
+
     const ftr = document.querySelector('.modal-ftr');
     ftr.innerHTML = `
         <button class="btn btn-ghost" onclick="closeTeamModal()">Close</button>
         ${pendings.length > 0 ? `<button class="btn btn-yellow" id="approve-all-btn" onclick="approveAllPending('${username}')">Approve All Pending</button>` : ''}
     `;
-    
+
     document.getElementById('modal-container').style.maxWidth = '800px';
     document.getElementById('modal-backdrop').classList.remove('hidden');
-    
+
     renderTeamReqModalContent(username);
 };
 
@@ -291,7 +291,7 @@ window.renderTeamReqModalContent = (username) => {
 window.approveAllPending = async (username) => {
     const pendings = globalOrders.filter(o => o.username === username && o.status === 'Pending');
     if (pendings.length === 0) return;
-    
+
     // Confirm with admin
     if (!confirm(`Are you sure you want to authorize all ${pendings.length} pending items for ${username} at once?`)) return;
 
@@ -312,7 +312,7 @@ window.approveAllPending = async (username) => {
                 const userRef = firestore.collection('users').doc(orderData.username);
                 const compDoc = await t.get(compRef);
                 const userDoc = await t.get(userRef);
-                
+
                 const compData = compDoc.data();
                 const userData = userDoc.data();
                 const totalCost = compData.price * orderData.quantity;
@@ -342,7 +342,7 @@ window.approveAllPending = async (username) => {
     if (failures > 0) {
         alert(`${failures} items could not be approved (likely due to insufficient stock or points).`);
     }
-    
+
     if (btn) { btn.innerHTML = 'Approve All Pending'; btn.disabled = false; }
 };
 // 3. Listen for Entities
@@ -413,21 +413,21 @@ function openModal(type, data = {}) {
     }
 
     const submitBtn = document.getElementById('modal-submit');
-    
+
     // Reset width and buttons
     if (container) {
         container.className = 'bg-white w-full max-w-xl rounded-[40px] shadow-2xl overflow-hidden scale-in';
     }
-    
+
     if (submitBtn) {
         submitBtn.classList.remove('hidden');
     }
-    
+
     if (type === 'teamDetail') {
         container.classList.remove('max-w-xl');
         container.classList.add('max-w-5xl');
     } else if (type === 'addComponent' || type === 'editComponent') {
-        
+
         const selectionHtml = type === 'addComponent' ? `
             <div>
                 <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-2">Standard Template</label>
@@ -574,7 +574,7 @@ async function saveTeam() {
     const username = document.getElementById('team-user').value;
     const password = document.getElementById('team-pass').value;
     const representativeName = document.getElementById('team-rep').value;
-    
+
     const members = Array.from(document.querySelectorAll('.team-member-input'))
         .map(input => input.value.trim())
         .filter(val => val !== "");
@@ -607,7 +607,7 @@ async function saveTeam() {
             points: 1000,
             orderingEnabled: true
         });
-        
+
         // Add Copy Option for Credentials
         showCredentialsPrompt(username, password);
         closeModal();
@@ -636,10 +636,10 @@ async function processOrder(orderId, action) {
 
                 const compRef = firestore.collection('components').doc(orderData.componentId);
                 const userRef = firestore.collection('users').doc(orderData.username);
-                
+
                 const compDoc = await t.get(compRef);
                 const userDoc = await t.get(userRef);
-                
+
                 const compData = compDoc.data();
                 const userData = userDoc.data();
                 const totalCost = compData.price * orderData.quantity;
@@ -667,7 +667,7 @@ async function processOrder(orderId, action) {
             } else if (action === 'return') {
                 const compRef = firestore.collection('components').doc(orderData.componentId);
                 const userRef = firestore.collection('users').doc(orderData.username);
-                
+
                 const compDoc = await t.get(compRef);
                 const userDoc = await t.get(userRef);
 
@@ -800,7 +800,7 @@ async function viewTeamDetails(username) {
     const content = document.getElementById('modal-content');
     const title = document.getElementById('modal-title');
     title.textContent = `ENTITY_PROFILE: ${username.toUpperCase()}`;
-    
+
     content.innerHTML = `<div class="flex justify-center py-20"><div class="animate-spin rounded-full h-12 w-12 border-4 border-bvRed border-t-transparent"></div></div>`;
 
     try {
@@ -812,7 +812,7 @@ async function viewTeamDetails(username) {
         // Financial Calculations
         let pointsUsed = 0;
         let pointsLoss = 0;
-        
+
         allOrders.forEach(o => {
             const cost = o.totalCost || (o.pricePerUnit * o.quantity) || 0;
             if (o.status === 'Given' || o.status === 'Approved') {
@@ -894,7 +894,7 @@ async function viewTeamDetails(username) {
 
 function renderDetailTable(items, headers) {
     if (items.length === 0) return `<p class="text-[10px] font-bold text-slate-300 uppercase italic">No records found for this protocol.</p>`;
-    
+
     return `
         <div class="bg-white border border-slate-100 rounded-[24px] overflow-hidden">
             <table class="w-full text-left">
@@ -909,9 +909,9 @@ function renderDetailTable(items, headers) {
                             <td class="px-6 py-4 font-black uppercase text-slate-800">${item.componentName}</td>
                             <td class="px-6 py-4">x${item.quantity}</td>
                             <td class="px-6 py-4">
-                                ${headers[2] === 'Cost' ? (item.totalCost || (item.pricePerUnit * item.quantity)) + ' PTS' : 
-                                  headers[2] === 'Loss (50%)' ? ((item.totalCost || (item.pricePerUnit * item.quantity)) * 0.5) + ' PTS' :
-                                  `<span class="status-${item.status} px-3 py-1 rounded-full text-[9px] uppercase tracking-tighter">${item.status}</span>`}
+                                ${headers[2] === 'Cost' ? (item.totalCost || (item.pricePerUnit * item.quantity)) + ' PTS' :
+            headers[2] === 'Loss (50%)' ? ((item.totalCost || (item.pricePerUnit * item.quantity)) * 0.5) + ' PTS' :
+                `<span class="status-${item.status} px-3 py-1 rounded-full text-[9px] uppercase tracking-tighter">${item.status}</span>`}
                             </td>
                             ${headers[3] === 'Manage' ? `<td class="px-6 py-4 text-right"><button class="bg-bvYellow text-bvRed px-5 py-2 rounded-full font-black text-[10px] shadow-sm hover:brightness-110 active:scale-95 transition-all uppercase tracking-widest inline-flex items-center gap-2" onclick="processOrder('${item.id}', 'return'); closeModal(); setTimeout(() => viewTeamDetails('${item.username}'), 400)">Process Return</button></td>` : ''}
                         </tr>
