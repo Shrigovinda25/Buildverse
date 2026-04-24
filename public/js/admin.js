@@ -43,7 +43,7 @@ function sortComponents(array) {
 }
 
 const PREDEFINED_COMPONENTS = [
-    { category: "Controller", name: "ESP32 Controller", totalQuantity: 20, price: 150 },
+    { category: "Controller", name: "ESP32 Controller + USB Cable", totalQuantity: 20, price: 175 },
     { category: "Sensor", name: "Ultrasonic Sensor", totalQuantity: 30, price: 30 },
     { category: "Sensor", name: "IR Sensor", totalQuantity: 40, price: 20 },
     { category: "Sensor", name: "LDR Sensor", totalQuantity: 20, price: 15 },
@@ -67,12 +67,13 @@ const PREDEFINED_COMPONENTS = [
     { category: "Hardware", name: "Breadboard (800 pts)", totalQuantity: 20, price: 40 },
     { category: "Hardware", name: "Jumper Wires (set)", totalQuantity: 20, price: 30 },
     { category: "Hardware", name: "Resistor Pack", totalQuantity: 20, price: 10 },
-    { category: "Power", name: "USB Cable", totalQuantity: 20, price: 25 },
+
     { category: "Power", name: "12V Power Adapter", totalQuantity: 20, price: 100 },
     { category: "Power", name: "5V Power Adapter", totalQuantity: 20, price: 80 },
     { category: "Power", name: "Power Jack", totalQuantity: 20, price: 15 },
     { category: "Power", name: "Single Strand Wire (1m)", totalQuantity: 10, price: 5 },
-    { category: "Miscellaneous", name: "Foam Board (5mm 2ft X 1ft)", totalQuantity: 40, price: 20, maxPerTeam: 2 },
+    { category: "Miscellaneous", name: "5mm Foam Board", totalQuantity: 40, price: 20, maxPerTeam: 1 },
+    { category: "Miscellaneous", name: "3mm Foam Board", totalQuantity: 40, price: 20, maxPerTeam: 1 },
     { category: "Miscellaneous", name: "Wire Stripper", totalQuantity: 10, price: 50 }
 ];
 
@@ -112,7 +113,7 @@ firestore.collection('components').onSnapshot(snapshot => {
             <tr class="hover:bg-slate-50 transition-colors group">
                 <td class="px-2 py-6">
                     <div class="flex items-center gap-4">
-                        <img src="${item.imageUrl || `assets/components/${item.name.replace(/\//g, ' ').replace(' (5mm 2ft X 1ft)', '')}.jpg`}" onerror="this.outerHTML='<div class=\\'w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-[8px] text-slate-300 font-black\\'>N/A</div>'" class="w-12 h-12 object-contain rounded-xl border border-slate-100 bg-white shadow-sm mix-blend-multiply" alt="${item.name}">
+                        <img src="${item.imageUrl || `assets/components/${item.name.replace(/\//g, ' ')}.jpg`}" onerror="this.outerHTML='<div class=\\'w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-[8px] text-slate-300 font-black\\'>N/A</div>'" class="w-12 h-12 object-contain rounded-xl border border-slate-100 bg-white shadow-sm mix-blend-multiply" alt="${item.name}">
                         <div class="flex flex-col">
                             <span class="text-[9px] font-black text-bvBlue uppercase tracking-widest mb-1 opacity-60">${item.category || 'RESOURCES'}</span>
                             <p class="font-black text-slate-800 text-lg uppercase tracking-tight leading-none">${item.name}</p>
