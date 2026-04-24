@@ -99,7 +99,7 @@ function renderCatalog() {
         const card = `
             <div class="bg-white rounded-[32px] shadow-sm border border-slate-100 overflow-hidden flex flex-col p-8 h-full transition-all hover:shadow-xl hover:-translate-y-1 group">
                 <div class="mb-6 rounded-2xl bg-stone-50 p-4 h-36 flex items-center justify-center overflow-hidden">
-                     <img src="${item.imageUrl || `assets/components/${item.name.replace(/\//g, ' ').replace(' (5mm 2ft X 1ft)', '')}.jpg`}" onerror="this.parentElement.style.display='none'" class="max-h-full object-contain mix-blend-multiply transition-transform group-hover:scale-110" alt="${item.name}">
+                     <img src="${item.imageUrl || `assets/components/${item.name.replace(/\//g, ' ').replace(/\+/g, '%2B').replace(/&/g, '%26')}.jpg`}" onerror="this.parentElement.style.display='none'" class="max-h-full object-contain mix-blend-multiply transition-transform group-hover:scale-110" alt="${item.name}">
                 </div>
                 <div class="flex justify-between items-start mb-6">
                     <div class="flex flex-col">

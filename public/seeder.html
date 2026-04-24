@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,14 +20,17 @@
         }
     </style>
 </head>
+
 <body class="hero-gradient min-h-screen flex items-center justify-center p-6 font-['Outfit']">
     <div class="grid-blob top-[-200px] right-[-200px]"></div>
     <div class="grid-blob bottom-[-200px] left-[-200px]"></div>
 
     <div class="ultra-card w-full max-w-2xl p-12 text-center fade-in-down">
         <div class="mb-10">
-            <h1 class="text-4xl font-[900] tracking-tighter text-slate-800 italic uppercase">System_Seed<span class="text-bvRed">.v2</span></h1>
-            <p class="text-[10px] font-black tracking-[0.4em] text-slate-400 mt-2">DEPLOYMENT PROTOCOL: INITIALIZATION</p>
+            <h1 class="text-4xl font-[900] tracking-tighter text-slate-800 italic uppercase">System_Seed<span
+                    class="text-bvRed">.v2</span></h1>
+            <p class="text-[10px] font-black tracking-[0.4em] text-slate-400 mt-2">DEPLOYMENT PROTOCOL: INITIALIZATION
+            </p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
@@ -43,23 +47,29 @@
         </div>
 
         <div class="space-y-4">
-            <button id="seed-admin-btn" class="w-full py-5 rounded-full bg-bvRed text-white font-black uppercase tracking-[0.2em] shadow-2xl shadow-red-100 transition-all active:scale-95 hover:bg-slate-900">
+            <button id="seed-admin-btn"
+                class="w-full py-5 rounded-full bg-bvRed text-white font-black uppercase tracking-[0.2em] shadow-2xl shadow-red-100 transition-all active:scale-95 hover:bg-slate-900">
                 Register Admin Node 1 — Buildverse
             </button>
-            <button id="seed-admin2-btn" class="w-full py-5 rounded-full bg-bvBlue text-white font-black uppercase tracking-[0.2em] shadow-2xl shadow-blue-100 transition-all active:scale-95 hover:bg-slate-900">
+            <button id="seed-admin2-btn"
+                class="w-full py-5 rounded-full bg-bvBlue text-white font-black uppercase tracking-[0.2em] shadow-2xl shadow-blue-100 transition-all active:scale-95 hover:bg-slate-900">
                 Register Admin Node 2 — Shrigovinda
             </button>
-            <button id="seed-items-btn" class="w-full py-5 rounded-full bg-bvYellow text-bvRed font-black uppercase tracking-[0.2em] shadow-2xl shadow-yellow-100 transition-all active:scale-95 hover:brightness-110">
+            <button id="seed-items-btn"
+                class="w-full py-5 rounded-full bg-bvYellow text-bvRed font-black uppercase tracking-[0.2em] shadow-2xl shadow-yellow-100 transition-all active:scale-95 hover:brightness-110">
                 Inject Resource Matrix
             </button>
         </div>
 
-        <div id="log" class="mt-10 p-6 bg-slate-50 rounded-[24px] border border-slate-100 text-left font-mono text-[10px] text-slate-500 h-40 overflow-y-auto leading-relaxed">
+        <div id="log"
+            class="mt-10 p-6 bg-slate-50 rounded-[24px] border border-slate-100 text-left font-mono text-[10px] text-slate-500 h-40 overflow-y-auto leading-relaxed">
             SYSTEM_IDLE: Awaiting command input...
         </div>
 
         <div class="mt-8">
-            <a href="index.html" class="text-[10px] font-black text-bvRed uppercase tracking-widest hover:underline decoration-2 underline-offset-8">Return to Portal</a>
+            <a href="index.html"
+                class="text-[10px] font-black text-bvRed uppercase tracking-widest hover:underline decoration-2 underline-offset-8">Return
+                to Portal</a>
         </div>
     </div>
 
@@ -88,7 +98,7 @@
             let color = 'text-slate-400';
             if (type === 'success') color = 'text-emerald-600';
             if (type === 'error') color = 'text-red-600';
-            
+
             logEl.innerHTML += `<div class="${color}">[${time}] > ${msg}</div>`;
             logEl.scrollTop = logEl.scrollHeight;
         }
@@ -122,6 +132,7 @@
             { category: "Hardware", name: "½in L Clamp", totalQuantity: 40, price: 10 },
             { category: "Hardware", name: "Female to Female Jumper wire", totalQuantity: 100, price: 1 },
             { category: "Hardware", name: "Male to Female Jumper wire", totalQuantity: 100, price: 1 },
+            { category: "Hardware", name: "M3 Nut & Bolts", totalQuantity: 100, price: 5 },
             { category: "Hardware", name: "Resistor Pack", totalQuantity: 20, price: 10 },
 
             { category: "Power", name: "12V Power Adapter", totalQuantity: 20, price: 100 },
@@ -138,7 +149,7 @@
                 log('Initiating Admin Node 1 registration...');
                 const salt = dcodeIO.bcrypt.genSaltSync(10);
                 const hashedPassword = dcodeIO.bcrypt.hashSync('shri25', salt);
-                
+
                 await db.collection('users').doc('Buildverse').set({
                     username: 'Buildverse',
                     password: hashedPassword,
@@ -158,7 +169,7 @@
                 log('Initiating Admin Node 2 registration...');
                 const salt = dcodeIO.bcrypt.genSaltSync(10);
                 const hashedPassword = dcodeIO.bcrypt.hashSync('8618104226', salt);
-                
+
                 await db.collection('users').doc('shrigovinda').set({
                     username: 'shrigovinda',
                     password: hashedPassword,
@@ -177,10 +188,7 @@
             try {
                 log('Starting resource matrix injection...');
                 const batch = db.batch();
-                
-                // Optional: Clear existing components if desired
-                // const snap = await db.collection('components').get();
-                // snap.forEach(doc => batch.delete(doc.ref));
+
 
                 components.forEach(item => {
                     const slug = item.name.toLowerCase().replace(/[^a-z0-9]/g, '_');
@@ -197,4 +205,5 @@
         };
     </script>
 </body>
+
 </html>

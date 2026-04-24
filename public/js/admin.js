@@ -71,6 +71,7 @@ const PREDEFINED_COMPONENTS = [
     { category: "Hardware", name: "½in L Clamp", totalQuantity: 40, price: 10 },
     { category: "Hardware", name: "Female to Female Jumper wire", totalQuantity: 100, price: 1 },
     { category: "Hardware", name: "Male to Female Jumper wire", totalQuantity: 100, price: 1 },
+    { category: "Hardware", name: "M3 Nut & Bolts", totalQuantity: 100, price: 5 },
     { category: "Hardware", name: "Resistor Pack", totalQuantity: 20, price: 10 },
 
     { category: "Power", name: "12V Power Adapter", totalQuantity: 20, price: 100 },
@@ -118,7 +119,7 @@ firestore.collection('components').onSnapshot(snapshot => {
             <tr class="hover:bg-slate-50 transition-colors group">
                 <td class="px-2 py-6">
                     <div class="flex items-center gap-4">
-                        <img src="${item.imageUrl || `assets/components/${item.name.replace(/\//g, ' ')}.jpg`}" onerror="this.outerHTML='<div class=\\'w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-[8px] text-slate-300 font-black\\'>N/A</div>'" class="w-12 h-12 object-contain rounded-xl border border-slate-100 bg-white shadow-sm mix-blend-multiply" alt="${item.name}">
+                        <img src="${item.imageUrl || `assets/components/${item.name.replace(/\//g, ' ').replace(/\+/g, '%2B').replace(/&/g, '%26')}.jpg`}" onerror="this.outerHTML='<div class=\\'w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-[8px] text-slate-300 font-black\\'>N/A</div>'" class="w-12 h-12 object-contain rounded-xl border border-slate-100 bg-white shadow-sm mix-blend-multiply" alt="${item.name}">
                         <div class="flex flex-col">
                             <span class="text-[9px] font-black text-bvBlue uppercase tracking-widest mb-1 opacity-60">${item.category || 'RESOURCES'}</span>
                             <p class="font-black text-slate-800 text-lg uppercase tracking-tight leading-none">${item.name}</p>
@@ -631,6 +632,22 @@ function showCredentialsPrompt(user, pass) {
 
 async function processOrder(orderId, action) {
     try {
+        let approvedQty = null;
+
+        if (action === 'approve') {
+            const docRef = await firestore.collection('orders').doc(orderId).get();
+            if (!docRef.exists) return alert("Order not found");
+            const data = docRef.data();
+            if (data.status !== 'Pending') return alert("Order already processed");
+
+            const qtyStr = prompt(`Approve how many ${data.componentName}? (Requested: ${data.quantity})`, data.quantity);
+            if (qtyStr === null) return;
+            approvedQty = parseInt(qtyStr, 10);
+            if (isNaN(approvedQty) || approvedQty < 1 || approvedQty > data.quantity) {
+                return alert("Invalid quantity. Must be between 1 and " + data.quantity);
+            }
+        }
+
         await firestore.runTransaction(async (t) => {
             const orderRef = firestore.collection('orders').doc(orderId);
             const orderDoc = await t.get(orderRef);
@@ -648,21 +665,21 @@ async function processOrder(orderId, action) {
 
                 const compData = compDoc.data();
                 const userData = userDoc.data();
-                const totalCost = compData.price * orderData.quantity;
+                const totalCost = compData.price * approvedQty;
 
-                if (compData.availableQuantity < orderData.quantity) throw new Error('Insufficient stock');
+                if (compData.availableQuantity < approvedQty) throw new Error('Insufficient stock');
                 if (userData.points < totalCost) throw new Error('Insufficient user points');
 
-                t.update(compRef, { availableQuantity: compData.availableQuantity - orderData.quantity });
+                t.update(compRef, { availableQuantity: compData.availableQuantity - approvedQty });
                 t.update(userRef, { points: userData.points - totalCost });
-                t.update(orderRef, { status: 'Approved' });
+                t.update(orderRef, { status: 'Approved', quantity: approvedQty });
 
                 const transRef = firestore.collection('transactions').doc();
                 t.set(transRef, {
                     username: orderData.username,
                     type: 'debit',
                     amount: totalCost,
-                    reason: `Purchase: ${orderData.quantity}x ${compData.name}`,
+                    reason: `Purchase: ${approvedQty}x ${compData.name}`,
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
