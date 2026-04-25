@@ -116,7 +116,7 @@ firestore.collection('components').onSnapshot(snapshot => {
             <tr class="hover:bg-slate-50 transition-colors group">
                 <td class="px-2 py-6">
                     <div class="flex items-center gap-4">
-                        <img src="${item.imageUrl || `assets/components/${item.name.replace(/\//g, ' ').replace(/\+/g, '%2B').replace(/&/g, '%26')}.jpg`}" onerror="this.outerHTML='<div class=\\'w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-[8px] text-slate-300 font-black\\'>N/A</div>'" class="w-12 h-12 object-contain rounded-xl border border-slate-100 bg-white shadow-sm mix-blend-multiply" alt="${item.name}">
+                        <img src="${item.imageUrl || `assets/components/${item.name.replace(/\//g, ' ').replace(/\+/g, '%2B').replace(/&/g, '%26').replace(/ /g, '%20')}.jpg`}" onerror="this.outerHTML='<div class=\\'w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-[8px] text-slate-300 font-black\\'>N/A</div>'" class="w-12 h-12 object-contain rounded-xl border border-slate-100 bg-white shadow-sm mix-blend-multiply" alt="${item.name}">
                         <div class="flex flex-col">
                             <span class="text-[9px] font-black text-bvBlue uppercase tracking-widest mb-1 opacity-60">${item.category || 'RESOURCES'}</span>
                             <p class="font-black text-slate-800 text-lg uppercase tracking-tight leading-none">${item.name}</p>
@@ -842,6 +842,25 @@ async function forceLogout(username) {
             lastHeartbeat: 0
         });
     } catch (e) { alert(e.message); }
+}
+
+async function seedResources() {
+    if (!confirm('This will synchronize the inventory with the predefined resource matrix. Existing stock for these items will be reset. Continue?')) return;
+    
+    try {
+        const batch = firestore.batch();
+        PREDEFINED_COMPONENTS.forEach(item => {
+            const slug = item.name.toLowerCase().replace(/[^a-z0-9]/g, '_');
+            const ref = firestore.collection('components').doc(slug);
+            batch.set(ref, {
+                ...item,
+                availableQuantity: item.totalQuantity
+            });
+        });
+
+        await batch.commit();
+        alert(`SUCCESS: ${PREDEFINED_COMPONENTS.length} resources synchronized.`);
+    } catch (e) { alert('ERR: ' + e.message); }
 }
 
 async function deduplicateComponents() {
