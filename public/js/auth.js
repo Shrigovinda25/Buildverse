@@ -19,11 +19,13 @@ firebase.initializeApp(firebaseConfig);
 const firestore = firebase.firestore();
 
 const loginForm = document.getElementById('login-form');
-const errMessage = document.getElementById('error-message');
+const errContainer = document.getElementById('error-message');
+const errText = document.getElementById('error-text');
 
 if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        if (errContainer) errContainer.classList.add('hidden');
         const username = document.getElementById('username').value;
         const password = document.getElementById('password').value;
 
@@ -44,7 +46,7 @@ if (loginForm) {
             
             // 45 second grace period, bypass if they are the SAME browser reclaiming their session
             if (currentTime - lastHeartbeat < 45000 && userData.activeSessionId !== existingSessionId) {
-                throw new Error('SECURITY_ALERT: ACCOUNT_IN_USE. Please wait 60s or log out from other devices.');
+                throw new Error('Concurrent Session: Account is already active on another device. Please wait 60s or log out elsewhere.');
             }
 
             // 4. Verify Password using bcrypt (Browser version)
@@ -83,9 +85,24 @@ if (loginForm) {
             }
 
         } catch (error) {
-            errMessage.textContent = error.message;
-            errMessage.style.display = 'block';
+            console.error('Login Error:', error.message);
+            if (errText && errContainer) {
+                errText.textContent = error.message;
+                errContainer.classList.remove('hidden');
+                
+                // Re-hide after 7 seconds
+                setTimeout(() => {
+                    errContainer.classList.add('hidden');
+                }, 7000);
+            }
         }
+    });
+
+    // Clear error on input
+    document.querySelectorAll('.form-input').forEach(input => {
+        input.addEventListener('input', () => {
+            if (errContainer) errContainer.classList.add('hidden');
+        });
     });
 }
 
