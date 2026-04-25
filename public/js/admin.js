@@ -10,9 +10,17 @@ if (user) {
 // ----------------------------------------------------------------------------
 function switchTab(tab) {
     document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
-    document.getElementById(`${tab}-tab`).classList.remove('hidden');
+    const targetSection = document.getElementById(`${tab}-tab`);
+    if (targetSection) targetSection.classList.remove('hidden');
 
+    // Update Sidebar Buttons
     document.querySelectorAll('.sidebar-btn[data-tab]').forEach(t => {
+        t.classList.remove('active');
+        if (t.dataset.tab === tab) t.classList.add('active');
+    });
+
+    // Update Floating Pill Nav (if exists)
+    document.querySelectorAll('.pill-nav-link').forEach(t => {
         t.classList.remove('active');
         if (t.dataset.tab === tab) t.classList.add('active');
     });
@@ -86,18 +94,7 @@ const PREDEFINED_COMPONENTS = [
 // ----------------------------------------------------------------------------
 // Tabs Logic (Pill Style)
 // ----------------------------------------------------------------------------
-function switchTab(tab) {
-    document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
-    document.getElementById(`${tab}-tab`).classList.remove('hidden');
-
-    // Update Floating Pill Nav
-    document.querySelectorAll('.pill-nav-link').forEach(t => {
-        t.classList.remove('active');
-        if (t.dataset.tab === tab) {
-            t.classList.add('active');
-        }
-    });
-}
+// (Consolidated switchTab logic at top of file)
 
 // ----------------------------------------------------------------------------
 // Real-time Listeners (Pill Style)
