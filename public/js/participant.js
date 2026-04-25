@@ -328,27 +328,67 @@ document.getElementById('modal-submit').onclick = async () => {
         document.getElementById('modal-submit').textContent = 'Processing...';
         document.getElementById('modal-submit').disabled = true;
 
-        const batch = firestore.batch();
+        await firestore.runTransaction(async (transaction) => {
+            const userRef = firestore.collection('users').doc(user.username);
+            const userDoc = await transaction.get(userRef);
+            if (!userDoc.exists) throw new Error("User document not found");
+            
+            const userData = userDoc.data();
+            let totalCartCost = 0;
+            const componentDataMap = {};
 
-        for (const [id, item] of Object.entries(cart)) {
-            const compDoc = await firestore.collection('components').doc(id).get();
-            if (!compDoc.exists || compDoc.data().availableQuantity < item.qty) {
-                throw new Error(`Insufficient stock for ${item.name}. Update your cart.`);
+            // 1. Fetch all component docs and check stock
+            for (const id of Object.keys(cart)) {
+                const compRef = firestore.collection('components').doc(id);
+                const compDoc = await transaction.get(compRef);
+                if (!compDoc.exists) throw new Error(`Component ${cart[id].name} no longer exists.`);
+                
+                const compData = compDoc.data();
+                if (compData.availableQuantity < cart[id].qty) {
+                    throw new Error(`Insufficient stock for ${cart[id].name}. Available: ${compData.availableQuantity}`);
+                }
+                
+                totalCartCost += cart[id].qty * cart[id].price;
+                componentDataMap[id] = compData;
             }
-            const newOrderRef = firestore.collection('orders').doc();
-            batch.set(newOrderRef, {
+
+            // 2. Check points
+            if (userData.points < totalCartCost) {
+                throw new Error(`Insufficient points. Required: ${totalCartCost}, Available: ${userData.points}`);
+            }
+
+            // 3. Apply updates
+            transaction.update(userRef, { points: userData.points - totalCartCost });
+
+            for (const [id, item] of Object.entries(cart)) {
+                const compRef = firestore.collection('components').doc(id);
+                transaction.update(compRef, { 
+                    availableQuantity: componentDataMap[id].availableQuantity - item.qty 
+                });
+
+                const newOrderRef = firestore.collection('orders').doc();
+                transaction.set(newOrderRef, {
+                    username: user.username,
+                    componentId: id,
+                    componentName: item.name,
+                    quantity: item.qty,
+                    pricePerUnit: item.price,
+                    totalCost: item.qty * item.price,
+                    status: 'Pending',
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            }
+
+            // 4. Log transaction
+            const transRef = firestore.collection('transactions').doc();
+            transaction.set(transRef, {
                 username: user.username,
-                componentId: id,
-                componentName: item.name,
-                quantity: item.qty,
-                pricePerUnit: item.price,
-                totalCost: item.qty * item.price,
-                status: 'Pending',
+                type: 'debit',
+                amount: totalCartCost,
+                reason: `Order Placement: ${Object.values(cart).map(i => `${i.qty}x ${i.name}`).join(', ')}`,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             });
-        }
-
-        await batch.commit();
+        });
 
         cart = {};
         updateCartUI();
