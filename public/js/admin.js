@@ -43,7 +43,7 @@ function sortComponents(array) {
 }
 
 const PREDEFINED_COMPONENTS = [
-    { category: "Controller", name: "ESP32 Controller + USB Cable", totalQuantity: 25, price: 175 },
+    { category: "Controller", name: "ESP32 Controller + USB Cable", totalQuantity: 25, price: 180 },
     { category: "Sensor", name: "Ultrasonic Sensor", totalQuantity: 30, price: 30 },
     { category: "Sensor", name: "IR Sensor", totalQuantity: 40, price: 20 },
     { category: "Sensor", name: "LDR Sensor", totalQuantity: 20, price: 15 },
