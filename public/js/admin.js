@@ -701,7 +701,7 @@ async function processOrder(orderId, action) {
             if (action === 'approve') {
                 if (orderData.status !== 'Pending') throw new Error('Order already processed');
 
-                const diff = orderData.quantity - approvedQty;
+                const diff = Number(orderData.quantity) - Number(approvedQty);
                 if (diff > 0) {
                     // Refund the difference if admin approved less than requested
                     const compRef = firestore.collection('components').doc(orderData.componentId);
@@ -711,10 +711,10 @@ async function processOrder(orderId, action) {
 
                     const compData = compDoc.data();
                     const userData = userDoc.data();
-                    const refundAmount = diff * orderData.pricePerUnit;
+                    const refundAmount = diff * Number(orderData.pricePerUnit);
 
-                    t.update(compRef, { availableQuantity: compData.availableQuantity + diff });
-                    t.update(userRef, { points: userData.points + refundAmount });
+                    t.update(compRef, { availableQuantity: Number(compData.availableQuantity || 0) + diff });
+                    t.update(userRef, { points: Number(userData.points || 0) + refundAmount });
 
                     const transRef = firestore.collection('transactions').doc();
                     t.set(transRef, {
@@ -739,10 +739,10 @@ async function processOrder(orderId, action) {
 
                 const compData = compDoc.data();
                 const userData = userDoc.data();
-                const refundAmount = orderData.quantity * orderData.pricePerUnit;
+                const refundAmount = Number(orderData.quantity) * Number(orderData.pricePerUnit);
 
-                t.update(compRef, { availableQuantity: compData.availableQuantity + orderData.quantity });
-                t.update(userRef, { points: userData.points + refundAmount });
+                t.update(compRef, { availableQuantity: Number(compData.availableQuantity || 0) + Number(orderData.quantity) });
+                t.update(userRef, { points: Number(userData.points || 0) + refundAmount });
                 t.update(orderRef, { status: 'Rejected' });
 
                 const transRef = firestore.collection('transactions').doc();
@@ -767,8 +767,8 @@ async function processOrder(orderId, action) {
                 const userData = userDoc.data();
                 const refund = (orderData.pricePerUnit * orderData.quantity) * 0.5;
 
-                t.update(compRef, { availableQuantity: compData.availableQuantity + orderData.quantity });
-                t.update(userRef, { points: userData.points + refund });
+                t.update(compRef, { availableQuantity: Number(compData.availableQuantity || 0) + Number(orderData.quantity) });
+                t.update(userRef, { points: Number(userData.points || 0) + refund });
                 t.update(orderRef, { status: 'Returned' });
 
                 const transRef = firestore.collection('transactions').doc();

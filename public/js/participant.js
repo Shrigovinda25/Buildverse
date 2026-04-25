@@ -362,8 +362,11 @@ document.getElementById('modal-submit').onclick = async () => {
 
             for (const [id, item] of Object.entries(cart)) {
                 const compRef = firestore.collection('components').doc(id);
+                const currentQty = Number(componentDataMap[id].availableQuantity || 0);
+                const orderQty = Number(item.qty || 0);
+
                 transaction.update(compRef, { 
-                    availableQuantity: componentDataMap[id].availableQuantity - item.qty 
+                    availableQuantity: currentQty - orderQty 
                 });
 
                 const newOrderRef = firestore.collection('orders').doc();
@@ -371,9 +374,9 @@ document.getElementById('modal-submit').onclick = async () => {
                     username: user.username,
                     componentId: id,
                     componentName: item.name,
-                    quantity: item.qty,
-                    pricePerUnit: item.price,
-                    totalCost: item.qty * item.price,
+                    quantity: orderQty,
+                    pricePerUnit: Number(item.price),
+                    totalCost: orderQty * Number(item.price),
                     status: 'Pending',
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
