@@ -383,6 +383,9 @@ firestore.collection('users').where('role', '==', 'participant').onSnapshot(snap
                     <button class="p-2 hover:bg-slate-100 rounded-xl text-slate-400 hover:text-bvRed transition-all" title="Toggle Access" onclick="toggleOrdering('${team.username}')">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                     </button>
+                    <button class="p-2 hover:bg-slate-100 rounded-xl text-slate-400 hover:text-emerald-500 transition-all" title="Manage Credentials" onclick="manageCredentials('${team.username}')">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+                    </button>
                     <button class="p-2 hover:bg-slate-100 rounded-xl text-slate-400 hover:text-orange-500 transition-all" title="Force Logout" onclick="forceLogout('${team.username}')">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
                     </button>
@@ -518,6 +521,34 @@ function openModal(type, data = {}) {
             </div>
         `;
         document.getElementById('modal-submit').onclick = saveTeam;
+    } else if (type === 'editTeam') {
+        title.textContent = 'ACCOUNT_MANAGEMENT';
+        content.innerHTML = `
+            <div class="space-y-6">
+                <div class="p-6 bg-slate-50 rounded-[32px] border border-slate-100 mb-4">
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 text-center">Entity Identity</p>
+                    <p class="text-3xl font-black text-bvBlue uppercase italic tracking-tighter text-center">${data.username}</p>
+                </div>
+                <div class="grid grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-2">Team ID</label>
+                        <input type="number" id="edit-team-id" class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-[24px] focus:ring-4 focus:ring-bvRed/10 focus:border-bvRed outline-none transition-all font-bold text-slate-700" value="${data.teamId || ''}">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-2">Rep Name</label>
+                        <input type="text" id="edit-team-rep" class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-[24px] focus:ring-4 focus:ring-bvRed/10 focus:border-bvRed outline-none transition-all font-bold text-slate-700" value="${data.representativeName || ''}">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-2">New Password (Leave blank to keep current)</label>
+                    <input type="password" id="edit-team-pass" class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-[24px] focus:ring-4 focus:ring-bvRed/10 focus:border-bvRed outline-none transition-all font-bold text-slate-700" placeholder="••••••••">
+                </div>
+                <div class="p-4 bg-amber-50 rounded-2xl border border-amber-100">
+                    <p class="text-[9px] font-bold text-amber-700 uppercase tracking-widest text-center">Passwords are encrypted. For security, you can only reset them, not view them.</p>
+                </div>
+            </div>
+        `;
+        document.getElementById('modal-submit').onclick = () => updateTeamCredentials(data.username);
     }
 
     document.getElementById('modal-backdrop').classList.remove('hidden');
@@ -614,6 +645,43 @@ async function saveTeam() {
 
         // Add Copy Option for Credentials
         showCredentialsPrompt(username, password);
+        closeModal();
+    } catch (e) { alert(e.message); }
+}
+
+async function manageCredentials(username) {
+    try {
+        const doc = await firestore.collection('users').doc(username).get();
+        if (!doc.exists) return alert('Entity not found.');
+        openModal('editTeam', { username, ...doc.data() });
+    } catch (e) { alert(e.message); }
+}
+
+async function updateTeamCredentials(username) {
+    const teamId = document.getElementById('edit-team-id').value;
+    const representativeName = document.getElementById('edit-team-rep').value;
+    const password = document.getElementById('edit-team-pass').value;
+
+    if (!teamId || !representativeName) {
+        alert('Team ID and Representative Name are required.');
+        return;
+    }
+
+    try {
+        const updates = { teamId, representativeName };
+
+        if (password) {
+            const bcrypt = getBcrypt();
+            if (!bcrypt) {
+                alert('Encryption library error.');
+                return;
+            }
+            const salt = bcrypt.genSaltSync(10);
+            updates.password = bcrypt.hashSync(password, salt);
+        }
+
+        await firestore.collection('users').doc(username).update(updates);
+        alert('Account updated successfully.');
         closeModal();
     } catch (e) { alert(e.message); }
 }
