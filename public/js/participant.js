@@ -33,6 +33,17 @@ function sortComponents(array) {
     });
 }
 
+function getComponentImageUrl(item) {
+    if (item.imageUrl) return item.imageUrl;
+    let name = item.name || '';
+    // Support legacy names with '+' by mapping to the 'Plus' filenames
+    const sanitizedName = name.replace(/\+/g, 'Plus')
+                              .replace(/\//g, ' ')
+                              .replace(/&/g, '%26')
+                              .replace(/ /g, '%20');
+    return `assets/components/${sanitizedName}.jpg`;
+}
+
 // ----------------------------------------------------------------------------
 // Tabs Logic (Pill Style)
 // ----------------------------------------------------------------------------
@@ -99,7 +110,7 @@ function renderCatalog() {
         const card = `
             <div class="bg-white rounded-[32px] shadow-sm border border-slate-100 overflow-hidden flex flex-col p-8 h-full transition-all hover:shadow-xl hover:-translate-y-1 group">
                 <div class="mb-6 rounded-2xl bg-stone-50 p-4 h-36 flex items-center justify-center overflow-hidden">
-                     <img src="${item.imageUrl || `assets/components/${item.name.replace(/\//g, ' ').replace(/\+/g, '%2B').replace(/&/g, '%26').replace(/ /g, '%20')}.jpg`}" onerror="this.parentElement.style.display='none'" class="max-h-full object-contain mix-blend-multiply transition-transform group-hover:scale-110" alt="${item.name}">
+                     <img src="${getComponentImageUrl(item)}" onerror="this.outerHTML='<div class=\\'w-full h-full rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-[10px] text-slate-300 font-black uppercase tracking-widest text-center p-4\\'>Resource Image Not Found</div>'" class="max-h-full object-contain mix-blend-multiply transition-transform group-hover:scale-110" alt="${item.name}">
                 </div>
                 <div class="flex justify-between items-start mb-6">
                     <div class="flex flex-col">

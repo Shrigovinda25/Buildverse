@@ -97,6 +97,20 @@ const PREDEFINED_COMPONENTS = [
 // (Consolidated switchTab logic at top of file)
 
 // ----------------------------------------------------------------------------
+// Helpers
+// ----------------------------------------------------------------------------
+function getComponentImageUrl(item) {
+    if (item.imageUrl) return item.imageUrl;
+    let name = item.name || '';
+    // Support legacy names with '+' by mapping to the 'Plus' filenames
+    const sanitizedName = name.replace(/\+/g, 'Plus')
+                              .replace(/\//g, ' ')
+                              .replace(/&/g, '%26')
+                              .replace(/ /g, '%20');
+    return `assets/components/${sanitizedName}.jpg`;
+}
+
+// ----------------------------------------------------------------------------
 // Real-time Listeners (Pill Style)
 // ----------------------------------------------------------------------------
 
@@ -116,7 +130,7 @@ firestore.collection('components').onSnapshot(snapshot => {
             <tr class="hover:bg-slate-50 transition-colors group">
                 <td class="px-2 py-6">
                     <div class="flex items-center gap-4">
-                        <img src="${item.imageUrl || `assets/components/${item.name.replace(/\//g, ' ').replace(/\+/g, '%2B').replace(/&/g, '%26').replace(/ /g, '%20')}.jpg`}" onerror="this.outerHTML='<div class=\\'w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-[8px] text-slate-300 font-black\\'>N/A</div>'" class="w-12 h-12 object-contain rounded-xl border border-slate-100 bg-white shadow-sm mix-blend-multiply" alt="${item.name}">
+                        <img src="${getComponentImageUrl(item)}" onerror="this.outerHTML='<div class=\\'w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-[8px] text-slate-300 font-black\\'>N/A</div>'" class="w-12 h-12 object-contain rounded-xl border border-slate-100 bg-white shadow-sm mix-blend-multiply" alt="${item.name}">
                         <div class="flex flex-col">
                             <span class="text-[9px] font-black text-bvBlue uppercase tracking-widest mb-1 opacity-60">${item.category || 'RESOURCES'}</span>
                             <p class="font-black text-slate-800 text-lg uppercase tracking-tight leading-none">${item.name}</p>
@@ -711,7 +725,7 @@ async function processOrder(orderId, action) {
 
                     const compData = compDoc.data();
                     const userData = userDoc.data();
-                    const refundAmount = diff * Number(orderData.pricePerUnit);
+                    const refundAmount = diff * Number(orderData.pricePerUnit || 0);
 
                     t.update(compRef, { availableQuantity: Number(compData.availableQuantity || 0) + diff });
                     t.update(userRef, { points: Number(userData.points || 0) + refundAmount });
@@ -739,7 +753,7 @@ async function processOrder(orderId, action) {
 
                 const compData = compDoc.data();
                 const userData = userDoc.data();
-                const refundAmount = Number(orderData.quantity) * Number(orderData.pricePerUnit);
+                const refundAmount = Number(orderData.quantity) * Number(orderData.pricePerUnit || 0);
 
                 t.update(compRef, { availableQuantity: Number(compData.availableQuantity || 0) + Number(orderData.quantity) });
                 t.update(userRef, { points: Number(userData.points || 0) + refundAmount });
@@ -842,6 +856,16 @@ async function forceLogout(username) {
             lastHeartbeat: 0
         });
     } catch (e) { alert(e.message); }
+}
+
+function getComponentImageUrl(item) {
+    if (item.imageUrl) return item.imageUrl;
+    let name = item.name || '';
+    const sanitizedName = name.replace(/\+/g, 'Plus')
+                              .replace(/\//g, ' ')
+                              .replace(/&/g, '%26')
+                              .replace(/ /g, '%20');
+    return `assets/components/${sanitizedName}.jpg`;
 }
 
 async function seedResources() {
