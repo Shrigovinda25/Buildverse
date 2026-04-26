@@ -683,7 +683,6 @@ function showCredentialsPrompt(user, pass) {
     const msg = `ENTITY REGISTERED\n\nIdentity: ${user}\nPasskey: ${pass}\n\nPlease copy and share these credentials with the team. They will not be shown again in plain text.`;
     if (confirm(msg + '\n\nCopy to clipboard?')) {
         navigator.clipboard.writeText(`BuildVerse Credentials\nIdentity: ${user}\nPasskey: ${pass}`)
-            .then(() => alert('Credentials copied to clipboard.'))
             .catch(() => alert('Manual copy required:\n' + user + ' / ' + pass));
     }
 }
@@ -703,6 +702,24 @@ async function processOrder(orderId, action) {
             approvedQty = parseInt(qtyStr, 10);
             if (isNaN(approvedQty) || approvedQty < 1 || approvedQty > data.quantity) {
                 return alert("Invalid quantity. Must be between 1 and " + data.quantity);
+            }
+        }
+
+        let returnQty = null;
+        if (action === 'return') {
+            const docRef = await firestore.collection('orders').doc(orderId).get();
+            if (!docRef.exists) return alert("Order not found");
+            const data = docRef.data();
+            
+            if (data.quantity > 1) {
+                const qtyStr = prompt(`How many ${data.componentName} are being returned? (Held: ${data.quantity})`, data.quantity);
+                if (qtyStr === null) return;
+                returnQty = parseInt(qtyStr, 10);
+                if (isNaN(returnQty) || returnQty < 1 || returnQty > data.quantity) {
+                    return alert("Invalid quantity. Must be between 1 and " + data.quantity);
+                }
+            } else {
+                returnQty = 1;
             }
         }
 
@@ -779,18 +796,36 @@ async function processOrder(orderId, action) {
 
                 const compData = compDoc.data();
                 const userData = userDoc.data();
-                const refund = (orderData.pricePerUnit * orderData.quantity) * 0.5;
+                
+                // Calculate refund for returnQty (50% of buying price)
+                const refund = (orderData.pricePerUnit * returnQty) * 0.5;
 
-                t.update(compRef, { availableQuantity: Number(compData.availableQuantity || 0) + Number(orderData.quantity) });
+                t.update(compRef, { availableQuantity: Number(compData.availableQuantity || 0) + returnQty });
                 t.update(userRef, { points: Number(userData.points || 0) + refund });
-                t.update(orderRef, { status: 'Returned' });
+                
+                if (returnQty === orderData.quantity) {
+                    // Full return
+                    t.update(orderRef, { status: 'Returned' });
+                } else {
+                    // Partial return
+                    t.update(orderRef, { quantity: orderData.quantity - returnQty });
+                    
+                    // Create new record for returned units
+                    const newOrderRef = firestore.collection('orders').doc();
+                    t.set(newOrderRef, {
+                        ...orderData,
+                        quantity: returnQty,
+                        status: 'Returned',
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                }
 
                 const transRef = firestore.collection('transactions').doc();
                 t.set(transRef, {
                     username: orderData.username,
                     type: 'credit',
                     amount: refund,
-                    reason: `Refund: ${orderData.quantity}x ${compData.name} returned`,
+                    reason: `Refund: ${returnQty}x ${compData.name} returned`,
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
             }

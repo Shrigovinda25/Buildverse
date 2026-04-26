@@ -860,6 +860,43 @@
                 font-size: 0.5rem;
             }
         }
+
+        /* ── SPONSOR CONTACT CARD ── */
+        .sponsor-contact-card {
+            background: #1a1a24;
+            border-radius: 16px;
+            padding: 1.2rem;
+            margin: 1.5rem 0.5rem;
+            border: 1px solid #222;
+        }
+
+        .sponsor-contact-card .sponsor-title {
+            font-size: 0.6rem;
+            font-weight: 800;
+            color: #FFD700;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .sponsor-contact-card .sponsor-address {
+            font-size: 0.7rem;
+            color: #888;
+            line-height: 1.4;
+            margin-bottom: 0.8rem;
+        }
+
+        .sponsor-contact-card .sponsor-phone {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
     </style>
     <link rel="stylesheet" href="css/style.css">
 </head>
@@ -890,23 +927,23 @@
             <div class="marquee-item">
                 <span class="marquee-label">POWERED BY</span>
                 <span class="marquee-name">CORE ELECTRONICS</span>
-                <span class="marquee-desc">— Industrial-grade components for regional innovators.</span>
+                <span class="marquee-desc">— Industrial-grade components for regional innovators. | 📞 9742986424</span>
             </div>
             <div class="marquee-item">
                 <span class="marquee-label">POWERED BY</span>
                 <span class="marquee-name">CORE ELECTRONICS</span>
-                <span class="marquee-desc">— Industrial-grade components for regional innovators.</span>
+                <span class="marquee-desc">— Industrial-grade components for regional innovators. | 📞 9742986424</span>
             </div>
             <!-- Set 2 (for seamless loop) -->
             <div class="marquee-item" aria-hidden="true">
                 <span class="marquee-label">POWERED BY</span>
                 <span class="marquee-name">CORE ELECTRONICS</span>
-                <span class="marquee-desc">— Industrial-grade components for regional innovators.</span>
+                <span class="marquee-desc">— Industrial-grade components for regional innovators. | 📞 9742986424</span>
             </div>
             <div class="marquee-item" aria-hidden="true">
                 <span class="marquee-label">POWERED BY</span>
                 <span class="marquee-name">CORE ELECTRONICS</span>
-                <span class="marquee-desc">— Industrial-grade components for regional innovators.</span>
+                <span class="marquee-desc">— Industrial-grade components for regional innovators. | 📞 9742986424</span>
             </div>
         </div>
     </div>
@@ -935,6 +972,26 @@
             </button>
 
             <div class="sidebar-divider"></div>
+
+            <!-- Sponsor Contact -->
+            <div class="sponsor-contact-card">
+                <div class="flex items-center gap-3 mb-4">
+                    <img src="assets/Core Electronics.png" alt="Core Electronics" class="w-10 h-10 object-contain bg-white rounded-xl p-1.5 shadow-sm">
+                    <div>
+                        <p class="sponsor-title mb-0" style="margin-bottom: 0;">Powered by</p>
+                        <p class="font-black text-white text-[0.8rem] leading-tight">CORE TECHNOLOGIES</p>
+                    </div>
+                </div>
+                <p class="sponsor-address">
+                    LOWER GROUND FLOOR, OPP. BVB COLLEGE, HUBBALLI-580031
+                </p>
+                <div class="sponsor-phone">
+                    <span style="color: #FFD700;">📞</span> 9742986424
+                </div>
+                <div class="sponsor-phone mt-1">
+                    <span style="color: #FFD700;">☎️</span> 0836-2376424
+                </div>
+            </div>
 
             <button class="sidebar-logout" onclick="logout()">
                 <span class="sb-icon">🚪</span> Exit Session
