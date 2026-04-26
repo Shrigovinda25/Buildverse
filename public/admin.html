@@ -291,6 +291,9 @@
             <span class="topbar-brand">Build<span>Verse</span></span>
         </div>
         <div style="display:flex;align-items:center;gap:1rem;">
+            <button id="global-pause-btn" class="hidden sm:flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-red-50 text-slate-500 hover:text-red-600 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all mr-4" onclick="toggleGlobalPause()">
+                <span class="text-sm">⏸️</span> Pause Event
+            </button>
             <div class="flex flex-col items-end mr-4">
                 <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Access Identity</span>
                 <span class="text-xs font-black text-bvBlue uppercase italic tracking-tighter leading-none" id="admin-name-display">...</span>
@@ -320,6 +323,9 @@
             </button>
             <button class="sidebar-btn" data-tab="teams" onclick="switchTab('teams')">
                 <span class="sb-icon">👥</span> Teams
+            </button>
+            <button class="sidebar-btn" data-tab="logs" onclick="switchTab('logs')">
+                <span class="sb-icon">📝</span> System Logs
             </button>
 
             <div class="sidebar-divider"></div>
@@ -430,10 +436,13 @@
                 <div class="section-card">
                     <div class="section-card-header">
                         <div>
-                            <p class="section-title">Entity Registry</p>
-                            <p class="section-sub">Authorized Team Records</p>
+                            <p class="section-title">Team Roster</p>
+                            <p class="section-sub">Network Participant Overview</p>
                         </div>
-                        <button class="btn btn-blue" onclick="openModal('addTeam')">＋ Register Team</button>
+                        <div style="display:flex;gap:0.6rem;">
+                            <button class="btn btn-ghost" onclick="exportDataCSV()">Download CSV</button>
+                            <button class="btn btn-primary" onclick="openModal('addTeam')">＋ Authorize Team</button>
+                        </div>
                     </div>
                     <div class="table-scroll">
                         <table class="bv-table">
@@ -447,6 +456,34 @@
                                 </tr>
                             </thead>
                             <tbody id="teams-list">
+                                <!-- Loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ── LOGS TAB ── -->
+            <section id="logs-tab" class="hidden fade-in">
+                <div class="section-card">
+                    <div class="section-card-header">
+                        <div>
+                            <p class="section-title">System Logs</p>
+                            <p class="section-sub">Immutable transaction and action registry</p>
+                        </div>
+                    </div>
+                    <div class="table-scroll">
+                        <table class="bv-table">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>User</th>
+                                    <th>Event Type</th>
+                                    <th>Details</th>
+                                    <th style="text-align:right;">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logs-list">
                                 <!-- Loaded dynamically -->
                             </tbody>
                         </table>

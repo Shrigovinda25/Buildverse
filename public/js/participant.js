@@ -64,6 +64,30 @@ function switchTab(tab) {
 // Real-time Listeners (Pill Style)
 // ----------------------------------------------------------------------------
 
+let isGlobalPaused = false;
+firestore.collection('settings').doc('system').onSnapshot(doc => {
+    if (doc.exists) {
+        isGlobalPaused = doc.data().orderingPaused || false;
+        updateBannerState();
+        renderCatalog();
+    }
+});
+
+function updateBannerState() {
+    const banner = document.getElementById('ordering-status-banner');
+    const liveUser = JSON.parse(localStorage.getItem('bv_user_live') || '{}');
+    
+    if (isGlobalPaused) {
+        banner.innerHTML = 'Global Event Paused by Organizers';
+        banner.classList.remove('hidden');
+    } else if (liveUser.orderingEnabled === false) {
+        banner.innerHTML = 'Operation Suspended by Admin Control';
+        banner.classList.remove('hidden');
+    } else {
+        banner.classList.add('hidden');
+    }
+}
+
 // 1. Listen for User Profile
 function setupUserListener(username) {
     firestore.collection('users').doc(username).onSnapshot(doc => {
@@ -72,16 +96,8 @@ function setupUserListener(username) {
 
         document.getElementById('user-points-val').textContent = data.points;
 
-        const banner = document.getElementById('ordering-status-banner');
-        if (!data.orderingEnabled) {
-            banner.classList.remove('hidden');
-        } else {
-            banner.classList.add('hidden');
-        }
-
-        // document.getElementById('stat-held-items').textContent = heldItems;
-
         localStorage.setItem('bv_user_live', JSON.stringify(data));
+        updateBannerState();
         renderCatalog();
     });
 }
@@ -99,13 +115,27 @@ function renderCatalog() {
     const liveUser = JSON.parse(localStorage.getItem('bv_user_live') || '{}');
     list.innerHTML = '';
 
-    components.forEach((item, index) => {
+    const searchTerm = (document.getElementById('catalog-search')?.value || '').toLowerCase();
+    const categoryFilter = document.getElementById('catalog-category')?.value || 'ALL';
+
+    const filteredComponents = components.filter(item => {
+        const matchesSearch = item.name.toLowerCase().includes(searchTerm);
+        const matchesCategory = categoryFilter === 'ALL' || item.category === categoryFilter;
+        return matchesSearch && matchesCategory;
+    });
+
+    if (filteredComponents.length === 0) {
+        list.innerHTML = '<div class="col-span-full py-12 text-center text-slate-400 font-bold uppercase tracking-widest text-xs">No resources found matching criteria</div>';
+        return;
+    }
+
+    filteredComponents.forEach((item, index) => {
         const alreadyCount = orderedCounts[item.id] || 0;
         const cartCount = cart[item.id]?.qty || 0;
         const totalTeamCount = alreadyCount + cartCount;
         const limitReached = item.maxPerTeam && totalTeamCount >= item.maxPerTeam;
 
-        const canOrder = liveUser.orderingEnabled && item.availableQuantity > 0 && !limitReached;
+        const canOrder = !isGlobalPaused && liveUser.orderingEnabled && item.availableQuantity > 0 && !limitReached;
 
         const card = `
             <div class="bg-white rounded-[32px] shadow-sm border border-slate-100 overflow-hidden flex flex-col p-8 h-full transition-all hover:shadow-xl hover:-translate-y-1 group">
@@ -132,22 +162,22 @@ function renderCatalog() {
                         <div class="h-full bg-bvYellow transition-all duration-700" style="width: ${(item.availableQuantity / item.totalQuantity) * 100}%"></div>
                     </div>
                     
-                    ${(liveUser.orderingEnabled && item.availableQuantity > 0) ? `
+                    ${(!isGlobalPaused && liveUser.orderingEnabled && item.availableQuantity > 0) ? `
                         <div class="flex items-center justify-between w-full mt-2 bg-slate-50 rounded-[20px] p-1.5 border border-slate-100">
-                            <button class="w-10 h-10 rounded-[14px] bg-white text-slate-400 hover:text-bvRed shadow-sm transition-all flex items-center justify-center" onclick="updateCartItem('${item.id}', '${item.name.replace(/'/g, "\\'")}', ${item.price}, -1)">
+                            <button class="w-10 h-10 rounded-[14px] bg-white text-slate-400 hover:text-bvRed shadow-sm transition-all flex items-center justify-center" onclick="updateCartItem(event, '${item.id}', '${item.name.replace(/'/g, "\\'")}', ${item.price}, -1)">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>
                             </button>
                             <span class="font-black text-lg italic w-10 text-center text-slate-700" id="cart-qty-${item.id}">${cartCount}</span>
                             <button class="w-10 h-10 rounded-[14px] ${limitReached ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-bvYellow text-bvRed shadow-yellow-100/50 hover:scale-105'} shadow-sm transition-all active:scale-95 flex items-center justify-center" 
                                     ${limitReached ? 'disabled' : ''}
-                                    onclick="updateCartItem('${item.id}', '${item.name.replace(/'/g, "\\'")}', ${item.price}, 1)">
+                                    onclick="updateCartItem(event, '${item.id}', '${item.name.replace(/'/g, "\\'")}', ${item.price}, 1)">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                             </button>
                         </div>
                         ${limitReached ? `<p class="text-center text-[8px] font-black text-bvRed uppercase mt-3 tracking-widest animate-pulse">Team quota reached</p>` : ''}
                     ` : `
                         <button class="w-full py-4 rounded-3xl font-black text-xs uppercase tracking-[0.2em] transition-all bg-slate-100 text-slate-300 cursor-not-allowed" disabled>
-                            ${!liveUser.orderingEnabled ? 'Locked' : 'Depleted'}
+                            ${isGlobalPaused ? 'Paused' : (!liveUser.orderingEnabled ? 'Locked' : 'Depleted')}
                         </button>
                     `}
                 </div>
@@ -284,7 +314,7 @@ firestore.collection('users').where('role', '==', 'participant').onSnapshot(snap
 // ----------------------------------------------------------------------------
 // Cart & Checkout
 // ----------------------------------------------------------------------------
-function updateCartItem(id, name, price, delta) {
+function updateCartItem(event, id, name, price, delta) {
     if (!cart[id]) cart[id] = { name, price, qty: 0 };
 
     // Check per-team limit
@@ -297,6 +327,46 @@ function updateCartItem(id, name, price, delta) {
                 // Limit exceeded
                 return;
             }
+        }
+        
+        // --- Fly-to-Cart Animation ---
+        if (event) {
+            try {
+                const btn = event.currentTarget;
+                const rect = btn.getBoundingClientRect();
+                const cartBtn = document.getElementById('floating-cart-btn');
+                
+                if (cartBtn && !cartBtn.classList.contains('hidden')) {
+                    const cartRect = cartBtn.getBoundingClientRect();
+                    
+                    // Create flying element
+                    const flyEl = document.createElement('div');
+                    flyEl.className = 'fly-item bg-bvBlue w-8 h-8 flex items-center justify-center rounded-full shadow-lg';
+                    flyEl.innerHTML = '<span class="text-white text-xs">📦</span>';
+                    
+                    // Set initial position
+                    flyEl.style.left = `${rect.left + rect.width / 2 - 16}px`;
+                    flyEl.style.top = `${rect.top + rect.height / 2 - 16}px`;
+                    
+                    document.body.appendChild(flyEl);
+                    
+                    // Trigger animation
+                    requestAnimationFrame(() => {
+                        flyEl.style.left = `${cartRect.left + cartRect.width / 2 - 16}px`;
+                        flyEl.style.top = `${cartRect.top + cartRect.height / 2 - 16}px`;
+                        flyEl.style.transform = 'scale(0.1)';
+                        flyEl.style.opacity = '0';
+                    });
+                    
+                    // Cleanup
+                    setTimeout(() => {
+                        flyEl.remove();
+                        // Give cart button a little bounce
+                        cartBtn.classList.add('scale-110');
+                        setTimeout(() => cartBtn.classList.remove('scale-110'), 150);
+                    }, 600);
+                }
+            } catch(e) {}
         }
     }
 

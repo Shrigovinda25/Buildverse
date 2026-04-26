@@ -425,6 +425,69 @@ firestore.collection('users').where('role', '==', 'participant').onSnapshot(snap
     });
 });
 
+// 4. Listen for System Logs
+firestore.collection('transactions').orderBy('timestamp', 'desc').limit(100).onSnapshot(snapshot => {
+    const list = document.getElementById('logs-list');
+    if (!list) return;
+    list.innerHTML = '';
+
+    snapshot.docs.forEach(doc => {
+        const log = doc.data();
+        const date = log.timestamp ? log.timestamp.toDate().toLocaleString() : 'Just now';
+        
+        const isCredit = log.type === 'credit';
+        const isSystem = log.type === 'system';
+
+        const row = `
+            <tr class="hover:bg-slate-50 transition-colors group">
+                <td class="px-2 py-4">
+                    <span class="text-xs font-bold text-slate-500">${date}</span>
+                </td>
+                <td class="px-2 py-4">
+                    <span class="font-black text-slate-800 uppercase tracking-tight italic">${log.username}</span>
+                </td>
+                <td class="px-2 py-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-widest ${isSystem ? 'bg-purple-50 text-purple-600 border border-purple-100' : isCredit ? 'bg-green-50 text-green-600 border border-green-100' : 'bg-red-50 text-red-600 border border-red-100'} shadow-sm">
+                        ${log.type}
+                    </span>
+                </td>
+                <td class="px-2 py-4">
+                    <span class="text-xs font-semibold text-slate-600">${log.reason || 'N/A'}</span>
+                </td>
+                <td class="px-2 py-4 text-right">
+                    <span class="font-black text-lg italic ${isSystem ? 'text-slate-400' : isCredit ? 'text-green-600' : 'text-red-600'}">
+                        ${isSystem ? '-' : (isCredit ? '+' : '-')}${Math.abs(log.amount || 0)}
+                    </span>
+                </td>
+            </tr>
+        `;
+        list.insertAdjacentHTML('beforeend', row);
+    });
+});
+
+async function exportDataCSV() {
+    try {
+        const usersSnap = await firestore.collection('users').where('role', '==', 'participant').get();
+        let csvContent = "data:text/csv;charset=utf-8,";
+        csvContent += "Team Username,Remaining Points,Status\n";
+
+        usersSnap.forEach(doc => {
+            const data = doc.data();
+            csvContent += `${data.username},${data.points},${data.orderingEnabled ? 'Active' : 'Locked'}\n`;
+        });
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `BuildVerse_Report_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    } catch (e) {
+        alert("Error generating CSV: " + e.message);
+    }
+}
+
 // ----------------------------------------------------------------------------
 // Modals & Identity
 // ----------------------------------------------------------------------------
@@ -1225,5 +1288,42 @@ async function returnAllComponents(username) {
         alert(`Successfully returned all components for ${username}.`);
     } catch (e) {
         alert('Error processing bulk return: ' + e.message);
+    }
+}
+
+let isGlobalPaused = false;
+firestore.collection('settings').doc('system').onSnapshot(doc => {
+    if (doc.exists) {
+        isGlobalPaused = doc.data().orderingPaused || false;
+        const btn = document.getElementById('global-pause-btn');
+        if (isGlobalPaused) {
+            btn.innerHTML = '<span class="text-sm">▶️</span> Resume Event';
+            btn.classList.remove('bg-slate-100', 'text-slate-500');
+            btn.classList.add('bg-red-500', 'text-white', 'hover:bg-red-600', 'hover:text-white', 'shadow-md', 'shadow-red-200', 'animate-pulse');
+        } else {
+            btn.innerHTML = '<span class="text-sm">⏸️</span> Pause Event';
+            btn.classList.remove('bg-red-500', 'text-white', 'hover:bg-red-600', 'hover:text-white', 'shadow-md', 'shadow-red-200', 'animate-pulse');
+            btn.classList.add('bg-slate-100', 'text-slate-500');
+        }
+    }
+});
+
+async function toggleGlobalPause() {
+    try {
+        await firestore.collection('settings').doc('system').set({
+            orderingPaused: !isGlobalPaused
+        }, { merge: true });
+        
+        // Also log this major action
+        const currentUser = JSON.parse(localStorage.getItem('bv_user') || '{}');
+        await firestore.collection('transactions').add({
+            username: currentUser.username || 'System',
+            type: 'system',
+            amount: 0,
+            reason: `Global event ordering ${!isGlobalPaused ? 'PAUSED' : 'RESUMED'}`,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+    } catch (e) {
+        alert('Error toggling global pause: ' + e.message);
     }
 }
