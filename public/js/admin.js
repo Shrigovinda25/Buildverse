@@ -1092,6 +1092,37 @@ function renderDetailTable(items, headers) {
     `;
 }
 
+async function forceLogoutOtherAdmins() {
+    const currentUser = JSON.parse(localStorage.getItem('bv_user') || '{}');
+    if (!confirm('SECURITY_PROTOCOL: This will immediately terminate all other active admin sessions across the network. Proceed?')) return;
+
+    try {
+        const snapshot = await firestore.collection('users').where('role', '==', 'admin').get();
+        const batch = firestore.batch();
+        let count = 0;
+
+        snapshot.forEach(doc => {
+            // Terminate session if it's NOT the current admin user
+            if (doc.id !== currentUser.username) {
+                batch.update(doc.ref, {
+                    activeSessionId: null,
+                    lastHeartbeat: 0
+                });
+                count++;
+            }
+        });
+
+        if (count > 0) {
+            await batch.commit();
+            alert(`SUCCESS: ${count} other admin sessions have been scheduled for termination.`);
+        } else {
+            alert('No other active admin sessions detected.');
+        }
+    } catch (e) {
+        alert('ERR: ' + e.message);
+    }
+}
+
 function logout() {
     localStorage.removeItem('bv_user');
     window.location.href = 'index.html';
