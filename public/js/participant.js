@@ -159,6 +159,18 @@ function renderCatalog() {
 
 // 3. Listen for Order Queue (My Orders)
 firestore.collection('orders').orderBy('timestamp', 'asc').onSnapshot(snapshot => {
+    // Check for status changes to show toasts
+    snapshot.docChanges().forEach(change => {
+        if (change.type === 'modified') {
+            const order = change.doc.data();
+            if (order.username === user.username) {
+                if (order.status === 'Approved') showToast('success', 'Order Approved', `Admin approved ${order.quantity}x ${order.componentName}`);
+                else if (order.status === 'Rejected') showToast('error', 'Order Rejected', `Admin rejected ${order.quantity}x ${order.componentName}`);
+                else if (order.status === 'Given') showToast('info', 'Items Received', `You received ${order.quantity}x ${order.componentName}`);
+            }
+        }
+    });
+
     const list = document.getElementById('my-orders-list');
     const heldList = document.getElementById('held-components-list');
     list.innerHTML = '';
@@ -196,12 +208,17 @@ firestore.collection('orders').orderBy('timestamp', 'asc').onSnapshot(snapshot =
                 <td class="px-2 py-6">
                     <span class="inline-flex items-center px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border shadow-sm status-${order.status}">${order.status}</span>
                 </td>
-                <td class="px-2 py-6 text-right">
-                    ${order.status === 'Pending' ? (() => {
-                const idx = allPending.findIndex(o => o.id === doc.id);
-                const pos = idx + 1;
-                return `<div class="w-10 h-10 rounded-2xl bg-bvRed text-white flex items-center justify-center font-black text-sm shadow-xl shadow-red-100 ml-auto italic transition-transform group-hover:scale-110">${pos}</div>`;
-            })() : '-'}
+                <td class="px-2 py-6">
+                    <div class="flex items-center justify-end gap-3">
+                        ${order.status === 'Pending' ? (() => {
+                    const idx = allPending.findIndex(o => o.id === doc.id);
+                    const pos = idx + 1;
+                    return `
+                            <button onclick="cancelOrder('${doc.id}', '${order.componentId}', ${order.quantity}, ${order.totalCost})" class="text-[10px] font-bold text-slate-400 hover:text-red-500 uppercase tracking-widest bg-slate-100 hover:bg-red-50 px-3 py-1.5 rounded-xl transition-all">Cancel</button>
+                            <div class="w-10 h-10 rounded-2xl bg-bvRed text-white flex items-center justify-center font-black text-sm shadow-xl shadow-red-100 italic transition-transform group-hover:scale-110">${pos}</div>
+                        `;
+                })() : '-'}
+                    </div>
                 </td>
             </tr>
         `;
@@ -231,6 +248,37 @@ firestore.collection('orders').orderBy('timestamp', 'asc').onSnapshot(snapshot =
 
     document.getElementById('stat-active-reqs').textContent = activeReqs;
     // document.getElementById('stat-held-items').textContent = heldItems;
+});
+
+// 4. Listen for Leaderboard
+firestore.collection('users').where('role', '==', 'participant').onSnapshot(snapshot => {
+    const list = document.getElementById('participant-leaderboard-list');
+    if (!list) return;
+    list.innerHTML = '';
+    
+    let users = snapshot.docs.map(doc => doc.data());
+    // Sort by points descending
+    users.sort((a, b) => (b.points || 0) - (a.points || 0));
+    
+    users.forEach((team, index) => {
+        const row = `
+            <tr class="hover:bg-slate-50 transition-colors group \${team.username === user.username ? 'bg-blue-50/30' : ''}">
+                <td class="px-2 py-6 text-center">
+                    <div class="w-10 h-10 mx-auto rounded-2xl \${index === 0 ? 'bg-yellow-400 text-yellow-900 shadow-lg shadow-yellow-200' : index === 1 ? 'bg-slate-300 text-slate-800 shadow-lg shadow-slate-200' : index === 2 ? 'bg-amber-600 text-white shadow-lg shadow-amber-200' : 'bg-slate-100 text-slate-500'} flex items-center justify-center font-black text-sm transition-transform group-hover:scale-110">
+                        \${index + 1}
+                    </div>
+                </td>
+                <td class="px-2 py-6">
+                    <p class="font-black text-slate-800 text-lg uppercase tracking-tight italic">\${team.username} \${team.username === user.username ? '<span class="text-[10px] text-bvBlue ml-2 not-italic">(YOU)</span>' : ''}</p>
+                </td>
+                <td class="px-2 py-6 text-right">
+                    <span class="font-black text-bvBlue text-xl italic">\${team.points}</span>
+                    <span class="text-[10px] text-slate-400 not-italic uppercase ml-0.5">pts</span>
+                </td>
+            </tr>
+        `;
+        list.insertAdjacentHTML('beforeend', row);
+    });
 });
 
 // ----------------------------------------------------------------------------
@@ -418,3 +466,87 @@ document.getElementById('modal-submit').onclick = async () => {
 };
 
 window.openCartModal = openCartModal;
+
+async function cancelOrder(orderId, componentId, quantity, totalCost) {
+    if (!confirm('Are you sure you want to cancel this request?')) return;
+    
+    try {
+        await firestore.runTransaction(async (transaction) => {
+            const orderRef = firestore.collection('orders').doc(orderId);
+            const orderDoc = await transaction.get(orderRef);
+            
+            if (!orderDoc.exists || orderDoc.data().status !== 'Pending') {
+                throw new Error('Order is no longer pending or does not exist.');
+            }
+            
+            const userRef = firestore.collection('users').doc(user.username);
+            const userDoc = await transaction.get(userRef);
+            
+            const compRef = firestore.collection('components').doc(componentId);
+            const compDoc = await transaction.get(compRef);
+            
+            if (userDoc.exists && compDoc.exists) {
+                const userData = userDoc.data();
+                const compData = compDoc.data();
+                
+                transaction.update(userRef, { points: Number(userData.points) + Number(totalCost) });
+                transaction.update(compRef, { availableQuantity: Number(compData.availableQuantity) + Number(quantity) });
+                transaction.update(orderRef, { status: 'Cancelled' });
+                
+                const transRef = firestore.collection('transactions').doc();
+                transaction.set(transRef, {
+                    username: user.username,
+                    type: 'credit',
+                    amount: totalCost,
+                    reason: \`Refund: Cancelled order for \${quantity}x \${compData.name}\`,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            }
+        });
+    } catch (e) {
+        alert('Error cancelling order: ' + e.message);
+    }
+}
+
+function showToast(type, title, message) {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+    
+    let bgColor = 'bg-white';
+    let icon = '';
+    let textColor = 'text-slate-800';
+    
+    if (type === 'success') {
+        icon = '<span class="text-green-500">✅</span>';
+        textColor = 'text-green-800';
+    } else if (type === 'error') {
+        icon = '<span class="text-red-500">❌</span>';
+        textColor = 'text-red-800';
+    } else if (type === 'info') {
+        icon = '<span class="text-bvBlue">ℹ️</span>';
+    }
+    
+    const toast = document.createElement('div');
+    toast.className = `flex items-center gap-3 \${bgColor} p-4 rounded-2xl shadow-xl border border-slate-100 transform transition-all duration-300 translate-y-10 opacity-0 pointer-events-auto max-w-sm`;
+    toast.innerHTML = `
+        <div class="text-xl">\${icon}</div>
+        <div>
+            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">\${title}</p>
+            <p class="text-sm font-bold \${textColor} leading-tight">\${message}</p>
+        </div>
+    `;
+    
+    container.appendChild(toast);
+    
+    // Animate in
+    requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-10', 'opacity-0');
+    });
+    
+    // Remove after 5 seconds
+    setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-x-10');
+        setTimeout(() => toast.remove(), 300);
+    }, 5000);
+}
+

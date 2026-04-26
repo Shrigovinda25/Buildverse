@@ -119,27 +119,45 @@ function getComponentImageUrl(item) {
 // ----------------------------------------------------------------------------
 // Real-time Listeners (Pill Style)
 // ----------------------------------------------------------------------------
-
 // 1. Listen for Components
-firestore.collection('components').onSnapshot(snapshot => {
+let allComponentsData = [];
+let showLowStockOnly = false;
+
+function toggleLowStockFilter() {
+    showLowStockOnly = !showLowStockOnly;
+    const btn = document.getElementById('low-stock-btn');
+    if (showLowStockOnly) {
+        btn.classList.add('bg-red-50', 'text-red-600', 'border-red-200');
+        btn.classList.remove('btn-ghost');
+    } else {
+        btn.classList.remove('bg-red-50', 'text-red-600', 'border-red-200');
+        btn.classList.add('btn-ghost');
+    }
+    renderInventoryList();
+}
+
+function renderInventoryList() {
     const list = document.getElementById('inventory-list');
     let totalStock = 0;
     list.innerHTML = '';
 
-    let items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    items = sortComponents(items);
+    let items = showLowStockOnly 
+        ? allComponentsData.filter(i => Number(i.availableQuantity) < 5) 
+        : allComponentsData;
 
     items.forEach((item) => {
         totalStock += item.availableQuantity;
+        const isLowStock = Number(item.availableQuantity) < 5;
 
         const row = `
-            <tr class="hover:bg-slate-50 transition-colors group">
+            <tr class="hover:bg-slate-50 transition-colors group ${isLowStock ? 'bg-red-50/30' : ''}">
                 <td class="px-2 py-6">
                     <div class="flex items-center gap-4">
                         <img src="${getComponentImageUrl(item)}" onerror="this.outerHTML='<div class=\\'w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-[8px] text-slate-300 font-black\\'>N/A</div>'" class="w-12 h-12 object-contain rounded-xl border border-slate-100 bg-white shadow-sm mix-blend-multiply" alt="${item.name}">
                         <div class="flex flex-col">
                             <span class="text-[9px] font-black text-bvBlue uppercase tracking-widest mb-1 opacity-60">${item.category || 'RESOURCES'}</span>
                             <p class="font-black text-slate-800 text-lg uppercase tracking-tight leading-none">${item.name}</p>
+                            ${isLowStock ? '<span class="text-[8px] font-bold text-red-500 uppercase tracking-widest mt-1 animate-pulse">Low Stock</span>' : ''}
                         </div>
                     </div>
                 </td>
@@ -149,9 +167,9 @@ firestore.collection('components').onSnapshot(snapshot => {
                 <td class="px-2 py-6">
                     <div class="flex items-center gap-4">
                         <div class="h-1 w-24 bg-slate-100 rounded-full overflow-hidden">
-                            <div class="h-full bg-bvRed transition-all duration-700" style="width: ${(item.availableQuantity / item.totalQuantity) * 100}%"></div>
+                            <div class="h-full ${isLowStock ? 'bg-red-500' : 'bg-bvRed'} transition-all duration-700" style="width: ${(item.availableQuantity / item.totalQuantity) * 100}%"></div>
                         </div>
-                        <span class="text-[10px] font-black text-slate-500 uppercase">${item.availableQuantity} / ${item.totalQuantity}</span>
+                        <span class="text-[10px] font-black ${isLowStock ? 'text-red-500' : 'text-slate-500'} uppercase">${item.availableQuantity} / ${item.totalQuantity}</span>
                     </div>
                 </td>
                 <td class="px-2 py-6 text-right space-x-1">
@@ -166,9 +184,15 @@ firestore.collection('components').onSnapshot(snapshot => {
         `;
         list.insertAdjacentHTML('beforeend', row);
     });
+}
+
+firestore.collection('components').onSnapshot(snapshot => {
+    let items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    allComponentsData = sortComponents(items);
+    renderInventoryList();
+});
 
     // document.getElementById('stat-total-items').textContent = totalStock;
-});
 
 // 2. Listen for Orders (Queue) (Grouped by Team)
 let globalOrders = [];
@@ -387,6 +411,9 @@ firestore.collection('users').where('role', '==', 'participant').onSnapshot(snap
                     </button>
                     <button class="p-2 hover:bg-slate-100 rounded-xl text-slate-400 hover:text-orange-500 transition-all" title="Force Logout" onclick="forceLogout('${team.username}')">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                    </button>
+                    <button class="p-2 hover:bg-slate-100 rounded-xl text-slate-400 hover:text-purple-500 transition-all" title="Return All Components" onclick="returnAllComponents('${team.username}')">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
                     </button>
                     <button class="p-2 hover:bg-red-50 rounded-xl text-slate-400 hover:text-red-600 transition-all" title="Delete Team" onclick="deleteTeam('${team.username}')">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
@@ -1132,4 +1159,71 @@ async function forceLogoutOtherAdmins() {
 function logout() {
     localStorage.removeItem('bv_user');
     window.location.href = 'index.html';
+}
+
+async function returnAllComponents(username) {
+    if (!confirm(`Are you sure you want to return ALL components held by ${username}?`)) return;
+
+    try {
+        const ordersSnapshot = await firestore.collection('orders')
+            .where('username', '==', username)
+            .where('status', '==', 'Given')
+            .get();
+
+        if (ordersSnapshot.empty) {
+            alert('This team does not currently hold any components.');
+            return;
+        }
+
+        await firestore.runTransaction(async (t) => {
+            const userRef = firestore.collection('users').doc(username);
+            const userDoc = await t.get(userRef);
+            if (!userDoc.exists) throw new Error('User not found');
+            
+            let totalRefund = 0;
+            const updates = [];
+
+            // Read all component data first
+            for (const doc of ordersSnapshot.docs) {
+                const orderData = doc.data();
+                const compRef = firestore.collection('components').doc(orderData.componentId);
+                const compDoc = await t.get(compRef);
+                
+                if (compDoc.exists) {
+                    updates.push({
+                        orderRef: doc.ref,
+                        orderData: orderData,
+                        compRef: compRef,
+                        compData: compDoc.data()
+                    });
+                }
+            }
+
+            // Apply updates
+            for (const update of updates) {
+                const { orderRef, orderData, compRef, compData } = update;
+                const refund = (orderData.pricePerUnit * orderData.quantity) * 0.5;
+                totalRefund += refund;
+
+                t.update(compRef, { availableQuantity: Number(compData.availableQuantity || 0) + Number(orderData.quantity) });
+                t.update(orderRef, { status: 'Returned' });
+                
+                const transRef = firestore.collection('transactions').doc();
+                t.set(transRef, {
+                    username: username,
+                    type: 'credit',
+                    amount: refund,
+                    reason: `Bulk Refund: ${orderData.quantity}x ${orderData.componentName} returned`,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            }
+
+            const userData = userDoc.data();
+            t.update(userRef, { points: Number(userData.points || 0) + totalRefund });
+        });
+
+        alert(`Successfully returned all components for ${username}.`);
+    } catch (e) {
+        alert('Error processing bulk return: ' + e.message);
+    }
 }

@@ -970,6 +970,9 @@
             <button class="sidebar-btn" data-tab="held" onclick="switchTab('held')">
                 <span class="sb-icon">🎒</span> Possessions
             </button>
+            <button class="sidebar-btn" data-tab="leaderboard" onclick="switchTab('leaderboard')">
+                <span class="sb-icon">🏆</span> Leaderboard
+            </button>
 
             <div class="sidebar-divider"></div>
 
@@ -1090,6 +1093,32 @@
                 </div>
             </section>
 
+            <!-- ── LEADERBOARD TAB ── -->
+            <section id="leaderboard-tab" class="hidden fade-in">
+                <div class="section-card">
+                    <div class="section-card-header">
+                        <div>
+                            <p class="section-title">Leaderboard</p>
+                            <p class="section-sub">Real-time point standings</p>
+                        </div>
+                    </div>
+                    <div class="table-scroll">
+                        <table class="bv-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 80px; text-align: center;">Rank</th>
+                                    <th>Entity Identity</th>
+                                    <th style="text-align:right;">Remaining PTS</th>
+                                </tr>
+                            </thead>
+                            <tbody id="participant-leaderboard-list">
+                                <!-- Loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
         </main>
     </div>
     <!-- Floating Cart Button -->
@@ -1115,6 +1144,9 @@
             </div>
         </div>
     </div>
+
+    <!-- TOAST CONTAINER -->
+    <div id="toast-container" class="fixed bottom-6 right-6 z-[2000] flex flex-col gap-3 pointer-events-none"></div>
 
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
