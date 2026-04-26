@@ -1,0 +1,31 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "server.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    { "src": "/admin.html", "dest": "/server.js" },
+    { "src": "/participant.html", "dest": "/server.js" },
+    { "src": "/seeder.html", "dest": "/server.js" },
+    { "src": "/index.html", "dest": "/server.js" },
+    { "src": "/js/(.*)", "dest": "/server.js" },
+    { "src": "/css/(.*)", "dest": "/server.js" },
+    { "src": "/assets/(.*)", "dest": "/server.js" },
+    { "src": "/auth/(.*)", "dest": "/server.js" },
+    { "src": "/components(.*)", "dest": "/server.js" },
+    { "src": "/orders(.*)", "dest": "/server.js" },
+    { "src": "/teams(.*)", "dest": "/server.js" },
+    { "src": "/(.*)", "dest": "/server.js" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+      ]
+    }
+  ]
+}
