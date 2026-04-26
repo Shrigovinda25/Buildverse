@@ -4,9 +4,13 @@
   "trailingSlash": false,
   "rewrites": [
     { "source": "/", "destination": "/public/index.html" },
+    { "source": "/index.html", "destination": "/public/index.html" },
     { "source": "/admin", "destination": "/public/admin.html" },
+    { "source": "/admin.html", "destination": "/public/admin.html" },
     { "source": "/participant", "destination": "/public/participant.html" },
+    { "source": "/participant.html", "destination": "/public/participant.html" },
     { "source": "/seeder", "destination": "/public/seeder.html" },
+    { "source": "/seeder.html", "destination": "/public/seeder.html" },
     { "source": "/css/(.*)", "destination": "/public/css/$1" },
     { "source": "/js/(.*)", "destination": "/public/js/$1" },
     { "source": "/assets/(.*)", "destination": "/public/assets/$1" }
