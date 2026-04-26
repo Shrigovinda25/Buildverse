@@ -415,6 +415,9 @@ firestore.collection('users').where('role', '==', 'participant').onSnapshot(snap
                     <button class="p-2 hover:bg-slate-100 rounded-xl text-slate-400 hover:text-purple-500 transition-all" title="Return All Components" onclick="returnAllComponents('${team.username}')">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
                     </button>
+                    <button class="p-2 hover:bg-emerald-50 rounded-xl text-slate-400 hover:text-emerald-600 transition-all" title="Download Team Report" onclick="downloadTeamCSV('${team.username}')">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    </button>
                     <button class="p-2 hover:bg-red-50 rounded-xl text-slate-400 hover:text-red-600 transition-all" title="Delete Team" onclick="deleteTeam('${team.username}')">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                     </button>
@@ -485,6 +488,47 @@ async function exportDataCSV() {
         document.body.removeChild(link);
     } catch (e) {
         alert("Error generating CSV: " + e.message);
+    }
+}
+
+async function downloadTeamCSV(username) {
+    try {
+        // Fetch team user data
+        const userDoc = await firestore.collection('users').doc(username).get();
+        const userData = userDoc.data();
+
+        // Fetch all orders for this team
+        const ordersSnap = await firestore.collection('orders').where('username', '==', username).get();
+
+        let csvRows = [];
+        csvRows.push(`BuildVerse Component Report - Team: ${username}`);
+        csvRows.push(`Generated: ${new Date().toLocaleString()}`);
+        csvRows.push(`Remaining Points: ${userData.points}`);
+        csvRows.push(`Account Status: ${userData.orderingEnabled ? 'Active' : 'Locked'}`);
+        csvRows.push('');
+        csvRows.push('Component Name,Category,Quantity,Unit Price (pts),Total Cost (pts),Status,Order Date');
+
+        ordersSnap.forEach(doc => {
+            const o = doc.data();
+            const date = o.timestamp ? o.timestamp.toDate().toLocaleDateString() : 'N/A';
+            const totalCost = (o.pricePerUnit || 0) * (o.quantity || 0);
+            csvRows.push(`"${o.componentName || 'N/A'}","${o.category || 'N/A'}",${o.quantity || 0},${o.pricePerUnit || 0},${totalCost},${o.status || 'N/A'},"${date}"`);
+        });
+
+        if (ordersSnap.empty) {
+            csvRows.push('No orders found for this team.');
+        }
+
+        const csvContent = "data:text/csv;charset=utf-8," + csvRows.join("\n");
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `BuildVerse_${username}_Report_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    } catch (e) {
+        alert("Error generating team report: " + e.message);
     }
 }
 
