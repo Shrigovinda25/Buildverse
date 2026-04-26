@@ -262,17 +262,17 @@ firestore.collection('users').where('role', '==', 'participant').onSnapshot(snap
     
     users.forEach((team, index) => {
         const row = `
-            <tr class="hover:bg-slate-50 transition-colors group \${team.username === user.username ? 'bg-blue-50/30' : ''}">
+            <tr class="hover:bg-slate-50 transition-colors group ${team.username === user.username ? 'bg-blue-50/30' : ''}">
                 <td class="px-2 py-6 text-center">
-                    <div class="w-10 h-10 mx-auto rounded-2xl \${index === 0 ? 'bg-yellow-400 text-yellow-900 shadow-lg shadow-yellow-200' : index === 1 ? 'bg-slate-300 text-slate-800 shadow-lg shadow-slate-200' : index === 2 ? 'bg-amber-600 text-white shadow-lg shadow-amber-200' : 'bg-slate-100 text-slate-500'} flex items-center justify-center font-black text-sm transition-transform group-hover:scale-110">
-                        \${index + 1}
+                    <div class="w-10 h-10 mx-auto rounded-2xl ${index === 0 ? 'bg-yellow-400 text-yellow-900 shadow-lg shadow-yellow-200' : index === 1 ? 'bg-slate-300 text-slate-800 shadow-lg shadow-slate-200' : index === 2 ? 'bg-amber-600 text-white shadow-lg shadow-amber-200' : 'bg-slate-100 text-slate-500'} flex items-center justify-center font-black text-sm transition-transform group-hover:scale-110">
+                        ${index + 1}
                     </div>
                 </td>
                 <td class="px-2 py-6">
-                    <p class="font-black text-slate-800 text-lg uppercase tracking-tight italic">\${team.username} \${team.username === user.username ? '<span class="text-[10px] text-bvBlue ml-2 not-italic">(YOU)</span>' : ''}</p>
+                    <p class="font-black text-slate-800 text-lg uppercase tracking-tight italic">${team.username} ${team.username === user.username ? '<span class="text-[10px] text-bvBlue ml-2 not-italic">(YOU)</span>' : ''}</p>
                 </td>
                 <td class="px-2 py-6 text-right">
-                    <span class="font-black text-bvBlue text-xl italic">\${team.points}</span>
+                    <span class="font-black text-bvBlue text-xl italic">${team.points}</span>
                     <span class="text-[10px] text-slate-400 not-italic uppercase ml-0.5">pts</span>
                 </td>
             </tr>
@@ -498,7 +498,7 @@ async function cancelOrder(orderId, componentId, quantity, totalCost) {
                     username: user.username,
                     type: 'credit',
                     amount: totalCost,
-                    reason: \`Refund: Cancelled order for \${quantity}x \${compData.name}\`,
+                    reason: `Refund: Cancelled order for ${quantity}x ${compData.name}`,
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
             }
@@ -527,12 +527,12 @@ function showToast(type, title, message) {
     }
     
     const toast = document.createElement('div');
-    toast.className = `flex items-center gap-3 \${bgColor} p-4 rounded-2xl shadow-xl border border-slate-100 transform transition-all duration-300 translate-y-10 opacity-0 pointer-events-auto max-w-sm`;
+    toast.className = `flex items-center gap-3 ${bgColor} p-4 rounded-2xl shadow-xl border border-slate-100 transform transition-all duration-300 translate-y-10 opacity-0 pointer-events-auto max-w-sm`;
     toast.innerHTML = `
-        <div class="text-xl">\${icon}</div>
+        <div class="text-xl">${icon}</div>
         <div>
-            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">\${title}</p>
-            <p class="text-sm font-bold \${textColor} leading-tight">\${message}</p>
+            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">${title}</p>
+            <p class="text-sm font-bold ${textColor} leading-tight">${message}</p>
         </div>
     `;
     
