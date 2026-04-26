@@ -2,6 +2,12 @@ const user = checkAuth('admin');
 if (user) {
     const sessionId = localStorage.getItem('bv_sessionId');
     startSessionHeartbeat(user.username, sessionId);
+    
+    // Display admin name
+    const adminNameDisplay = document.getElementById('admin-name-display');
+    if (adminNameDisplay) {
+        adminNameDisplay.textContent = user.username;
+    }
 }
 // Basic auth check passed
 
