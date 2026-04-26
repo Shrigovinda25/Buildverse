@@ -506,13 +506,13 @@ async function downloadTeamCSV(username) {
         csvRows.push(`Remaining Points: ${userData.points}`);
         csvRows.push(`Account Status: ${userData.orderingEnabled ? 'Active' : 'Locked'}`);
         csvRows.push('');
-        csvRows.push('Component Name,Category,Quantity,Unit Price (pts),Total Cost (pts),Status,Order Date');
+        csvRows.push('Component Name,Quantity,Unit Price (pts),Total Cost (pts),Status,Order Date');
 
         ordersSnap.forEach(doc => {
             const o = doc.data();
             const date = o.timestamp ? o.timestamp.toDate().toLocaleDateString() : 'N/A';
             const totalCost = (o.pricePerUnit || 0) * (o.quantity || 0);
-            csvRows.push(`"${o.componentName || 'N/A'}","${o.category || 'N/A'}",${o.quantity || 0},${o.pricePerUnit || 0},${totalCost},${o.status || 'N/A'},"${date}"`);
+            csvRows.push(`"${o.componentName || 'N/A'}",${o.quantity || 0},${o.pricePerUnit || 0},${totalCost},${o.status || 'N/A'},"${date}"`);
         });
 
         if (ordersSnap.empty) {
