@@ -57,7 +57,7 @@ function sortComponents(array) {
 }
 
 const PREDEFINED_COMPONENTS = [
-    { category: "Controller", name: "ESP32 Controller + USB Cable", totalQuantity: 25, price: 180, imageUrl: "assets/components/ESP32%20Controller.jpg" },
+    { category: "Controller", name: "ESP32 Controller + USB Cable", totalQuantity: 25, price: 180, imageUrl: "/assets/components/ESP32%20Controller.jpg" },
     { category: "Sensor", name: "Ultrasonic Sensor", totalQuantity: 30, price: 30 },
     { category: "Sensor", name: "IR Sensor", totalQuantity: 40, price: 20 },
     { category: "Sensor", name: "LDR Sensor", totalQuantity: 20, price: 15 },
@@ -113,7 +113,7 @@ function getComponentImageUrl(item) {
                               .replace(/\//g, ' ')
                               .replace(/&/g, '%26')
                               .replace(/ /g, '%20');
-    return `assets/components/${sanitizedName}.jpg`;
+    return `/assets/components/${sanitizedName}.jpg`;
 }
 
 // ----------------------------------------------------------------------------
@@ -1033,15 +1033,7 @@ async function forceLogout(username) {
     } catch (e) { alert(e.message); }
 }
 
-function getComponentImageUrl(item) {
-    if (item.imageUrl) return item.imageUrl;
-    let name = item.name || '';
-    const sanitizedName = name.replace(/\+/g, 'Plus')
-                              .replace(/\//g, ' ')
-                              .replace(/&/g, '%26')
-                              .replace(/ /g, '%20');
-    return `assets/components/${sanitizedName}.jpg`;
-}
+
 
 async function seedResources() {
     if (!confirm('This will synchronize the inventory with the predefined resource matrix. Existing stock for these items will be reset. Continue?')) return;
