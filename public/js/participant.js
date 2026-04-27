@@ -36,6 +36,12 @@ function sortComponents(array) {
 function getComponentImageUrl(item) {
     if (item.imageUrl) return item.imageUrl;
     let name = item.name || '';
+
+    // Use the specific ESP32 default image for all ESP32 variants
+    if (name.toUpperCase().includes('ESP32')) {
+        return 'assets/components/ESP32_Default.jpg';
+    }
+
     // Support names with special characters by mapping to sanitized filenames
     const sanitizedName = name.replace(/\+/g, 'Plus')
                               .replace(/½/g, 'Half ')
