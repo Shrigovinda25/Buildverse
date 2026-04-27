@@ -109,9 +109,9 @@ function getComponentImageUrl(item) {
     if (item.imageUrl) return item.imageUrl;
     let name = item.name || '';
     
-    // Use the specific ESP32 default image for all ESP32 variants
+    // Use the specific ESP32 image file
     if (name.toUpperCase().includes('ESP32')) {
-        return 'assets/components/ESP32_Default.jpg';
+        return 'assets/components/ESP32 Controller + USB Cable.jpg';
     }
 
     // Support names with special characters by mapping to sanitized filenames
