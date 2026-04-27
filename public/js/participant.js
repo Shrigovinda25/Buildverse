@@ -41,7 +41,7 @@ function getComponentImageUrl(item) {
                               .replace(/\//g, ' ')
                               .replace(/&/g, '%26')
                               .replace(/ /g, '%20');
-    return `/assets/components/${sanitizedName}.jpg`;
+    return `assets/components/${sanitizedName}.jpg`;
 }
 
 // ----------------------------------------------------------------------------
