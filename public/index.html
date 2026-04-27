@@ -1366,8 +1366,13 @@
                 grid.innerHTML = '';
                 snapshot.forEach(doc => {
                     const comp = doc.data();
-                    // IMAGE LOGIC: Match local assets directory, sanitize slashes
-                    const sanitizedName = comp.name.replace(/\//g, ' ');
+                    // IMAGE LOGIC: Match local assets directory, sanitize for URL safety
+                    const sanitizedName = comp.name
+                        .replace(/\+/g, 'Plus')
+                        .replace(/½/g, 'Half ')
+                        .replace(/\//g, ' ')
+                        .replace(/&/g, '%26')
+                        .replace(/ /g, '%20');
                     const imgPath = `assets/components/${sanitizedName}.jpg`;
                     const card = `
                     <div class="matrix-card">
