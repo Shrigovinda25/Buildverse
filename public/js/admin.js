@@ -108,8 +108,9 @@ const PREDEFINED_COMPONENTS = [
 function getComponentImageUrl(item) {
     if (item.imageUrl) return item.imageUrl;
     let name = item.name || '';
-    // Support legacy names with '+' by mapping to the 'Plus' filenames
+    // Support names with special characters by mapping to sanitized filenames
     const sanitizedName = name.replace(/\+/g, 'Plus')
+                              .replace(/½/g, 'Half ')
                               .replace(/\//g, ' ')
                               .replace(/&/g, '%26')
                               .replace(/ /g, '%20');
