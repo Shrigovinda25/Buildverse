@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BUILDVERSE | Participant Portal</title>
+    <link rel="icon" type="image/png" href="assets/logo.png">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bvRed: '#C8102E', bvYellow: '#FFD700', bvBlue: '#0047AB',
+                        sidebar: '#0f0f13', sidebarHover: '#1a1a24'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: #f0f2f8;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── TOPBAR ── */
+        .admin-topbar {
+            background: #fff;
+            height: 90px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2.5rem;
+            border-bottom: 2px solid #f0f0f0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 200;
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 1.8rem;
+        }
+
+        .topbar-left img {
+            height: 50px;
+            object-fit: contain;
+        }
+
+        .topbar-sep {
+            width: 2px;
+            height: 40px;
+            background: #eee;
+        }
+
+        .topbar-brand {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.15rem;
+            font-weight: 900;
+            letter-spacing: -0.02em;
+            color: #111;
+        }
+
+        .topbar-brand span {
+            color: #C8102E;
+        }
+
+        .topbar-badge {
+            background: #0047AB;
+            color: #fff;
+            font-size: 0.55rem;
+            font-weight: 800;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            padding: 0.25rem 0.7rem;
+            border-radius: 50px;
+        }
+
+        /* ── LAYOUT ── */
+        .admin-layout {
+            display: flex;
+            flex: 1;
+        }
+
+        /* ── SIDEBAR ── */
+        .sidebar {
+            width: 260px;
+            min-height: calc(100vh - 90px);
+            background: #0f0f13;
+            display: flex;
+            flex-direction: column;
+            padding: 1.2rem;
+            gap: 0.3rem;
+            flex-shrink: 0;
+        }
+
+        .sidebar-brand {
+            padding: 1.5rem 1rem 2rem;
+            text-align: center;
+            border-bottom: 1px solid #1a1a24;
+            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .sidebar-brand img {
+            width: 110px;
+            height: 110px;
+            object-fit: contain;
+            background: #fff;
+            border-radius: 50%;
+            padding: 5px;
+            filter: drop-shadow(0 0 15px rgba(200, 16, 46, 0.2));
+            margin-left: 5px;
+            /* Reduced from 15px as requested */
+        }
+
+        .brand-title {
+            color: #fff;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 950;
+            letter-spacing: -0.02em;
+            margin-top: 1.2rem;
+            text-transform: uppercase;
+        }
+
+        .brand-title span {
+            color: #C8102E;
+        }
+
+        .sidebar-section-label {
+            font-size: 0.58rem;
+            font-weight: 800;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: #444;
+            padding: 0.6rem 0.8rem 0.4rem;
+            margin-top: 0.8rem;
+        }
+
+        .sidebar-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            padding: 0.85rem 1rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #888;
+            border: none;
+            background: transparent;
+            text-align: left;
+            width: 100%;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .sidebar-btn:hover {
+            background: #1a1a24;
+            color: #ddd;
+        }
+
+        .sidebar-btn.active {
+            background: #0047AB;
+            color: #fff;
+            box-shadow: 0 6px 20px rgba(0, 71, 171, 0.35);
+        }
+
+        .sidebar-btn.active .sb-icon {
+            color: #fff;
+        }
+
+        .sb-icon {
+            font-size: 1.1rem;
+            width: 22px;
+            text-align: center;
+        }
+
+        .sidebar-divider {
+            height: 1px;
+            background: #222;
+            margin: 0.8rem 0;
+        }
+
+        .sidebar-logout {
+            margin-top: auto;
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            padding: 0.85rem 1rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #666;
+            border: none;
+            background: transparent;
+            text-align: left;
+            width: 100%;
+            transition: all 0.2s;
+        }
+
+        .sidebar-logout:hover {
+            background: rgba(200, 16, 46, 0.15);
+            color: #C8102E;
+        }
+
+        /* ── MAIN CONTENT ── */
+        .admin-main {
+            flex: 1;
+            overflow-x: hidden;
+            padding: 2rem 2.5rem;
+        }
+
+        /* ── PAGE HEADER ── */
+        .page-header {
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-header h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            color: #111;
+            letter-spacing: -0.03em;
+            line-height: 1;
+        }
+
+        .page-header h1 span {
+            color: #0047AB;
+        }
+
+        .page-header p {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #999;
+            margin-top: 0.3rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* ── SPONSOR MARQUEE ── */
+        .sponsor-marquee-container {
+            background: #0f0f13;
+            color: #fff;
+            padding: 0.6rem 0;
+            overflow: hidden;
+            white-space: nowrap;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-family: 'Outfit', sans-serif;
+            position: relative;
+            z-index: 150;
+        }
+
+        .marquee-content {
+            display: inline-block;
+            animation: marquee-scroll 60s linear infinite;
+        }
+
+        .marquee-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-right: 5rem;
+        }
+
+        .marquee-label {
+            font-size: 0.55rem;
+            font-weight: 800;
+            color: #FFD700; /* Golden Color */
+            text-transform: uppercase;
+            letter-spacing: 0.25em;
+        }
+
+        .marquee-name {
+            font-size: 0.85rem;
+            font-weight: 900;
+            letter-spacing: 0.05em;
+        }
+
+        .marquee-desc {
+            font-size: 0.75rem;
+            color: #777;
+            font-weight: 500;
+        }
+
+        @keyframes marquee-scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        /* ── BANNER ── */
+        .status-banner {
+            background: linear-gradient(135deg, #fef2f2, #fee2e2);
+            border: 1px solid #fecaca;
+            color: #b91c1c;
+            padding: 1.2rem 2rem;
+            border-radius: 16px;
+            font-size: 0.85rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 15px rgba(220, 38, 38, 0.1);
+        }
+
+        /* ── STAT CARDS ── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            border-radius: 20px;
+            padding: 1.5rem 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            right: -20px;
+            top: -20px;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .stat-card-blue {
+            background: linear-gradient(135deg, #0047AB, #003380);
+            color: #fff;
+            box-shadow: 0 8px 28px rgba(0, 71, 171, 0.35);
+        }
+
+        .stat-card-red {
+            background: linear-gradient(135deg, #C8102E, #9b0c22);
+            color: #fff;
+            box-shadow: 0 8px 28px rgba(200, 16, 46, 0.35);
+        }
+
+        .stat-icon {
+            font-size: 2rem;
+        }
+
+        .stat-label {
+            font-size: 0.65rem;
+            font-weight: 800;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            opacity: 0.8;
+            margin-bottom: 0.2rem;
+        }
+
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        /* ── SECTION CARD ── */
+        .section-card {
+            background: #fff;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            border: 1px solid #f0f0f0;
+        }
+
+        .section-card-header {
+            padding: 1.4rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .section-title {
+            font-size: 1rem;
+            font-weight: 900;
+            color: #111;
+        }
+
+        .section-sub {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-top: 0.15rem;
+        }
+
+        /* ── COLORFUL BUTTONS ── */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.6rem 1.3rem;
+            border-radius: 50px;
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn-primary {
+            background: #C8102E;
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(200, 16, 46, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: #a80d25;
+        }
+
+        .btn-blue {
+            background: #0047AB;
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(0, 71, 171, 0.3);
+        }
+
+        .btn-blue:hover {
+            background: #003a8c;
+        }
+
+        .btn-yellow {
+            background: #FFD700;
+            color: #111;
+            box-shadow: 0 4px 14px rgba(255, 215, 0, 0.35);
+        }
+
+        .btn-yellow:hover {
+            background: #e6c200;
+        }
+
+        .btn-ghost {
+            background: #f5f5f5;
+            color: #555;
+            border: 1.5px solid #eee;
+        }
+
+        .btn-ghost:hover {
+            background: #ececec;
+        }
+
+        /* ── TABLE ── */
+        .bv-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .bv-table thead tr {
+            background: #fafafa;
+        }
+
+        .bv-table th {
+            padding: 0.9rem 1.2rem;
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #aaa;
+            border-bottom: 1px solid #f0f0f0;
+            text-align: left;
+        }
+
+        .bv-table th:last-child {
+            text-align: right;
+        }
+
+        .bv-table td {
+            padding: 0.85rem 1.2rem;
+            font-size: 0.82rem;
+            border-bottom: 1px solid #fafafa;
+            color: #333;
+            vertical-align: middle;
+        }
+
+        .bv-table tr:hover td {
+            background: #fafbff;
+        }
+
+        .bv-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* ── STATUS BADGES ── */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.3rem 0.8rem;
+            border-radius: 50px;
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .badge-pending {
+            background: #fff8e1;
+            color: #d97706;
+            border: 1px solid #fde68a;
+        }
+
+        .badge-approved {
+            background: #e0f2fe;
+            color: #0369a1;
+            border: 1px solid #bae6fd;
+        }
+
+        .badge-given {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .badge-returned {
+            background: #f3e8ff;
+            color: #7c3aed;
+            border: 1px solid #ddd6fe;
+        }
+
+        .badge-rejected {
+            background: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+        }
+
+        .badge-cat {
+            background: #f0f4ff;
+            color: #3b4fce;
+            border: 1px solid #c7d2fe;
+        }
+
+        /* ── CATEGORY COLOR STRIP ── */
+        .cat-strip {
+            width: 4px;
+            height: 32px;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+
+        .cat-Controller {
+            background: #0047AB;
+        }
+
+        .cat-Sensor {
+            background: #059669;
+        }
+
+        .cat-Actuator {
+            background: #d97706;
+        }
+
+        .cat-Indicator {
+            background: #db2777;
+        }
+
+        .cat-Display {
+            background: #7c3aed;
+        }
+
+        .cat-Input {
+            background: #0891b2;
+        }
+
+        .cat-Hardware {
+            background: #6b7280;
+        }
+
+        .cat-Power {
+            background: #C8102E;
+        }
+
+        /* ── SECTION TAB FADE ── */
+        section.fade-in {
+            animation: fadeUp 0.35s ease;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ── MODAL ── */
+        #modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 10, 10, 0.55);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        #modal-backdrop:not(.hidden) {
+            display: flex;
+        }
+
+        #modal-container {
+            background: #fff;
+            width: 100%;
+            max-width: 500px;
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.25);
+            animation: popIn 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        @keyframes popIn {
+            from {
+                opacity: 0;
+                transform: scale(0.88) translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        #modal-container .modal-hdr {
+            background: linear-gradient(135deg, #0047AB, #003380);
+            padding: 1.6rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        #modal-title {
+            font-size: 1.1rem;
+            font-weight: 900;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .modal-close-x {
+            background: rgba(255, 255, 255, 0.18);
+            border: none;
+            color: #fff;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close-x:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        #modal-content {
+            padding: 2rem;
+        }
+
+        .modal-ftr {
+            background: #fafafa;
+            padding: 1.4rem 2rem;
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.8rem;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        /* ── SCROLL AREA (tables) ── */
+        .table-scroll {
+            overflow-x: auto;
+        }
+
+        /* CATALOG CARDS OVERRIDE FOR PARTICIPANT.JS COMPATIBILITY */
+        .component-card {
+            background: #fff;
+            border: 1px solid #f0f0f0;
+            border-radius: 20px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+            transition: all 0.2s;
+        }
+
+        .component-card:hover {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* ── MOBILE RESPONSIVE ── */
+        .sidebar {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sidebar-toggle {
+            display: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #1e293b;
+            transition: all 0.2s;
+        }
+
+        .sidebar-toggle:hover {
+            background: #f1f5f9;
+        }
+
+        .sidebar-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 15, 19, 0.4);
+            backdrop-filter: blur(4px);
+            z-index: 900;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar-toggle {
+                display: flex;
+            }
+
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                z-index: 1000;
+                transform: translateX(-100%);
+                height: 100vh;
+                width: 280px;
+                box-shadow: 20px 0 50px rgba(0, 0, 0, 0.1);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .sidebar-overlay.show {
+                display: block;
+                opacity: 1;
+            }
+
+            .admin-topbar {
+                padding: 0 1.5rem;
+                height: 75px;
+            }
+
+            .topbar-sep {
+                height: 30px;
+            }
+
+            .admin-main {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .page-header h1 {
+                font-size: 1.6rem;
+            }
+
+            .section-card-header {
+                padding: 1.2rem 1.5rem;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .stat-value {
+                font-size: 1.8rem;
+            }
+
+            .topbar-brand {
+                font-size: 1rem;
+            }
+
+            .topbar-left {
+                gap: 1rem;
+            }
+
+            .topbar-left img {
+                height: 35px;
+            }
+
+            #welcome-msg {
+                font-size: 0.5rem;
+            }
+        }
+
+        /* ── SPONSOR CONTACT CARD ── */
+        .sponsor-contact-card {
+            background: #1a1a24;
+            border-radius: 16px;
+            padding: 1.2rem;
+            margin: 1.5rem 0.5rem;
+            border: 1px solid #222;
+        }
+
+        .sponsor-contact-card .sponsor-title {
+            font-size: 0.6rem;
+            font-weight: 800;
+            color: #FFD700;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .sponsor-contact-card .sponsor-address {
+            font-size: 0.7rem;
+            color: #888;
+            line-height: 1.4;
+            margin-bottom: 0.8rem;
+        }
+
+        .sponsor-contact-card .sponsor-phone {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        /* ── FLY TO CART ANIMATION ── */
+        .fly-item {
+            position: fixed;
+            z-index: 9999;
+            pointer-events: none;
+            transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+            border-radius: 50%;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            opacity: 1;
+            transform: scale(1);
+        }
+    </style>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+    <!-- TOP BAR -->
+    <header class="admin-topbar">
+        <div class="topbar-left">
+            <button class="sidebar-toggle" id="mobile-toggle">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+            </button>
+            <img src="assets/pleiades logo black.png" alt="Pleiades" onerror="this.style.display='none'">
+            <div class="topbar-sep"></div>
+            <span class="topbar-brand">Build<span>Verse</span></span>
+        </div>
+        <div style="display:flex;align-items:center;gap:1rem;">
+            <span class="topbar-badge" id="welcome-msg">Entity Portal</span>
+        </div>
+    </header>
+
+    <!-- SPONSOR MARQUEE -->
+    <div class="sponsor-marquee-container">
+        <div class="marquee-content">
+            <!-- Set 1 -->
+            <div class="marquee-item">
+                <span class="marquee-label">POWERED BY</span>
+                <span class="marquee-name">CORE ELECTRONICS</span>
+                <span class="marquee-desc">— Industrial-grade components for regional innovators. | 📞 9742986424</span>
+            </div>
+            <div class="marquee-item">
+                <span class="marquee-label">POWERED BY</span>
+                <span class="marquee-name">CORE ELECTRONICS</span>
+                <span class="marquee-desc">— Industrial-grade components for regional innovators. | 📞 9742986424</span>
+            </div>
+            <!-- Set 2 (for seamless loop) -->
+            <div class="marquee-item" aria-hidden="true">
+                <span class="marquee-label">POWERED BY</span>
+                <span class="marquee-name">CORE ELECTRONICS</span>
+                <span class="marquee-desc">— Industrial-grade components for regional innovators. | 📞 9742986424</span>
+            </div>
+            <div class="marquee-item" aria-hidden="true">
+                <span class="marquee-label">POWERED BY</span>
+                <span class="marquee-name">CORE ELECTRONICS</span>
+                <span class="marquee-desc">— Industrial-grade components for regional innovators. | 📞 9742986424</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- SIDEBAR OVERLAY (Mobile) -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <!-- LAYOUT -->
+    <div class="admin-layout">
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <img src="assets/logo.png" alt="BuildVerse Logo">
+                <p class="brand-title">Build<span>verse</span></p>
+            </div>
+            <p class="sidebar-section-label">Navigation</p>
+            <button class="sidebar-btn active" data-tab="catalog" onclick="switchTab('catalog')">
+                <span class="sb-icon">🛍</span> Catalog
+            </button>
+            <button class="sidebar-btn" data-tab="my-orders" onclick="switchTab('my-orders')">
+                <span class="sb-icon">📋</span> Orders
+            </button>
+            <button class="sidebar-btn" data-tab="held" onclick="switchTab('held')">
+                <span class="sb-icon">🎒</span> Possessions
+            </button>
+            <button class="sidebar-btn" data-tab="leaderboard" onclick="switchTab('leaderboard')">
+                <span class="sb-icon">🏆</span> Leaderboard
+            </button>
+
+            <div class="sidebar-divider"></div>
+
+            <!-- Sponsor Contact -->
+            <div class="sponsor-contact-card">
+                <div class="flex items-center gap-3 mb-4">
+                    <img src="assets/Core Electronics.png" alt="Core Electronics" class="w-10 h-10 object-contain bg-white rounded-xl p-1.5 shadow-sm">
+                    <div>
+                        <p class="sponsor-title mb-0" style="margin-bottom: 0;">Powered by</p>
+                        <p class="font-black text-white text-[0.8rem] leading-tight">CORE TECHNOLOGIES</p>
+                    </div>
+                </div>
+                <p class="sponsor-address">
+                    LOWER GROUND FLOOR, OPP. BVB COLLEGE, HUBBALLI-580031
+                </p>
+                <div class="sponsor-phone">
+                    <span style="color: #FFD700;">📞</span> 9742986424
+                </div>
+                <div class="sponsor-phone mt-1">
+                    <span style="color: #FFD700;">☎️</span> 0836-2376424
+                </div>
+            </div>
+
+            <button class="sidebar-logout" onclick="logout()">
+                <span class="sb-icon">🚪</span> Exit Session
+            </button>
+        </aside>
+
+        <!-- MAIN -->
+        <main class="admin-main">
+
+            <!-- BANNER -->
+            <div id="ordering-status-banner" class="hidden status-banner">
+                Operation Suspended by Admin Control
+            </div>
+
+            <!-- STATS ROW -->
+            <div class="stats-grid">
+                <div class="stat-card stat-card-blue">
+                    <div class="stat-icon">💎</div>
+                    <div>
+                        <p class="stat-label">Credit Pool</p>
+                        <p class="stat-value" id="user-points-val">0</p>
+                    </div>
+                </div>
+                <div class="stat-card stat-card-red">
+                    <div class="stat-icon">🚩</div>
+                    <div>
+                        <p class="stat-label">Queue Rank</p>
+                        <p class="stat-value" id="stat-active-reqs">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── CATALOG TAB ── -->
+            <section id="catalog-tab" class="fade-in">
+                <div class="section-card" style="background:transparent; border:none; box-shadow:none;">
+                    <div class="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div>
+                            <p class="section-title" style="font-size:1.5rem;">Resource Catalog</p>
+                            <p class="section-sub">Available inventory for acquisition</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <input type="text" id="catalog-search" placeholder="Search resources..." class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-bold text-slate-700 focus:outline-none focus:border-bvBlue w-full md:w-64 transition-all" oninput="renderCatalog()">
+                            <select id="catalog-category" class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-bold text-slate-700 focus:outline-none focus:border-bvBlue transition-all bg-white" onchange="renderCatalog()">
+                                <option value="ALL">All Categories</option>
+                                <option value="Controller">Controllers</option>
+                                <option value="Sensor">Sensors</option>
+                                <option value="Actuator">Actuators</option>
+                                <option value="Indicator">Indicators</option>
+                                <option value="Display">Displays</option>
+                                <option value="Input">Inputs</option>
+                                <option value="Hardware">Hardware</option>
+                                <option value="Power">Power</option>
+                                <option value="Miscellaneous">Miscellaneous</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="catalog-list">
+                        <!-- Loaded dynamically -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- ── ORDERS TAB ── -->
+            <section id="my-orders-tab" class="hidden fade-in">
+                <div class="section-card">
+                    <div class="section-card-header">
+                        <div>
+                            <p class="section-title">Operation Status</p>
+                            <p class="section-sub">Tracking resource distribution protocol</p>
+                        </div>
+                    </div>
+                    <div class="table-scroll">
+                        <table class="bv-table">
+                            <thead>
+                                <tr>
+                                    <th>Resource ID</th>
+                                    <th>Qty</th>
+                                    <th>Protocol Status</th>
+                                    <th style="text-align:right;">Queue Rank</th>
+                                </tr>
+                            </thead>
+                            <tbody id="my-orders-list">
+                                <!-- Loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ── COMPONENTS HELD TAB ── -->
+            <section id="held-tab" class="hidden fade-in">
+                <div class="section-card">
+                    <div class="section-card-header">
+                        <div>
+                            <p class="section-title">My Components</p>
+                            <p class="section-sub">Hardware Currently in Possession</p>
+                        </div>
+                    </div>
+                    <div class="table-scroll">
+                        <table class="bv-table">
+                            <thead>
+                                <tr>
+                                    <th>Resource Name</th>
+                                    <th>Total Held</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="held-components-list">
+                                <!-- Loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ── LEADERBOARD TAB ── -->
+            <section id="leaderboard-tab" class="hidden fade-in">
+                <div class="section-card">
+                    <div class="section-card-header">
+                        <div>
+                            <p class="section-title">Leaderboard</p>
+                            <p class="section-sub">Real-time point standings</p>
+                        </div>
+                    </div>
+                    <div class="table-scroll">
+                        <table class="bv-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 80px; text-align: center;">Rank</th>
+                                    <th>Entity Identity</th>
+                                    <th style="text-align:right;">Remaining PTS</th>
+                                </tr>
+                            </thead>
+                            <tbody id="participant-leaderboard-list">
+                                <!-- Loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+    <!-- Floating Cart Button -->
+    <button id="floating-cart-btn"
+        class="hidden fixed bottom-8 right-8 z-[1500] bg-bvBlue text-white px-8 py-5 rounded-[24px] font-black uppercase tracking-widest shadow-2xl shadow-blue-500/30 hover:scale-105 active:scale-95 transition-all flex items-center gap-4 border border-blue-400"
+        onclick="openCartModal()">
+        <!-- Set by JS dynamically -->
+    </button>
+
+    <!-- ── MODAL ── -->
+    <div id="modal-backdrop" class="hidden">
+        <div id="modal-container">
+            <div class="modal-hdr">
+                <h3 id="modal-title">Acquire Resource</h3>
+                <button class="modal-close-x" onclick="closeModal()">✕</button>
+            </div>
+            <div id="modal-content" class="px-8 py-8 space-y-6">
+                <!-- Loaded dynamically -->
+            </div>
+            <div class="modal-ftr">
+                <button class="btn btn-ghost" onclick="closeModal()">Dismiss</button>
+                <button class="btn btn-yellow" id="modal-submit">Acquire Now</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST CONTAINER -->
+    <div id="toast-container" class="fixed bottom-6 right-6 z-[2000] flex flex-col gap-3 pointer-events-none"></div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/participant.js"></script>
+    <script>
+        // Sidebar Toggle Logic
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        const toggleBtn = document.getElementById('mobile-toggle');
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('show');
+        }
+
+        toggleBtn.addEventListener('click', toggleSidebar);
+        overlay.addEventListener('click', toggleSidebar);
+
+        // Close sidebar when clicking a nav button on mobile
+        document.querySelectorAll('.sidebar-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (window.innerWidth <= 1024) {
+                    toggleSidebar();
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

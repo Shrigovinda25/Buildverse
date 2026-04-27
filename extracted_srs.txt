@@ -1,0 +1,1295 @@
+__BUILDVERSE__
+
+Event Management Platform
+
+*Software Requirements Specification & System Design Document*
+
+__Field__
+
+__Details__
+
+Document Version
+
+1\.0
+
+Date
+
+14 April 2026
+
+Status
+
+Draft – For Review
+
+Project Name
+
+BuildVerse Event Platform
+
+Document Type
+
+SRS \+ System Architecture
+
+# 1\. Introduction
+
+## 1\.1 Project Overview
+
+BuildVerse is a full\-stack, web\-based event management platform designed specifically for prototype\-building competitions\. The platform serves two distinct user roles: Administrators and Participants \(Teams\)\. It digitises the entire event lifecycle — from team registration and QR\-based check\-in, to component inventory management, point tracking, and real\-time leaderboards\.
+
+## 1\.2 Purpose of This Document
+
+This Software Requirements Specification \(SRS\) defines the complete functional and non\-functional requirements for the BuildVerse platform\. It is intended for developers, designers, event organisers, and other stakeholders involved in building or evaluating the system\.
+
+## 1\.3 Scope
+
+The platform covers the following areas:
+
+- Team registration and QR code generation
+- Admin\-controlled event day check\-in via QR scan
+- Component catalogue with point\-based pricing
+- Team shopping cart and component request workflow
+- Admin\-controlled component delivery confirmation
+- Team dashboard with point balance and purchase history
+- Public activity feed showing what teams are buying
+
+## 1\.4 Definitions & Acronyms
+
+__Term__
+
+__Definition__
+
+Admin
+
+Event organiser with full system access
+
+Team / User
+
+Registered participant group in the BuildVerse event
+
+QR Code
+
+Quick Response code uniquely generated per team for check\-in
+
+Points
+
+Virtual currency assigned to teams for purchasing components
+
+Component
+
+Hardware/electronic/mechanical part available in the event inventory
+
+Cart
+
+Pending component request list for a team
+
+Delivered
+
+Admin\-confirmed status once a team physically receives a component
+
+SRS
+
+Software Requirements Specification
+
+# 2\. Stakeholders & User Roles
+
+## 2\.1 Admin Role
+
+Admins are event organisers or volunteers who manage the backend operations of the event\. There may be one or more admins operating simultaneously\.
+
+### 2\.1\.1 Admin Capabilities
+
+- Register new teams manually or review pre\-registered teams
+- Generate unique QR codes per team and distribute them \(via email/download\)
+- Scan or enter QR codes on the event day to check in teams
+- View full team list with check\-in status
+- Manage the component catalogue \(add, edit, remove components and point costs\)
+- View all pending component requests across all teams
+- Mark individual component requests as Delivered once teams collect them
+- View all team point balances and transaction histories
+- Monitor the real\-time activity feed
+
+## 2\.2 Team / User Role
+
+Teams are participant groups that register for the BuildVerse event\. Each team gets one account/login that all members share or a designated team leader manages\.
+
+### 2\.2\.1 Team Capabilities
+
+- View their own dashboard with available points and point usage summary
+- Browse the component catalogue with names, descriptions, and point costs
+- Add components to their cart
+- View their cart \(pending, delivered, and history\)
+- View a public activity feed showing other teams' recent purchases and point usage
+- Receive their QR code for event day check\-in
+
+# 3\. Functional Requirements
+
+## 3\.1 Authentication & Access Control
+
+__Req ID__
+
+__Requirement__
+
+__Role__
+
+__Priority__
+
+AUTH\-01
+
+System shall provide separate login flows for Admin and Team roles
+
+Both
+
+High
+
+AUTH\-02
+
+Admin accounts shall be pre\-created by a super\-admin or seeded
+
+Admin
+
+High
+
+AUTH\-03
+
+Teams shall register with team name, leader name, email, and member count
+
+Team
+
+High
+
+AUTH\-04
+
+System shall issue JWT tokens with role\-based claims upon login
+
+Both
+
+High
+
+AUTH\-05
+
+Session shall auto\-expire after 8 hours of inactivity
+
+Both
+
+Medium
+
+AUTH\-06
+
+Password reset via registered email shall be supported
+
+Both
+
+Medium
+
+## 3\.2 Team Registration & QR Code Management
+
+__Req ID__
+
+__Requirement__
+
+__Role__
+
+__Priority__
+
+QR\-01
+
+Upon successful registration, system shall auto\-generate a unique QR code per team
+
+Admin
+
+High
+
+QR\-02
+
+QR code shall encode a unique team identifier \(UUID\)
+
+Admin
+
+High
+
+QR\-03
+
+Admin shall be able to download QR codes individually or in bulk as PNG/PDF
+
+Admin
+
+High
+
+QR\-04
+
+Admin shall be able to send QR codes to team email addresses via the platform
+
+Admin
+
+Medium
+
+QR\-05
+
+Teams shall be able to view and download their own QR code from their dashboard
+
+Team
+
+Medium
+
+QR\-06
+
+QR codes shall be invalidated/regenerated if a team account is reset
+
+Admin
+
+Low
+
+## 3\.3 Event Day Check\-In
+
+__Req ID__
+
+__Requirement__
+
+__Role__
+
+__Priority__
+
+CHK\-01
+
+Admin shall access a dedicated Check\-In screen on the event day
+
+Admin
+
+High
+
+CHK\-02
+
+Admin shall scan a team QR code using device camera or upload an image
+
+Admin
+
+High
+
+CHK\-03
+
+On successful scan, team status shall update to Checked In with a timestamp
+
+Admin
+
+High
+
+CHK\-04
+
+Admin shall also be able to manually search a team and mark them checked in
+
+Admin
+
+Medium
+
+CHK\-05
+
+System shall prevent duplicate check\-ins and display a warning
+
+Admin
+
+High
+
+CHK\-06
+
+Check\-in dashboard shall show total checked\-in vs total registered count
+
+Admin
+
+Medium
+
+CHK\-07
+
+Each check\-in event shall be timestamped and logged
+
+Admin
+
+Medium
+
+## 3\.4 Component Catalogue Management
+
+__Req ID__
+
+__Requirement__
+
+__Role__
+
+__Priority__
+
+CAT\-01
+
+Admin shall create component entries with: name, description, category, point cost, stock quantity, image
+
+Admin
+
+High
+
+CAT\-02
+
+Admin shall edit or archive existing components
+
+Admin
+
+High
+
+CAT\-03
+
+Components with zero stock shall be displayed as Out of Stock to teams
+
+Both
+
+High
+
+CAT\-04
+
+Teams shall browse the catalogue with filters \(category, point range, availability\)
+
+Team
+
+Medium
+
+CAT\-05
+
+Each component page shall show name, image, description, point cost, and availability
+
+Team
+
+High
+
+CAT\-06
+
+Admin shall be able to bulk import components via CSV upload
+
+Admin
+
+Low
+
+## 3\.5 Cart & Component Request Workflow
+
+__Req ID__
+
+__Requirement__
+
+__Role__
+
+__Priority__
+
+CART\-01
+
+Teams shall add components to their cart from the catalogue
+
+Team
+
+High
+
+CART\-02
+
+System shall validate that team has sufficient points before allowing cart submission
+
+Team
+
+High
+
+CART\-03
+
+Team shall confirm/submit their cart; points shall be deducted on submission
+
+Team
+
+High
+
+CART\-04
+
+Submitted requests shall appear in Admin's pending requests queue
+
+Admin
+
+High
+
+CART\-05
+
+Admin shall mark a request as Delivered after physically handing over the component
+
+Admin
+
+High
+
+CART\-06
+
+On Delivered status, team dashboard shall reflect the component under My Components
+
+Team
+
+High
+
+CART\-07
+
+Teams shall not be able to cancel a request once submitted \(Admin can cancel\)
+
+Both
+
+Medium
+
+CART\-08
+
+Admin shall be able to cancel a request and refund points to the team
+
+Admin
+
+Medium
+
+## 3\.6 Points System
+
+__Req ID__
+
+__Requirement__
+
+__Role__
+
+__Priority__
+
+PTS\-01
+
+Each team shall be assigned an initial point balance by Admin at the start of event
+
+Admin
+
+High
+
+PTS\-02
+
+Points shall be deducted on cart submission
+
+System
+
+High
+
+PTS\-03
+
+Points shall be refunded if Admin cancels a request
+
+Admin
+
+Medium
+
+PTS\-04
+
+Team dashboard shall display: total points, points spent, points remaining
+
+Team
+
+High
+
+PTS\-05
+
+Admin shall be able to manually adjust a team's point balance with a reason note
+
+Admin
+
+Medium
+
+PTS\-06
+
+Full point transaction history \(credits, debits, reason\) shall be visible to both Admin and the Team
+
+Both
+
+Medium
+
+## 3\.7 Team Dashboard
+
+__Req ID__
+
+__Requirement__
+
+__Role__
+
+__Priority__
+
+DASH\-01
+
+Team dashboard shall show point summary widget \(total, spent, remaining\)
+
+Team
+
+High
+
+DASH\-02
+
+Dashboard shall list all submitted component requests with their status \(Pending/Delivered\)
+
+Team
+
+High
+
+DASH\-03
+
+Dashboard shall show team's QR code with a download button
+
+Team
+
+Medium
+
+DASH\-04
+
+Dashboard shall include a public activity feed widget
+
+Team
+
+Medium
+
+DASH\-05
+
+Dashboard shall show quick links: Browse Catalogue, My Cart, My Components
+
+Team
+
+Low
+
+## 3\.8 Public Activity Feed
+
+__Req ID__
+
+__Requirement__
+
+__Role__
+
+__Priority__
+
+FEED\-01
+
+Activity feed shall display recent component purchase events from all teams
+
+Both
+
+Medium
+
+FEED\-02
+
+Each feed item shall show: team name, component name, points spent, and time
+
+Both
+
+Medium
+
+FEED\-03
+
+Feed shall update in real\-time or near\-real\-time \(polling every 15 seconds minimum\)
+
+Both
+
+Medium
+
+FEED\-04
+
+Feed shall NOT reveal a team's total remaining points to other teams
+
+System
+
+High
+
+FEED\-05
+
+Admin shall have a full leaderboard view showing all team point balances
+
+Admin
+
+Medium
+
+# 4\. Non\-Functional Requirements
+
+__Category__
+
+__Requirement__
+
+Performance
+
+Pages shall load within 2 seconds on a standard 4G connection
+
+Performance
+
+QR scan processing shall complete within 1 second
+
+Availability
+
+Platform shall target 99\.5% uptime during the event day
+
+Scalability
+
+System shall support up to 500 concurrent users without degradation
+
+Security
+
+All data in transit shall be encrypted via HTTPS/TLS 1\.2\+
+
+Security
+
+Passwords shall be hashed using bcrypt \(cost factor >= 12\)
+
+Security
+
+Role\-based access control shall be enforced at both API and UI layers
+
+Usability
+
+Platform shall be fully responsive on mobile, tablet, and desktop
+
+Usability
+
+Check\-in flow shall be completable in under 10 seconds per team
+
+Maintainability
+
+Backend API shall follow RESTful conventions with OpenAPI documentation
+
+Reliability
+
+Database shall have automated daily backups
+
+Compliance
+
+No sensitive payment information is stored \(points are virtual only\)
+
+# 5\. System Architecture
+
+## 5\.1 Architecture Style
+
+BuildVerse adopts a Three\-Tier Client\-Server architecture with a RESTful API backend, a Single Page Application \(SPA\) frontend, and a relational database\. The architecture prioritises simplicity, rapid development, and maintainability for an event\-scale deployment\.
+
+## 5\.2 Technology Stack
+
+__Layer__
+
+__Technology__
+
+__Justification__
+
+Frontend
+
+React\.js \+ Vite
+
+Fast SPA development, excellent ecosystem, component reuse
+
+UI Library
+
+Tailwind CSS \+ shadcn/ui
+
+Rapid styling, consistent design system
+
+State Management
+
+Zustand or React Query
+
+Lightweight, fits event\-scale complexity
+
+Backend
+
+Node\.js \+ Express\.js
+
+Fast JSON API development, large ecosystem
+
+Authentication
+
+JWT \(jsonwebtoken\) \+ bcrypt
+
+Stateless auth, role claims
+
+Database
+
+PostgreSQL
+
+Relational integrity for points/transactions, robust
+
+ORM
+
+Prisma
+
+Type\-safe queries, easy migrations
+
+QR Generation
+
+qrcode \(npm\) \+ canvas
+
+Server\-side QR PNG generation
+
+QR Scanning
+
+html5\-qrcode \(browser\)
+
+Camera\-based scan, no native app needed
+
+Email
+
+Nodemailer \+ SMTP / SendGrid
+
+QR code delivery to teams
+
+Real\-time Feed
+
+Socket\.io or REST polling \(15s\)
+
+Activity feed updates
+
+File Storage
+
+AWS S3 / Cloudinary
+
+Component images, QR code storage
+
+Hosting
+
+Vercel \(frontend\) \+ Railway/Render \(backend\)
+
+Free\-tier friendly, fast deploy
+
+Version Control
+
+GitHub
+
+Collaboration and CI/CD pipelines
+
+## 5\.3 Database Schema
+
+### 5\.3\.1 Core Tables
+
+__Table__
+
+__Key Columns__
+
+__Purpose__
+
+users
+
+id, team\_name, leader\_name, email, password\_hash, role, points\_balance, qr\_token, checked\_in, checked\_in\_at, created\_at
+
+Stores both admin and team accounts
+
+components
+
+id, name, description, category, point\_cost, stock\_qty, image\_url, is\_active, created\_at
+
+Component catalogue entries
+
+cart\_items
+
+id, team\_id, component\_id, quantity, status \(PENDING/DELIVERED/CANCELLED\), requested\_at, delivered\_at, delivered\_by
+
+Component requests from teams
+
+point\_transactions
+
+id, team\_id, delta, reason, reference\_id, created\_by, created\_at
+
+Immutable ledger of all point changes
+
+activity\_feed
+
+id, team\_id, team\_name, component\_name, points\_spent, event\_type, created\_at
+
+Denormalised feed for display performance
+
+## 5\.4 API Endpoint Overview
+
+### Auth Endpoints
+
+__Method__
+
+__Endpoint__
+
+__Description__
+
+__Role__
+
+POST
+
+/api/auth/register
+
+Register a new team
+
+Public
+
+POST
+
+/api/auth/login
+
+Login \(admin or team\)
+
+Public
+
+POST
+
+/api/auth/logout
+
+Invalidate token
+
+Both
+
+POST
+
+/api/auth/reset\-password
+
+Send password reset link
+
+Public
+
+### Team / Admin Endpoints
+
+__Method__
+
+__Endpoint__
+
+__Description__
+
+__Role__
+
+GET
+
+/api/teams
+
+List all teams
+
+Admin
+
+GET
+
+/api/teams/:id
+
+Get team details
+
+Admin \+ Own Team
+
+GET
+
+/api/teams/:id/qr
+
+Get/download QR code
+
+Admin \+ Own Team
+
+POST
+
+/api/teams/:id/checkin
+
+Mark team as checked in
+
+Admin
+
+PATCH
+
+/api/teams/:id/points
+
+Adjust team point balance
+
+Admin
+
+### Component Endpoints
+
+__Method__
+
+__Endpoint__
+
+__Description__
+
+__Role__
+
+GET
+
+/api/components
+
+List all components \(with filters\)
+
+Both
+
+POST
+
+/api/components
+
+Create new component
+
+Admin
+
+PUT
+
+/api/components/:id
+
+Update component
+
+Admin
+
+DELETE
+
+/api/components/:id
+
+Archive component
+
+Admin
+
+### Cart & Order Endpoints
+
+__Method__
+
+__Endpoint__
+
+__Description__
+
+__Role__
+
+GET
+
+/api/cart
+
+Get current team's cart
+
+Team
+
+POST
+
+/api/cart
+
+Add item to cart
+
+Team
+
+DELETE
+
+/api/cart/:itemId
+
+Remove item from cart
+
+Team
+
+POST
+
+/api/cart/submit
+
+Submit cart \(deducts points\)
+
+Team
+
+GET
+
+/api/orders
+
+List all pending orders
+
+Admin
+
+PATCH
+
+/api/orders/:id/deliver
+
+Mark order as delivered
+
+Admin
+
+PATCH
+
+/api/orders/:id/cancel
+
+Cancel order and refund points
+
+Admin
+
+### Feed & Leaderboard Endpoints
+
+__Method__
+
+__Endpoint__
+
+__Description__
+
+__Role__
+
+GET
+
+/api/feed
+
+Get recent activity feed
+
+Both
+
+GET
+
+/api/leaderboard
+
+Get all teams' point balances
+
+Admin
+
+# 6\. Page & Screen Structure
+
+## 6\.1 Admin Pages
+
+__Page__
+
+__Route__
+
+__Key Features__
+
+Admin Login
+
+/admin/login
+
+Email/password login, redirect to dashboard
+
+Admin Dashboard
+
+/admin/dashboard
+
+Stats overview: teams registered, checked in, pending orders, point distribution chart
+
+Team Management
+
+/admin/teams
+
+List all teams, check\-in status, search, filter, manual check\-in button
+
+Check\-In Scanner
+
+/admin/checkin
+
+Camera QR scanner, manual team search, success/error feedback, live counter
+
+Component Catalogue Manager
+
+/admin/components
+
+Table of all components, add/edit/archive, stock management
+
+Add/Edit Component
+
+/admin/components/new
+
+Form: name, description, category, point cost, stock, image upload
+
+Orders Queue
+
+/admin/orders
+
+Pending orders list, filter by team/component, mark delivered, cancel
+
+Points Manager
+
+/admin/points
+
+All teams points table, manual adjustment modal, export CSV
+
+Activity Feed
+
+/admin/feed
+
+Full activity log with filters by team, time range
+
+QR Management
+
+/admin/qr
+
+Generate/regenerate QR codes, bulk download, send via email
+
+## 6\.2 Team / User Pages
+
+__Page__
+
+__Route__
+
+__Key Features__
+
+Team Registration
+
+/register
+
+Team name, leader name, email, password, member count
+
+Team Login
+
+/login
+
+Email/password, redirect to dashboard
+
+Team Dashboard
+
+/dashboard
+
+Point summary card, QR code widget, recent orders, activity feed preview
+
+Component Catalogue
+
+/catalogue
+
+Grid of components, filter by category/points, add to cart button
+
+Component Detail
+
+/catalogue/:id
+
+Full component info, point cost, stock status, add to cart
+
+My Cart
+
+/cart
+
+Pending cart items, total points, submit button with confirmation
+
+My Orders
+
+/orders
+
+All submitted requests with status badges \(Pending / Delivered\)
+
+My Components
+
+/components
+
+All delivered components list
+
+Activity Feed
+
+/feed
+
+Public feed: team name, component, points spent, timestamp
+
+My QR Code
+
+/qr
+
+Display and download team's QR code
+
+# 7\. Key User Flows
+
+## 7\.1 Team Registration & QR Distribution Flow
+
+1. Team visits /register and fills out registration form
+2. System creates team account, assigns default point balance
+3. System auto\-generates unique QR code \(UUID\-encoded\) and stores it
+4. Admin receives notification of new registration
+5. Admin navigates to QR Management, selects team\(s\), clicks Send QR via Email
+6. System sends email with QR code attachment to team's registered email
+7. Team can also view and download QR code from their own dashboard under My QR Code
+
+## 7\.2 Event Day Check\-In Flow
+
+1. Admin opens /admin/checkin on a phone or tablet
+2. Admin clicks Start Scanner — device camera activates
+3. Team presents their QR code \(printed or on phone screen\)
+4. Scanner decodes QR, sends UUID to /api/teams/:id/checkin
+5. System validates UUID, checks for duplicates
+6. Success: team status updated to Checked In with timestamp; green confirmation shown
+7. Duplicate: yellow warning shown — Team already checked in at \[time\]
+8. Invalid: red error shown — QR code not recognised
+
+## 7\.3 Component Request & Delivery Flow
+
+1. Team browses catalogue at /catalogue, clicks Add to Cart on desired component
+2. System checks stock and point balance; adds item to cart if valid
+3. Team navigates to /cart, reviews items and total point cost
+4. Team clicks Submit Request — system deducts points and creates order records
+5. Activity feed entry is created \(visible to all teams and admin\)
+6. Admin sees new pending order in /admin/orders queue
+7. Volunteer physically collects the component from the storage area
+8. Admin clicks Mark as Delivered next to the order
+9. Team's order status updates to Delivered; component appears in My Components
+
+# 8\. Security Considerations
+
+__Threat__
+
+__Mitigation__
+
+Unauthorised access to admin pages
+
+JWT role claim validation on every protected API route; frontend route guards
+
+Teams viewing other teams' point balances
+
+Points balance only returned for authenticated team's own ID; feed shows only spend events, not totals
+
+QR code forgery
+
+QR encodes UUID that is validated server\-side against the database; no client\-trusting data
+
+SQL Injection
+
+Prisma ORM uses parameterised queries by default
+
+XSS attacks
+
+React's JSX escapes output; Content\-Security\-Policy headers set
+
+CSRF
+
+JWT in Authorization header \(not cookies\) eliminates CSRF risk
+
+Brute\-force login
+
+Rate limiting \(express\-rate\-limit\): max 10 attempts per 15 minutes per IP
+
+Point manipulation
+
+Points are only modified server\-side through controlled endpoints; client cannot send point delta directly
+
+# 9\. Development Milestones & Suggested Timeline
+
+__Phase__
+
+__Deliverables__
+
+__Suggested Duration__
+
+Phase 1 – Setup
+
+Project scaffolding, DB schema, auth \(register/login/JWT\), basic routing
+
+Week 1
+
+Phase 2 – Core Admin
+
+Team management, QR generation/download, Check\-in scanner
+
+Week 2
+
+Phase 3 – Catalogue
+
+Component CRUD \(admin\), catalogue browse \(team\), image upload
+
+Week 2\-3
+
+Phase 4 – Cart & Orders
+
+Cart add/submit, points deduction, orders queue, mark delivered
+
+Week 3
+
+Phase 5 – Dashboards
+
+Team dashboard, admin dashboard, point transactions, activity feed
+
+Week 4
+
+Phase 6 – Polish
+
+Email QR sending, responsive design, error handling, loading states
+
+Week 4\-5
+
+Phase 7 – Testing
+
+Unit tests, integration tests, UAT with event organisers
+
+Week 5\-6
+
+Phase 8 – Deployment
+
+CI/CD pipeline, staging, production deployment, monitoring
+
+Week 6
+
+# 10\. Future Enhancements \(Post\-MVP\)
+
+- Judge scoring module with per\-criterion rubric
+- Live leaderboard screen for public display \(projector view\)
+- Team chat or announcement broadcast from admin
+- Component return/refund workflow
+- Progressive Web App \(PWA\) support for offline QR display
+- Multi\-event support with event archiving
+- Analytics dashboard with charts \(most popular components, spend distribution\)
+- CSV/PDF export of all event data post\-event
+
+*End of Document — BuildVerse Platform SRS v1\.0*
+

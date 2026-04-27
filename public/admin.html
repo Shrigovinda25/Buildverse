@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BUILDVERSE | Admin Command Center</title>
+    <link rel="icon" type="image/png" href="assets/logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bvRed: '#C8102E', bvYellow: '#FFD700', bvBlue: '#0047AB',
+                        sidebar: '#0f0f13', sidebarHover: '#1a1a24'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Outfit', sans-serif; background: #f0f2f8; min-height: 100vh; display: flex; flex-direction: column; }
+
+        /* ── TOPBAR ── */
+        .admin-topbar {
+            background: #fff;
+            height: 90px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2.5rem;
+            border-bottom: 2px solid #f0f0f0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 200;
+        }
+        .topbar-left { display: flex; align-items: center; gap: 1.8rem; }
+        .topbar-left img { height: 50px; object-fit: contain; }
+        .topbar-sep { width: 2px; height: 40px; background: #eee; }
+        .topbar-brand { font-family: 'Outfit', sans-serif; font-size: 1.15rem; font-weight: 900; letter-spacing: -0.02em; color: #111; }
+        .topbar-brand span { color: #C8102E; }
+        .topbar-badge { background: #C8102E; color: #fff; font-size: 0.55rem; font-weight: 800; letter-spacing: 0.15em; text-transform: uppercase; padding: 0.25rem 0.7rem; border-radius: 50px; }
+
+        /* ── LAYOUT ── */
+        .admin-layout { display: flex; flex: 1; }
+
+        /* ── SIDEBAR ── */
+        .sidebar {
+            width: 260px;
+            min-height: calc(100vh - 90px);
+            background: #0f0f13;
+            display: flex;
+            flex-direction: column;
+            padding: 1.2rem;
+            gap: 0.3rem;
+            flex-shrink: 0;
+        }
+        .sidebar-brand {
+            padding: 1.5rem 1rem 2rem;
+            text-align: center;
+            border-bottom: 1px solid #1a1a24;
+            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .sidebar-brand img {
+            width: 110px;
+            height: 110px;
+            object-fit: contain;
+            background: #fff;
+            border-radius: 50%;
+            padding: 5px;
+            filter: drop-shadow(0 0 15px rgba(200,16,46,0.2));
+            margin-left: 5px; /* Reduced from 15px as requested */
+        }
+        .brand-title {
+            color: #fff;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 950;
+            letter-spacing: -0.02em;
+            margin-top: 1.2rem;
+            text-transform: uppercase;
+        }
+        .brand-title span {
+            color: #C8102E;
+        }
+        .sidebar-section-label {
+            font-size: 0.58rem; font-weight: 800; letter-spacing: 0.22em;
+            text-transform: uppercase; color: #444; padding: 0.6rem 0.8rem 0.4rem;
+            margin-top: 0.8rem;
+        }
+        .sidebar-btn {
+            display: flex; align-items: center; gap: 0.85rem;
+            padding: 0.85rem 1rem; border-radius: 12px; cursor: pointer;
+            font-size: 0.82rem; font-weight: 700; color: #888;
+            border: none; background: transparent; text-align: left;
+            width: 100%; transition: all 0.2s; position: relative;
+        }
+        .sidebar-btn:hover { background: #1a1a24; color: #ddd; }
+        .sidebar-btn.active { background: #C8102E; color: #fff; box-shadow: 0 6px 20px rgba(200,16,46,0.35); }
+        .sidebar-btn.active .sb-icon { color: #fff; }
+        .sb-icon { font-size: 1.1rem; width: 22px; text-align: center; }
+        .sidebar-divider { height: 1px; background: #222; margin: 0.8rem 0; }
+        .sidebar-logout {
+            margin-top: auto; display: flex; align-items: center; gap: 0.85rem;
+            padding: 0.85rem 1rem; border-radius: 12px; cursor: pointer;
+            font-size: 0.8rem; font-weight: 700; color: #666;
+            border: none; background: transparent; text-align: left; width: 100%;
+            transition: all 0.2s;
+        }
+        .sidebar-logout:hover { background: rgba(200,16,46,0.15); color: #C8102E; }
+
+        /* ── MAIN CONTENT ── */
+        .admin-main { flex: 1; overflow-x: hidden; padding: 2rem 2.5rem; }
+
+        /* ── PAGE HEADER ── */
+        .page-header {
+            margin-bottom: 2rem;
+        }
+        .page-header h1 {
+            font-size: 2rem; font-weight: 900; color: #111;
+            letter-spacing: -0.03em; line-height: 1;
+        }
+        .page-header p { font-size: 0.78rem; font-weight: 600; color: #999; margin-top: 0.3rem; letter-spacing: 0.05em; text-transform: uppercase; }
+
+        /* ── STAT CARDS ── */
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.2rem; margin-bottom: 2rem; }
+        .stat-card {
+            border-radius: 20px; padding: 1.5rem 1.8rem;
+            display: flex; align-items: center; gap: 1.2rem;
+            position: relative; overflow: hidden;
+        }
+        .stat-card::before {
+            content: ''; position: absolute; right: -20px; top: -20px;
+            width: 100px; height: 100px; border-radius: 50%;
+            background: rgba(255,255,255,0.08);
+        }
+        .stat-card-red { background: linear-gradient(135deg, #C8102E, #9b0c22); color: #fff; box-shadow: 0 8px 28px rgba(200,16,46,0.35); }
+        .stat-card-blue { background: linear-gradient(135deg, #0047AB, #003380); color: #fff; box-shadow: 0 8px 28px rgba(0,71,171,0.35); }
+        .stat-icon { font-size: 2rem; }
+        .stat-label { font-size: 0.65rem; font-weight: 800; letter-spacing: 0.15em; text-transform: uppercase; opacity: 0.8; margin-bottom: 0.2rem; }
+        .stat-value { font-size: 2.2rem; font-weight: 900; line-height: 1; }
+
+        /* ── SECTION CARD ── */
+        .section-card {
+            background: #fff;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            border: 1px solid #f0f0f0;
+        }
+        .section-card-header {
+            padding: 1.4rem 2rem;
+            display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 1px solid #f5f5f5;
+        }
+        .section-title { font-size: 1rem; font-weight: 900; color: #111; }
+        .section-sub { font-size: 0.65rem; font-weight: 700; color: #aaa; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 0.15rem; }
+
+        /* ── COLORFUL BUTTONS ── */
+        .btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.6rem 1.3rem; border-radius: 50px; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; border: none; transition: all 0.2s; }
+        .btn:active { transform: scale(0.95); }
+        .btn-primary { background: #C8102E; color: #fff; box-shadow: 0 4px 14px rgba(200,16,46,0.3); }
+        .btn-primary:hover { background: #a80d25; }
+        .btn-blue { background: #0047AB; color: #fff; box-shadow: 0 4px 14px rgba(0,71,171,0.3); }
+        .btn-blue:hover { background: #003a8c; }
+        .btn-yellow { background: #FFD700; color: #111; box-shadow: 0 4px 14px rgba(255,215,0,0.35); }
+        .btn-yellow:hover { background: #e6c200; }
+        .btn-ghost-red { background: rgba(200,16,46,0.08); color: #C8102E; border: 1.5px solid rgba(200,16,46,0.2); }
+        .btn-ghost-red:hover { background: rgba(200,16,46,0.14); }
+        .btn-ghost { background: #f5f5f5; color: #555; border: 1.5px solid #eee; }
+        .btn-ghost:hover { background: #ececec; }
+
+        /* ── TABLE ── */
+        .bv-table { width: 100%; border-collapse: collapse; }
+        .bv-table thead tr { background: #fafafa; }
+        .bv-table th { padding: 0.9rem 1.2rem; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #aaa; border-bottom: 1px solid #f0f0f0; text-align: left; }
+        .bv-table th:last-child { text-align: right; }
+        .bv-table td { padding: 0.85rem 1.2rem; font-size: 0.82rem; border-bottom: 1px solid #fafafa; color: #333; vertical-align: middle; }
+        .bv-table tr:hover td { background: #fafbff; }
+        .bv-table tr:last-child td { border-bottom: none; }
+
+        /* ── STATUS BADGES ── */
+        .badge { display: inline-flex; align-items: center; padding: 0.3rem 0.8rem; border-radius: 50px; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; }
+        .badge-pending { background: #fff8e1; color: #d97706; border: 1px solid #fde68a; }
+        .badge-approved { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+        .badge-given { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+        .badge-returned { background: #f3e8ff; color: #7c3aed; border: 1px solid #ddd6fe; }
+        .badge-rejected { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+        .badge-cat { background: #f0f4ff; color: #3b4fce; border: 1px solid #c7d2fe; }
+
+        /* ── CATEGORY COLOR STRIP ── */
+        .cat-strip { width: 4px; height: 32px; border-radius: 2px; flex-shrink: 0; }
+        .cat-Controller { background: #0047AB; }
+        .cat-Sensor { background: #059669; }
+        .cat-Actuator { background: #d97706; }
+        .cat-Indicator { background: #db2777; }
+        .cat-Display { background: #7c3aed; }
+        .cat-Input { background: #0891b2; }
+        .cat-Hardware { background: #6b7280; }
+        .cat-Power { background: #C8102E; }
+
+        /* ── SECTION TAB FADE ── */
+        section.fade-in { animation: fadeUp 0.35s ease; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ── MODAL ── */
+        #modal-backdrop { position: fixed; inset: 0; background: rgba(10,10,10,0.55); backdrop-filter: blur(10px); z-index: 2000; display: none; align-items: center; justify-content: center; padding: 1.5rem; }
+        #modal-backdrop:not(.hidden) { display: flex; }
+        #modal-container { background: #fff; width: 100%; max-width: 540px; border-radius: 28px; overflow: hidden; box-shadow: 0 40px 80px rgba(0,0,0,0.25); animation: popIn 0.28s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+        @keyframes popIn { from { opacity: 0; transform: scale(0.88) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        #modal-container .modal-hdr { background: linear-gradient(135deg,#C8102E,#9b0c22); padding: 1.6rem 2rem; display: flex; align-items: center; justify-content: space-between; }
+        #modal-title { font-size: 1.1rem; font-weight: 900; color: #fff; text-transform: uppercase; letter-spacing: 0.05em; }
+        .modal-close-x { background: rgba(255,255,255,0.18); border: none; color: #fff; width: 34px; height: 34px; border-radius: 50%; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .modal-close-x:hover { background: rgba(255,255,255,0.3); }
+        #modal-content { padding: 2rem; }
+        .modal-ftr { background: #fafafa; padding: 1.4rem 2rem; display: flex; justify-content: flex-end; gap: 0.8rem; border-top: 1px solid #f0f0f0; }
+
+        /* ── SCROLL AREA (tables) ── */
+        .table-scroll { overflow-x: auto; }
+
+        /* ── TEAM AVAILABILITY TOGGLE ── */
+        .toggle-on { background: #d1fae5; color: #065f46; }
+        .toggle-off { background: #fee2e2; color: #b91c1c; }
+
+        /* hide class */
+        .hidden { display: none !important; }
+
+        /* ── MOBILE RESPONSIVE ── */
+        .sidebar { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .sidebar-toggle { 
+            display: none; 
+            width: 44px; height: 44px; 
+            border-radius: 12px; 
+            background: #f8fafc; 
+            border: 1px solid #e2e8f0; 
+            align-items: center; justify-content: center; 
+            cursor: pointer; color: #1e293b;
+            transition: all 0.2s;
+        }
+        .sidebar-toggle:hover { background: #f1f5f9; }
+        .sidebar-overlay { 
+            position: fixed; inset: 0; background: rgba(15, 15, 19, 0.4); 
+            backdrop-filter: blur(4px); z-index: 900; 
+            display: none; opacity: 0; transition: opacity 0.3s ease;
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar-toggle { display: flex; }
+            .sidebar {
+                position: fixed; left: 0; top: 0; bottom: 0;
+                z-index: 1000; transform: translateX(-100%);
+                height: 100vh; width: 280px; box-shadow: 20px 0 50px rgba(0,0,0,0.1);
+            }
+            .sidebar.open { transform: translateX(0); }
+            .sidebar-overlay.show { display: block; opacity: 1; }
+            .admin-topbar { padding: 0 1.5rem; height: 75px; }
+            .topbar-sep { height: 30px; }
+            .admin-main { padding: 1.5rem; }
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .page-header h1 { font-size: 1.6rem; }
+            .section-card-header { padding: 1.2rem 1.5rem; flex-direction: column; align-items: flex-start; gap: 1rem; }
+            .btn { width: 100%; justify-content: center; }
+            .stat-value { font-size: 1.8rem; }
+            .topbar-brand { font-size: 1rem; }
+            .topbar-left { gap: 1rem; }
+            .topbar-left img { height: 35px; }
+        }
+    </style>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- TOP BAR -->
+    <header class="admin-topbar">
+        <div class="topbar-left">
+            <button class="sidebar-toggle" id="mobile-toggle">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+            </button>
+            <img src="assets/pleiades logo black.png" alt="Pleiades" onerror="this.style.display='none'">
+            <div class="topbar-sep"></div>
+            <span class="topbar-brand">Build<span>Verse</span></span>
+        </div>
+        <div style="display:flex;align-items:center;gap:1rem;">
+            <button id="global-pause-btn" class="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-red-50 text-slate-500 hover:text-red-600 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all mr-4" onclick="toggleGlobalPause()">
+                <span class="text-sm">⏸️</span> Pause Event
+            </button>
+            <div class="flex flex-col items-end mr-4">
+                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Access Identity</span>
+                <span class="text-xs font-black text-bvBlue uppercase italic tracking-tighter leading-none" id="admin-name-display">...</span>
+            </div>
+            <span class="topbar-badge">Admin Command</span>
+        </div>
+    </header>
+
+    <!-- SIDEBAR OVERLAY (Mobile) -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <!-- LAYOUT -->
+    <div class="admin-layout">
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <img src="assets/logo.png" alt="BuildVerse Logo">
+                <p class="brand-title">Build<span>verse</span></p>
+            </div>
+            <p class="sidebar-section-label">Navigation</p>
+            <button class="sidebar-btn active" data-tab="inventory" onclick="switchTab('inventory')">
+                <span class="sb-icon">📦</span> Inventory
+            </button>
+            <button class="sidebar-btn" data-tab="orders" onclick="switchTab('orders')">
+                <span class="sb-icon">📋</span> Queue
+            </button>
+            <button class="sidebar-btn" data-tab="teams" onclick="switchTab('teams')">
+                <span class="sb-icon">👥</span> Teams
+            </button>
+            <button class="sidebar-btn" data-tab="logs" onclick="switchTab('logs')">
+                <span class="sb-icon">📝</span> System Logs
+            </button>
+
+            <div class="sidebar-divider"></div>
+            <p class="sidebar-section-label">System</p>
+            <button class="sidebar-btn" onclick="seedResources()">
+                <span class="sb-icon">🔄</span> Sync Resources
+            </button>
+            <button class="sidebar-btn" onclick="deduplicateComponents()">
+                <span class="sb-icon">🔧</span> De-duplicate
+            </button>
+            <button class="sidebar-btn" onclick="purgeComponents()">
+                <span class="sb-icon">🗑</span> Purge Repo
+            </button>
+            <button class="sidebar-btn text-red-400 hover:text-red-500 hover:bg-red-50/5" onclick="forceLogoutOtherAdmins()">
+                <span class="sb-icon">🔐</span> Force Admin Logout
+            </button>
+
+            <button class="sidebar-logout" onclick="logout()">
+                <span class="sb-icon">🚪</span> Exit Session
+            </button>
+        </aside>
+
+        <!-- MAIN -->
+        <main class="admin-main">
+
+            <!-- STATS ROW -->
+            <div class="stats-grid">
+                <div class="stat-card stat-card-red">
+                    <div class="stat-icon">⏳</div>
+                    <div>
+                        <p class="stat-label">Pending Requests</p>
+                        <p class="stat-value" id="stat-pending-orders">0</p>
+                    </div>
+                </div>
+                <div class="stat-card stat-card-blue">
+                    <div class="stat-icon">🏷</div>
+                    <div>
+                        <p class="stat-label">Active Teams</p>
+                        <p class="stat-value" id="stat-total-teams">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── INVENTORY TAB ── -->
+            <section id="inventory-tab" class="fade-in">
+                <div class="section-card">
+                    <div class="section-card-header">
+                        <div>
+                            <p class="section-title">Resource Repository</p>
+                            <p class="section-sub">Global Stock Control</p>
+                        </div>
+                        <div style="display:flex;gap:0.6rem;flex-wrap:wrap;">
+                            <button class="btn btn-ghost" onclick="deduplicateComponents()">De-duplicate</button>
+                            <button class="btn btn-ghost-red" onclick="purgeComponents()">Purge</button>
+                            <button class="btn btn-ghost" id="low-stock-btn" onclick="toggleLowStockFilter()">⚠️ Low Stock</button>
+                            <button class="btn btn-primary" onclick="openModal('addComponent')">＋ Add Resource</button>
+                        </div>
+                    </div>
+                    <div class="table-scroll">
+                        <table class="bv-table">
+                            <thead>
+                                <tr>
+                                    <th>Resource Name</th>
+                                    <th>Price</th>
+                                    <th>Inventory Status</th>
+                                    <th style="text-align:right;">Manage</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventory-list">
+                                <!-- Loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ── ORDERS TAB ── -->
+            <section id="orders-tab" class="hidden fade-in">
+                <div class="section-card">
+                    <div class="section-card-header">
+                        <div>
+                            <p class="section-title">Acquisition Queue</p>
+                            <p class="section-sub">FIFO Protocol Processing</p>
+                        </div>
+                        <button class="btn btn-ghost-red" onclick="clearProcessedOrders()">🗑 Clear Passed</button>
+                    </div>
+                    <div class="table-scroll">
+                        <table class="bv-table">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Team Name</th>
+                                    <th>Total Items</th>
+                                    <th>Processing Status</th>
+                                    <th style="text-align:right;">Management</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orders-list">
+                                <!-- Loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ── TEAMS TAB ── -->
+            <section id="teams-tab" class="hidden fade-in">
+                <div class="section-card">
+                    <div class="section-card-header">
+                        <div>
+                            <p class="section-title">Team Roster</p>
+                            <p class="section-sub">Network Participant Overview</p>
+                        </div>
+                        <div style="display:flex;gap:0.6rem;">
+                            <button class="btn btn-ghost" onclick="exportDataCSV()">Download CSV</button>
+                            <button class="btn btn-primary" onclick="openModal('addTeam')">＋ Authorize Team</button>
+                        </div>
+                    </div>
+                    <div class="table-scroll">
+                        <table class="bv-table">
+                            <thead>
+                                <tr>
+                                    <th>Team ID</th>
+                                    <th>Team Name</th>
+                                    <th>Points</th>
+                                    <th>Ordering Status</th>
+                                    <th style="text-align:right;">Management</th>
+                                </tr>
+                            </thead>
+                            <tbody id="teams-list">
+                                <!-- Loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ── LOGS TAB ── -->
+            <section id="logs-tab" class="hidden fade-in">
+                <div class="section-card">
+                    <div class="section-card-header">
+                        <div>
+                            <p class="section-title">System Logs</p>
+                            <p class="section-sub">Immutable transaction and action registry</p>
+                        </div>
+                    </div>
+                    <div class="table-scroll">
+                        <table class="bv-table">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>User</th>
+                                    <th>Event Type</th>
+                                    <th>Details</th>
+                                    <th style="text-align:right;">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logs-list">
+                                <!-- Loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- ── MODAL ── -->
+    <div id="modal-backdrop" class="hidden">
+        <div id="modal-container">
+            <div class="modal-hdr">
+                <h3 id="modal-title">Action</h3>
+                <button class="modal-close-x" onclick="closeModal()">✕</button>
+            </div>
+            <div id="modal-content" class="px-8 py-8 space-y-6">
+                <!-- Loaded dynamically -->
+            </div>
+            <div class="modal-ftr">
+                <button class="btn btn-ghost" onclick="closeModal()">Dismiss</button>
+                <button class="btn btn-yellow" id="modal-submit">Confirm Action</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.4.3/bcrypt.min.js"></script>
+    <script>
+        if (typeof bcrypt === 'undefined' && typeof dcodeIO !== 'undefined') {
+            window.bcrypt = dcodeIO.bcrypt;
+        }
+    </script>
+    <script src="js/auth.js"></script>
+    <script src="js/admin.js"></script>
+    <script>
+        // Sidebar Toggle Logic
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        const toggleBtn = document.getElementById('mobile-toggle');
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('show');
+        }
+
+        toggleBtn.addEventListener('click', toggleSidebar);
+        overlay.addEventListener('click', toggleSidebar);
+
+        // Close sidebar when clicking a nav button on mobile
+        document.querySelectorAll('.sidebar-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (window.innerWidth <= 1024) {
+                    toggleSidebar();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

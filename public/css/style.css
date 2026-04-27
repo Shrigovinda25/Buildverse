@@ -1,0 +1,88 @@
+/* BuildVerse Pill Style - Tailwind Extensions */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap');
+
+:root {
+    --bv-red: #C8102E;
+    --bv-yellow: #FFD700;
+    --bv-blue: #0047AB;
+}
+
+body {
+    font-family: 'Outfit', sans-serif;
+    color: #333;
+}
+
+/* Floating Pill Nav */
+.pill-nav {
+    position: fixed;
+    top: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border-radius: 9999px;
+    padding: 0.5rem 2rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    display: flex;
+    gap: 1.5rem;
+    z-index: 1000;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.pill-nav-link {
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.8rem 0;
+    position: relative;
+    transition: all 0.2s;
+}
+
+.pill-nav-link.active {
+    color: var(--bv-red);
+}
+
+.pill-nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 60%;
+    height: 4px;
+    background: var(--bv-red);
+    border-radius: 2px;
+}
+
+/* Ultra Rounded Containers */
+.ultra-card {
+    border-radius: 40px;
+    background: #fff;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.hero-gradient {
+    background: radial-gradient(circle at top right, #fff 0%, #f1f5f9 100%);
+}
+
+@keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in-down {
+    animation: fadeInDown 0.6s ease-out;
+}
+
+/* Custom Status Styles */
+.status-Pending { @apply bg-yellow-100 text-yellow-800 border-yellow-200; }
+.status-Approved { @apply bg-blue-100 text-blue-800 border-blue-200; }
+.status-Given { @apply bg-emerald-100 text-emerald-800 border-emerald-200; }
+.status-Returned { @apply bg-purple-100 text-purple-800 border-purple-200; }
+.status-Rejected { @apply bg-red-100 text-red-800 border-red-200; }
+
+.btn-pill {
+    @apply rounded-full font-black uppercase tracking-widest transition-all active:scale-95;
+}

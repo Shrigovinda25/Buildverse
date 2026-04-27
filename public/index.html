@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BUILDVERSE | Hardware Inventory Platform</title>
+    <link rel="icon" type="image/png" href="assets/logo.png">
+    <meta name="description"
+        content="BuildVerse — Real-time hardware inventory and component management for engineering innovation events.">
+    <link rel="stylesheet" href="css/style.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,800&family=Outfit:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bvRed: '#C8102E',
+                        bvYellow: '#FFD700',
+                        bvBlue: '#0047AB'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #C8102E;
+            border-radius: 10px;
+        }
+
+        /* top-bar removed */
+
+        /* ── MAIN NAV ── */
+        .main-nav {
+            background: transparent;
+            padding: 0 4rem;
+            height: 110px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 200;
+            transition: all 0.4s;
+        }
+
+        .main-nav.scrolled {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            height: 90px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-left: auto;
+        }
+
+        .nav-link {
+            font-size: 0.78rem;
+            font-weight: 800;
+            color: #ffffff;
+            text-decoration: none;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 0.6rem 1.2rem;
+            border-radius: 50px;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+        }
+
+        .nav-link:hover {
+            background: rgba(200, 16, 46, 0.1);
+            color: #C8102E;
+        }
+
+        .nav-link.active {
+            background: #C8102E;
+            color: #fff;
+        }
+
+        .login-btn {
+            background: transparent;
+            border: 2px solid #ffffff;
+            color: #ffffff;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 0.55rem 1.6rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+
+        .login-btn:hover {
+            background: #C8102E;
+            border-color: #C8102E;
+            color: #fff;
+        }
+
+        /* ── HERO ── */
+        .hero {
+            height: 100vh;
+            background-image: url('assets/background.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .hero.blurred {
+            filter: blur(30px);
+            transform: scale(1.1);
+        }
+
+        /* Subtle dark overlay so text stays readable without killing the image */
+        .hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            max-width: 1000px;
+            padding: 2.5rem 2rem 3rem;
+        }
+
+        .hero-logo-container {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto 2rem;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        @keyframes float-delayed {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(10px);
+            }
+        }
+
+        .hero-brand {
+            font-family: 'Outfit', sans-serif;
+            font-size: clamp(3.5rem, 8vw, 5.5rem);
+            font-weight: 900;
+            color: #ffffff;
+            line-height: 0.9;
+            letter-spacing: -0.02em;
+            text-align: center;
+        }
+
+        .hero-brand .bv-sub {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            font-weight: 800;
+            letter-spacing: 0.6em;
+            text-transform: uppercase;
+            color: #C8102E;
+            display: block;
+            margin-bottom: 0.8rem;
+        }
+
+        .hero-branding-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 3rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .branding-logo-left {
+            width: 140px;
+            height: 140px;
+            background: #fff;
+            border-radius: 50%;
+            padding: 15px;
+            object-fit: contain;
+            box-shadow: 0 15px 45px rgba(0, 0, 0, 0.2);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .branding-logo-right {
+            height: 120px;
+            width: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.2));
+            animation: float-delayed 6.2s ease-in-out infinite;
+        }
+
+        .hero-brand .accent {
+            color: #C8102E;
+            font-style: italic;
+        }
+
+        .hero-divider {
+            width: 40px;
+            height: 3px;
+            background: #C8102E;
+            margin: 1rem auto;
+            border-radius: 2px;
+        }
+
+        .hero-desc {
+            font-size: 1.1rem;
+            color: #ffffff;
+            line-height: 1.6;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            /* Reduced to bring partner card up */
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-desc strong {
+            color: #ffffff;
+        }
+
+        .hero-btns {
+            display: flex;
+            gap: 2.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-red {
+            background: #C8102E;
+            color: #fff;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            padding: 0.95rem 2.4rem;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.25s;
+            box-shadow: 0 8px 28px rgba(200, 16, 46, 0.35);
+        }
+
+        .btn-red:hover {
+            background: #a80d25;
+            transform: translateY(-2px);
+            box-shadow: 0 14px 36px rgba(200, 16, 46, 0.4);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: #ffffff;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            padding: 0.93rem 2.4rem;
+            border-radius: 50px;
+            border: 2px solid #ffffff;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+
+        .btn-ghost:hover {
+            background: #1a1a1a;
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        /* ── PARTNER CARD ── */
+        .partner-card {
+            margin-top: 0.5rem;
+            /* Pulled up closer */
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(20px) saturate(180%);
+            border-radius: 40px;
+            padding: 1.8rem 3rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 2.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-width: 850px;
+            position: relative;
+            transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .partner-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+            transform: translateX(-100%);
+            transition: 0.8s;
+        }
+
+        .partner-card:hover::before {
+            transform: translateX(100%);
+        }
+
+        .partner-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-8px) scale(1.01);
+            border-color: rgba(200, 16, 46, 0.5);
+            box-shadow: 0 30px 60px rgba(200, 16, 46, 0.15);
+        }
+
+        @keyframes pulse-border {
+
+            0%,
+            100% {
+                border-color: rgba(255, 255, 255, 0.1);
+                box-shadow: 0 0 0 rgba(200, 16, 46, 0);
+            }
+
+            50% {
+                border-color: rgba(200, 16, 46, 0.3);
+                box-shadow: 0 0 30px rgba(200, 16, 46, 0.1);
+            }
+        }
+
+        .partner-card:hover {
+            background: rgba(255, 255, 255, 0.06);
+            transform: translateY(-5px) scale(1.02);
+            border-color: rgba(200, 16, 46, 0.5);
+        }
+
+        .partner-logo {
+            width: 90px;
+            height: 90px;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.2));
+            background: #fff;
+            border-radius: 24px;
+            padding: 14px;
+            transition: all 0.4s;
+        }
+
+        .partner-card:hover .partner-logo {
+            transform: scale(1.1) rotate(-3deg);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .partner-info {
+            text-align: left;
+        }
+
+        .partner-label {
+            font-size: 0.6rem;
+            font-weight: 900;
+            color: #FFD700;
+            /* Golden Color */
+            text-transform: uppercase;
+            letter-spacing: 0.3em;
+            margin-bottom: 0.3rem;
+            display: block;
+        }
+
+        .partner-name {
+            font-size: 1.2rem;
+            font-weight: 900;
+            color: #fff;
+            margin-bottom: 0.2rem;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .partner-desc {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.6);
+            line-height: 1.4;
+            max-width: 450px;
+        }
+
+        .partner-link {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            padding: 0.8rem 1.4rem;
+            border-radius: 16px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .partner-link:hover {
+            background: #C8102E;
+            color: #fff;
+            box-shadow: 0 10px 20px rgba(200, 16, 46, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .partner-card {
+                flex-direction: column;
+                text-align: center;
+                gap: 1.5rem;
+                padding: 2rem;
+                margin-top: 3rem;
+            }
+
+            .partner-info {
+                text-align: center;
+            }
+
+            .partner-desc {
+                margin: 0 auto;
+            }
+        }
+
+        /* ── FOOTER ── */
+        .footer-bar {
+            background: #1e1e1e;
+            color: #666;
+            text-align: center;
+            padding: 1.1rem 2rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+        }
+
+        /* ── LOGIN MODAL ── */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 10, 10, 0.6);
+            backdrop-filter: blur(12px);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        .modal-backdrop.open {
+            display: flex;
+            animation: fadeIn 0.2s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .modal-box {
+            background: #fff;
+            border-radius: 32px;
+            width: 100%;
+            max-width: 430px;
+            overflow: hidden;
+            animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.25);
+        }
+
+        @keyframes popIn {
+            from {
+                opacity: 0;
+                transform: scale(0.88) translateY(24px);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .modal-header {
+            background: #fff;
+            padding: 1.8rem 2.2rem 1.6rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .modal-logos {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .modal-logo-sep {
+            width: 2px;
+            height: 48px;
+            background: #eee;
+        }
+
+        .modal-logos img {
+            height: 55px;
+            object-fit: contain;
+        }
+
+        .modal-close {
+            background: rgba(0, 0, 0, 0.05);
+            border: none;
+            color: #555;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .modal-close:hover {
+            background: rgba(0, 0, 0, 0.1);
+            color: #000;
+        }
+
+        .modal-body {
+            padding: 2rem 2.2rem 2.4rem;
+        }
+
+        .modal-sub {
+            font-size: 0.63rem;
+            font-weight: 800;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: #aaa;
+            margin-bottom: 0.3rem;
+        }
+
+        .modal-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #1a1a1a;
+            margin-bottom: 1.8rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.65rem;
+            font-weight: 800;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: #999;
+            margin-bottom: 0.45rem;
+            margin-left: 0.3rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.88rem 1.3rem;
+            background: #f5f5f5;
+            border: 1.5px solid #ebebeb;
+            border-radius: 50px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: #333;
+            outline: none;
+            transition: all 0.2s;
+            margin-bottom: 1.1rem;
+        }
+
+        .form-input:focus {
+            background: #fff;
+            border-color: #C8102E;
+            box-shadow: 0 0 0 4px rgba(200, 16, 46, 0.09);
+        }
+
+        .animate-shake {
+            animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
+        .info-box {
+            background: #f7f7f7;
+            border: 1.5px dashed #e2e2e2;
+            border-radius: 14px;
+            padding: 0.9rem 1.1rem;
+            margin-top: 1.2rem;
+        }
+
+        /* ── CONTENT OVERLAYS ── */
+        .content-panel {
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(40px) saturate(180%);
+            z-index: 150;
+            display: none;
+            overflow-y: auto;
+            padding: 8rem 2rem 4rem;
+        }
+
+        .content-panel.active {
+            display: block;
+            animation: panelIn 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+
+        @keyframes panelIn {
+            from {
+                opacity: 0;
+                transform: scale(1.05);
+                filter: blur(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+                filter: blur(0);
+            }
+        }
+
+        .panel-close {
+            position: fixed;
+            top: 110px;
+            right: 4rem;
+            width: 50px;
+            height: 50px;
+            background: #111;
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            border: none;
+            z-index: 160;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s;
+        }
+
+        .panel-close:hover {
+            background: #C8102E;
+            transform: rotate(90px);
+        }
+
+        .section-container {
+            padding: 4rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 5rem;
+        }
+
+        .section-label {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: #C8102E;
+            text-transform: uppercase;
+            letter-spacing: 0.4em;
+            display: block;
+            margin-bottom: 1rem;
+        }
+
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem;
+            font-weight: 900;
+            color: #111;
+            letter-spacing: -0.02em;
+        }
+
+        /* ABOUT REDESIGN */
+        .prize-hero-banner {
+            background: linear-gradient(135deg, #C8102E, #8B0000);
+            padding: 3rem 4rem;
+            border-radius: 32px;
+            color: #fff;
+            text-align: center;
+            margin-bottom: 4rem;
+            box-shadow: 0 20px 50px rgba(200, 16, 46, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s;
+        }
+
+        .prize-hero-banner:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 60px rgba(200, 16, 46, 0.3);
+        }
+
+        .prize-info h3 {
+            font-size: 0.75rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.4em;
+            opacity: 0.8;
+            margin-bottom: 0.5rem;
+        }
+
+        .prize-amount {
+            font-size: 4.5rem;
+            font-weight: 900;
+            line-height: 1;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .about-pillar-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .pillar-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 2.5rem;
+            border-radius: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .pillar-card:hover {
+            background: #fff;
+            transform: translateY(-12px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+            border-color: #C8102E;
+        }
+
+        .pillar-head {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .pillar-num {
+            font-size: 0.9rem;
+            font-weight: 900;
+            color: #C8102E;
+            font-family: 'Outfit', sans-serif;
+            opacity: 0.4;
+        }
+
+        .pillar-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #111;
+        }
+
+        .pillar-body {
+            font-size: 0.95rem;
+            line-height: 1.7;
+            color: #555;
+            font-weight: 600;
+        }
+
+        .about-mission-footer {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+            padding: 2.5rem;
+            border-top: 2px solid #f0f0f0;
+            font-style: italic;
+            color: #777;
+            font-size: 1.1rem;
+        }
+
+        .about-brand-highlight {
+            color: #C8102E;
+            font-weight: 900;
+        }
+
+        /* INVENTORY MATRIX */
+        .matrix-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2.5rem;
+        }
+
+        .matrix-card {
+            background: #fff;
+            border-radius: 24px;
+            padding: 2rem;
+            border: 1px solid #f0f0f0;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .matrix-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+            border-color: rgba(200, 16, 46, 0.1);
+        }
+
+        .matrix-card img {
+            width: 180px;
+            height: 180px;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.05));
+        }
+
+        .matrix-name {
+            font-size: 1rem;
+            font-weight: 900;
+            color: #111;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* RULES */
+        .rules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.8rem;
+        }
+
+        .rule-card {
+            background: #fff;
+            padding: 2.5rem;
+            border-radius: 24px;
+            border: 1px solid #f0f0f0;
+            display: flex;
+            gap: 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .rule-card:hover {
+            background: #fafafa;
+            border-color: #C8102E;
+        }
+
+        .rule-num {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #C8102E;
+            color: #fff;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 1rem;
+            box-shadow: 0 4px 10px rgba(200, 16, 46, 0.3);
+        }
+
+        .rule-content {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #555;
+            font-weight: 600;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* ── MOBILE RESPONSIVENESS ── */
+        @media (max-width: 768px) {
+
+            /* Nav */
+            .main-nav {
+                padding: 0 1.5rem;
+                height: 80px;
+            }
+
+            .nav-links {
+                gap: 0.25rem;
+            }
+
+            .nav-link {
+                padding: 0.5rem 0.6rem;
+                font-size: 0.68rem;
+            }
+
+            .login-btn {
+                display: block;
+                padding: 0.5rem 0.8rem;
+                font-size: 0.68rem;
+                border-width: 1.5px;
+            }
+
+            /* Hero */
+            .hero-content {
+                padding: 1.5rem;
+            }
+
+            .hero-branding-row {
+                gap: 1.5rem;
+            }
+
+            .branding-logo-left {
+                width: 70px;
+                height: 70px;
+            }
+
+            .branding-logo-right {
+                height: 60px;
+            }
+
+            .hero-brand {
+                font-size: 3rem;
+            }
+
+            .hero-brand .bv-sub {
+                letter-spacing: 0.3em;
+                font-size: 0.8rem;
+            }
+
+            .hero-btns {
+                flex-direction: column;
+                gap: 1rem;
+                width: 100%;
+            }
+
+            .btn-red,
+            .btn-ghost {
+                width: 100%;
+                text-align: center;
+            }
+
+            /* Panels */
+            .content-panel {
+                padding: 6rem 1.5rem 2rem;
+            }
+
+            .section-title {
+                font-size: 2.2rem;
+            }
+
+            /* About Section */
+            .prize-hero-banner {
+                flex-direction: column;
+                padding: 2.5rem 2rem;
+                gap: 2rem;
+                margin-bottom: 2rem;
+            }
+
+            .prize-amount {
+                font-size: 3rem;
+            }
+
+            .prize-hero-banner .w-px {
+                width: 50px;
+                height: 2px;
+            }
+
+            .about-pillar-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .pillar-card {
+                padding: 1.8rem;
+            }
+
+            .about-mission-footer {
+                padding: 1.5rem;
+                font-size: 0.95rem;
+            }
+
+            /* Inventory */
+            .matrix-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 1rem;
+            }
+
+            .matrix-card {
+                padding: 1rem;
+            }
+
+            .matrix-card img {
+                width: 100px;
+                height: 100px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="main-nav">
+        <div class="nav-links">
+            <button class="nav-link" onclick="toggleSection('about')">About</button>
+            <button class="nav-link" onclick="toggleSection('inventory')">Inventory</button>
+            <button class="nav-link" onclick="toggleSection('rules')">Rules</button>
+            <button class="login-btn" onclick="openLoginModal()">Login Portal →</button>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero" id="main-hero">
+        <div class="hero-content">
+            <div class="hero-branding-row">
+                <img src="assets/logo.png" alt="BuildVerse Logo" class="branding-logo-left">
+                <img src="assets/pleiades logo white.png" alt="Pleiades" class="branding-logo-right">
+            </div>
+
+            <h1 class="hero-brand">
+                <span class="bv-sub">PROTOTYPING REVOLUTION</span>
+                Build<span class="accent">Verse</span>
+            </h1>
+
+            <div class="hero-divider"></div>
+
+            <p class="hero-desc">
+                The high-performance hardware ecosystem. <br>
+                <strong>Ideate. Engineer. Optimize.</strong>
+            </p>
+
+
+
+            <!-- PARTNER SPOTLIGHT -->
+            <div class="partner-card">
+                <img src="assets/Core Electronics.png" alt="Core Electronics" class="partner-logo">
+                <div class="partner-info">
+                    <span class="partner-label">Powered By</span>
+                    <p class="partner-name">Core Electronics</p>
+                    <p class="partner-desc">Empowering innovators with industrial-grade components and precision
+                        engineering solutions for the next generation of hardware.</p>
+                </div>
+                <a href="https://www.justdial.com/Hubli/Core-Technologies-Opp-BVB-COLLEGE-Vidyanagar-Hubli/0836PX836-X836-190517113342-H5F3_BZDET" target="_blank" class="partner-link">Explore Portal</a>
+            </div>
+        </div>
+    </section>
+
+    <button class="panel-close hidden" id="panel-close-btn" onclick="closeAllPanels()">✕</button>
+
+    <!-- ABOUT PANEL -->
+    <div id="about" class="content-panel">
+        <section class="section-container">
+            <!-- PRIZE HERO -->
+            <div class="prize-hero-banner">
+                <div class="prize-info">
+                    <h3>The Rewards Matrix</h3>
+                    <div class="prize-amount">₹24,000</div>
+                    <p class="uppercase tracking-[0.4em] font-black opacity-80 mt-2 text-[0.6rem]">Total Prize
+                        Repository</p>
+                </div>
+                <div class="w-px h-24 bg-white/20"></div>
+                <div class="text-left max-w-xs">
+                    <p class="text-sm font-bold leading-relaxed opacity-90">Experience the high-performance hardware
+                        ecosystem where innovation meets precision.</p>
+                </div>
+            </div>
+
+            <!-- CORE PILLARS -->
+            <div class="about-pillar-grid">
+                <!-- CARD 1 -->
+                <div class="pillar-card">
+                    <div class="pillar-head">
+                        <span class="pillar-num">01</span>
+                        <h3 class="pillar-title">Conceptual Framework</h3>
+                    </div>
+                    <p class="pillar-body">
+                        Buildverse is an engineering innovation challenge designed to test creativity, technical skills,
+                        and strategic thinking under real-world constraints. Transform ideas into functional prototypes
+                        using a dynamic points-based repository.
+                    </p>
+                </div>
+
+                <!-- CARD 2 -->
+                <div class="pillar-card">
+                    <div class="pillar-head">
+                        <span class="pillar-num">02</span>
+                        <h3 class="pillar-title">Operational Pipeline</h3>
+                    </div>
+                    <p class="pillar-body">
+                        Engage in a multi-stage process: component analysis, strategic planning, procurement, and
+                        iterative optimization. Mirroring real-world product development environments for rapid
+                        problem-solving.
+                    </p>
+                </div>
+
+                <!-- CARD 3 -->
+                <div class="pillar-card">
+                    <div class="pillar-head">
+                        <span class="pillar-num">03</span>
+                        <h3 class="pillar-title">Design Optimization</h3>
+                    </div>
+                    <p class="pillar-body">
+                        Balance innovation with cost-efficiency. Prototypes are evaluated based on engineering design,
+                        functionality, and efficient resource management during structured evaluation cycles.
+                    </p>
+                </div>
+            </div>
+
+            <div class="about-mission-footer">
+                Buildverse provides a hands-on platform for aspiring engineers to ideate, engineer, and optimize
+                solutions, fostering practical skills and teamwork essential for modern engineering challenges.
+            </div>
+        </section>
+    </div>
+
+    <!-- INVENTORY PANEL -->
+    <div id="inventory" class="content-panel">
+        <section class="section-container">
+            <div class="section-header">
+                <span class="section-label">Resource Matrix</span>
+                <h2 class="section-title">Hardware Arsenal</h2>
+            </div>
+            <div id="public-matrix" class="matrix-grid">
+                <!-- Loaded dynamically -->
+                <p class="text-center col-span-full py-10 font-bold text-slate-400">CONNECTING TO REPOSITORY...</p>
+            </div>
+        </section>
+    </div>
+
+    <!-- RULES PANEL -->
+    <div id="rules" class="content-panel">
+        <section class="section-container">
+            <div class="section-header">
+                <span class="section-label">Requisition Protocol</span>
+                <h2 class="section-title">Rules of Engagement</h2>
+            </div>
+            <div class="rules-grid">
+                <div class="rule-card">
+                    <div class="rule-num">1</div>
+                    <div class="rule-content">Teams must register before the specified deadline to participate in the
+                        event.</div>
+                </div>
+                <div class="rule-card">
+                    <div class="rule-num">2</div>
+                    <div class="rule-content">Each team must consist of the approved number of members; no changes
+                        allowed once the event begins.</div>
+                </div>
+                <!-- ... other rules ... -->
+                <div class="rule-card">
+                    <div class="rule-num">3</div>
+                    <div class="rule-content">Participants are allowed to be part of only one team.</div>
+                </div>
+                <div class="rule-card">
+                    <div class="rule-num">4</div>
+                    <div class="rule-content">Strict adherence to instructions provided by the organizers throughout the
+                        event.</div>
+                </div>
+                <div class="rule-card">
+                    <div class="rule-num">5</div>
+                    <div class="rule-content">Only components purchased through the official points-based system may be
+                        used for building.</div>
+                </div>
+                <div class="rule-card">
+                    <div class="rule-num">6</div>
+                    <div class="rule-content">Use of external or pre-owned components is strictly prohibited.</div>
+                </div>
+                <div class="rule-card">
+                    <div class="rule-num">7</div>
+                    <div class="rule-content">Teams must manage their allocated points efficiently; overspending may
+                        impact evaluation.</div>
+                </div>
+                <div class="rule-card">
+                    <div class="rule-num">8</div>
+                    <div class="rule-content">Exchange or sharing of components between teams is not allowed under any
+                        circumstances.</div>
+                </div>
+                <div class="rule-card">
+                    <div class="rule-num">9</div>
+                    <div class="rule-content">Any damage caused to components or equipment due to negligence may result
+                        in penalties.</div>
+                </div>
+                <div class="rule-card">
+                    <div class="rule-num">10</div>
+                    <div class="rule-content">Participants must handle all materials responsibly and return unused
+                        components.</div>
+                </div>
+                <div class="rule-card">
+                    <div class="rule-num">11</div>
+                    <div class="rule-content">Completion of prototype must be within the allocated time limits for each
+                        round.</div>
+                </div>
+                <div class="rule-card">
+                    <div class="rule-num">12</div>
+                    <div class="rule-content">Maintain discipline and follow all safety guidelines during the entire
+                        event.</div>
+                </div>
+                <div class="rule-card">
+                    <div class="rule-num">13</div>
+                    <div class="rule-content">The decisions made by the judges and organizing committee will be final
+                        and binding.</div>
+                </div>
+                <div class="rule-card">
+                    <div class="rule-num">14</div>
+                    <div class="rule-content">Organizers reserve the right to modify rules to ensure smooth execution of
+                        the event.</div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer-bar">
+        &copy; 2026 BuildVerse &nbsp;·&nbsp; Pleiades Innovation Lab &nbsp;·&nbsp; All Rights Reserved
+    </div>
+
+    <!-- LOGIN MODAL -->
+    <div class="modal-backdrop" id="login-modal" onclick="handleBackdrop(event)">
+        <div class="modal-box">
+            <div class="modal-header">
+                <div class="modal-logos">
+                    <img src="assets/logo.png" alt="BuildVerse">
+                    <div class="modal-logo-sep"></div>
+                    <img src="assets/pleiades logo black.png" alt="Pleiades">
+                </div>
+                <button class="modal-close" onclick="closeLoginModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-sub">Security Clearance Required</p>
+                <h2 class="modal-title">Access Portal</h2>
+
+                <form id="login-form" autocomplete="off">
+                    <label class="form-label" for="username">Access Identity</label>
+                    <input type="text" id="username" class="form-input" placeholder="Username" required>
+
+                    <label class="form-label" for="password">Passkey Code</label>
+                    <input type="password" id="password" class="form-input" placeholder="••••••••" required>
+
+                    <button type="submit" class="btn-red" style="width:100%;padding:1rem 0;margin-top:0.4rem;">
+                        Initialize Session
+                    </button>
+                </form>
+
+                <div id="error-message" class="mt-6 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 hidden animate-shake">
+                    <svg class="w-5 h-5 text-red-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    <p id="error-text" class="text-red-700 text-xs font-black uppercase tracking-tight leading-tight"></p>
+                </div>
+
+                <div class="info-box">
+                    <p class="info-title">Participant Access Protocol</p>
+                    <p class="info-text">
+                        Use the <strong>Identity</strong> and <strong>Passkey</strong> provided by the Admin during
+                        registration. Keep your credentials secure at all times.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.4.3/bcrypt.min.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        if (typeof bcrypt === 'undefined' && typeof dcodeIO !== 'undefined') {
+            window.bcrypt = dcodeIO.bcrypt;
+        }
+        function openLoginModal() {
+            document.getElementById('login-modal').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeLoginModal() {
+            document.getElementById('login-modal').classList.remove('open');
+            document.body.style.overflow = '';
+        }
+        function handleBackdrop(e) {
+            if (e.target === document.getElementById('login-modal')) closeLoginModal();
+        }
+
+        // PANEL SYSTEM
+        function toggleSection(id) {
+            const panel = document.getElementById(id);
+            const hero = document.getElementById('main-hero');
+            const nav = document.querySelector('.main-nav');
+            const closeBtn = document.getElementById('panel-close-btn');
+
+            if (panel.classList.contains('active')) {
+                closeAllPanels();
+                return;
+            }
+
+            closeAllPanels();
+            panel.classList.add('active');
+            hero.classList.add('blurred');
+            nav.classList.add('scrolled');
+            closeBtn.classList.remove('hidden');
+        }
+
+        function closeAllPanels() {
+            document.querySelectorAll('.content-panel').forEach(p => p.classList.remove('active'));
+            document.getElementById('main-hero').classList.remove('blurred');
+            document.querySelector('.main-nav').classList.remove('scrolled');
+            document.getElementById('panel-close-btn').classList.add('hidden');
+        }
+
+        // DYNAMIC INVENTORY
+        if (typeof firestore !== 'undefined') {
+            firestore.collection('components').onSnapshot(snapshot => {
+                const grid = document.getElementById('public-matrix');
+                if (!grid) return;
+                grid.innerHTML = '';
+                snapshot.forEach(doc => {
+                    const comp = doc.data();
+                    // IMAGE LOGIC: Match local assets directory, sanitize slashes
+                    const sanitizedName = comp.name.replace(/\//g, ' ');
+                    const imgPath = `assets/components/${sanitizedName}.jpg`;
+                    const card = `
+                    <div class="matrix-card">
+                        <img src="${imgPath}" alt="${comp.name}" onerror="this.src='assets/logo.png'">
+                        <div class="matrix-name">${comp.name}</div>
+                    </div>
+                `;
+                    grid.insertAdjacentHTML('beforeend', card);
+                });
+            });
+        }
+    </script>
+</body>
+
+</html>
