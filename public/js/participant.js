@@ -74,7 +74,16 @@ function switchTab(tab) {
 let isGlobalPaused = false;
 firestore.collection('settings').doc('system').onSnapshot(doc => {
     if (doc.exists) {
-        isGlobalPaused = doc.data().orderingPaused || false;
+        const data = doc.data();
+        isGlobalPaused = data.orderingPaused || false;
+        
+        // Handle global image visibility
+        if (data.hideComponentImages) {
+            document.body.classList.add('hide-component-images');
+        } else {
+            document.body.classList.remove('hide-component-images');
+        }
+
         updateBannerState();
         renderCatalog();
     }

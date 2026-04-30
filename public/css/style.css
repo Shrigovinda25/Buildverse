@@ -86,3 +86,10 @@ body {
 .btn-pill {
     @apply rounded-full font-black uppercase tracking-widest transition-all active:scale-95;
 }
+
+/* Global Component Image Visibility Toggle */
+.hide-component-images #catalog-list img,
+.hide-component-images #inventory-list img,
+.hide-component-images #public-matrix img {
+    display: none !important;
+}

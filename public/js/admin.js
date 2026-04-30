@@ -1369,3 +1369,44 @@ async function toggleGlobalPause() {
         alert('Error toggling global pause: ' + e.message);
     }
 }
+
+// ── GLOBAL IMAGE TOGGLE ──
+let areImagesHidden = false;
+firestore.collection('settings').doc('system').onSnapshot(doc => {
+    if (doc.exists) {
+        areImagesHidden = doc.data().hideComponentImages || false;
+        const btn = document.getElementById('hide-imgs-btn');
+        if (btn) {
+            if (areImagesHidden) {
+                btn.innerHTML = '<span class="text-sm">👁️</span> Show Imgs';
+                btn.classList.remove('bg-slate-100', 'text-slate-500');
+                btn.classList.add('bg-bvBlue', 'text-white', 'hover:bg-bvBlue/80');
+                document.body.classList.add('hide-component-images');
+            } else {
+                btn.innerHTML = '<span class="text-sm">🖼️</span> Hide Imgs';
+                btn.classList.remove('bg-bvBlue', 'text-white', 'hover:bg-bvBlue/80');
+                btn.classList.add('bg-slate-100', 'text-slate-500');
+                document.body.classList.remove('hide-component-images');
+            }
+        }
+    }
+});
+
+async function toggleHideImages() {
+    try {
+        await firestore.collection('settings').doc('system').set({
+            hideComponentImages: !areImagesHidden
+        }, { merge: true });
+
+        const currentUser = JSON.parse(localStorage.getItem('bv_user') || '{}');
+        await firestore.collection('transactions').add({
+            username: currentUser.username || 'System',
+            type: 'system',
+            amount: 0,
+            reason: `Global resource images ${!areImagesHidden ? 'HIDDEN' : 'RESTORED'}`,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+    } catch (e) {
+        alert('Error toggling image visibility: ' + e.message);
+    }
+}

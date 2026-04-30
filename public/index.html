@@ -1360,6 +1360,17 @@
 
         // DYNAMIC INVENTORY
         if (typeof firestore !== 'undefined') {
+            // Listen for global settings
+            firestore.collection('settings').doc('system').onSnapshot(doc => {
+                if (doc.exists) {
+                    if (doc.data().hideComponentImages) {
+                        document.body.classList.add('hide-component-images');
+                    } else {
+                        document.body.classList.remove('hide-component-images');
+                    }
+                }
+            });
+
             firestore.collection('components').onSnapshot(snapshot => {
                 const grid = document.getElementById('public-matrix');
                 if (!grid) return;
