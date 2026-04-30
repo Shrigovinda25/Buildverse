@@ -85,15 +85,14 @@ const PREDEFINED_COMPONENTS = [
     { category: "Hardware", name: "½in L Clamp", totalQuantity: 40, price: 10 },
     { category: "Hardware", name: "Female to Female Jumper wire", totalQuantity: 100, price: 1 },
     { category: "Hardware", name: "Male to Female Jumper wire", totalQuantity: 100, price: 1 },
-    { category: "Hardware", name: "M3 Nut & Bolts", totalQuantity: 100, price: 5 },
+    { category: "Hardware", name: "M4 Nut & Bolts", totalQuantity: 100, price: 5 },
     { category: "Hardware", name: "Resistor Pack", totalQuantity: 20, price: 10 },
 
     { category: "Power", name: "12V Power Adapter", totalQuantity: 20, price: 100 },
     { category: "Power", name: "5V Power Adapter", totalQuantity: 20, price: 80 },
     { category: "Power", name: "Male & Female Jack", totalQuantity: 20, price: 20 },
     { category: "Power", name: "Single Strand Wire (1m)", totalQuantity: 10, price: 5 },
-    { category: "Miscellaneous", name: "5mm Foam Board", totalQuantity: 40, price: 60, maxPerTeam: 1 },
-    { category: "Miscellaneous", name: "3mm Foam Board", totalQuantity: 40, price: 50, maxPerTeam: 1 },
+    { category: "Miscellaneous", name: "5mm Foam Board (2ft x 1ft)", totalQuantity: 40, price: 60, maxPerTeam: 1, imageUrl: "assets/components/5mm%20Foam%20Board.jpg" },
     { category: "Miscellaneous", name: "Wire Stripper", totalQuantity: 10, price: 30 }
 ];
 
