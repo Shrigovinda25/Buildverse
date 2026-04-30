@@ -127,3 +127,14 @@ body {
     justify-content: center;
     min-height: 200px;
 }
+
+/* Strict hide for Admin Table */
+.hide-component-images #inventory-list .flex-col,
+.hide-component-images #inventory-list img {
+    display: none !important;
+}
+
+.hide-component-images #inventory-list .comp-number {
+    display: flex !important;
+    margin: 0; /* Keep it left-aligned in the table cell if preferred, or centered */
+}
