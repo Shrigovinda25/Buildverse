@@ -156,6 +156,7 @@ function renderCatalog() {
         const card = `
             <div class="bg-white rounded-[32px] shadow-sm border border-slate-100 overflow-hidden flex flex-col p-8 h-full transition-all hover:shadow-xl hover:-translate-y-1 group">
                 <div class="mb-6 rounded-2xl bg-stone-50 p-4 h-36 flex items-center justify-center overflow-hidden">
+                     <div class="comp-number">${index + 1}</div>
                      <img src="${getComponentImageUrl(item)}" onerror="this.outerHTML='<div class=\\'w-full h-full rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-[10px] text-slate-300 font-black uppercase tracking-widest text-center p-4\\'>Resource Image Not Found</div>'" class="max-h-full object-contain mix-blend-multiply transition-transform group-hover:scale-110" alt="${item.name}">
                 </div>
                 <div class="flex justify-between items-start mb-6">

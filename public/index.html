@@ -1375,7 +1375,7 @@
                 const grid = document.getElementById('public-matrix');
                 if (!grid) return;
                 grid.innerHTML = '';
-                snapshot.forEach(doc => {
+                snapshot.docs.forEach((doc, index) => {
                     const comp = doc.data();
                     // IMAGE LOGIC: Match local assets directory, sanitize for URL safety
                     const sanitizedName = comp.name
@@ -1387,6 +1387,7 @@
                     const imgPath = `assets/components/${sanitizedName}.jpg`;
                     const card = `
                     <div class="matrix-card">
+                        <div class="comp-number">${index + 1}</div>
                         <img src="${imgPath}" alt="${comp.name}" onerror="this.src='assets/logo.png'">
                         <div class="matrix-name">${comp.name}</div>
                     </div>

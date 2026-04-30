@@ -151,7 +151,7 @@ function renderInventoryList() {
         ? allComponentsData.filter(i => Number(i.availableQuantity) < 5) 
         : allComponentsData;
 
-    items.forEach((item) => {
+    items.forEach((item, index) => {
         totalStock += item.availableQuantity;
         const isLowStock = Number(item.availableQuantity) < 5;
 
@@ -159,6 +159,7 @@ function renderInventoryList() {
             <tr class="hover:bg-slate-50 transition-colors group ${isLowStock ? 'bg-red-50/30' : ''}">
                 <td class="px-2 py-6">
                     <div class="flex items-center gap-4">
+                        <div class="comp-number" style="width: 48px; height: 48px; font-size: 1.2rem; border-width: 2px;">${index + 1}</div>
                         <img src="${getComponentImageUrl(item)}" onerror="this.outerHTML='<div class=\\'w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-[8px] text-slate-300 font-black\\'>N/A</div>'" class="w-12 h-12 object-contain rounded-xl border border-slate-100 bg-white shadow-sm mix-blend-multiply" alt="${item.name}">
                         <div class="flex flex-col">
                             <span class="text-[9px] font-black text-bvBlue uppercase tracking-widest mb-1 opacity-60">${item.category || 'RESOURCES'}</span>
