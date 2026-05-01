@@ -1,19 +1,11 @@
 {
   "version": 2,
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api" },
-    { "source": "/auth/(.*)", "destination": "/api" },
-    { "source": "/components(.*)", "destination": "/api" },
-    { "source": "/orders(.*)", "destination": "/api" },
-    { "source": "/teams(.*)", "destination": "/api" },
+    { "source": "/api/(.*)", "destination": "/api/server.js" },
+    { "source": "/auth/(.*)", "destination": "/api/server.js" },
+    { "source": "/components(.*)", "destination": "/api/server.js" },
+    { "source": "/orders(.*)", "destination": "/api/server.js" },
+    { "source": "/teams(.*)", "destination": "/api/server.js" },
     { "source": "/(.*)", "destination": "/public/$1" }
-  ],
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
-      ]
-    }
   ]
 }
