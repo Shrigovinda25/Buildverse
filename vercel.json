@@ -1,11 +1,11 @@
 {
   "version": 2,
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/index.js" },
-    { "source": "/auth/(.*)", "destination": "/api/index.js" },
-    { "source": "/components(.*)", "destination": "/api/index.js" },
-    { "source": "/orders(.*)", "destination": "/api/index.js" },
-    { "source": "/teams(.*)", "destination": "/api/index.js" },
+    { "source": "/api/:path*", "destination": "/api/index.js" },
+    { "source": "/auth/:path*", "destination": "/api/index.js" },
+    { "source": "/components:path*", "destination": "/api/index.js" },
+    { "source": "/orders:path*", "destination": "/api/index.js" },
+    { "source": "/teams:path*", "destination": "/api/index.js" },
     { "source": "/(.*)", "destination": "/public/$1" }
   ],
   "headers": [
