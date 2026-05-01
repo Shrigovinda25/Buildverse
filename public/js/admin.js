@@ -485,6 +485,9 @@ firestore.collection('users').where('role', '==', 'participant').onSnapshot(snap
                     <button class="p-2 hover:bg-emerald-50 rounded-xl text-slate-400 hover:text-emerald-600 transition-all" title="Download Team Report" onclick="downloadTeamCSV('${team.username}')">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                     </button>
+                    <button class="p-2 hover:bg-bvBlue/10 rounded-xl text-slate-400 hover:text-bvBlue transition-all" title="Send Credentials Email" onclick="sendTeamEmailPrompt('${team.username}')">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                    </button>
                     <button class="p-2 hover:bg-red-50 rounded-xl text-slate-400 hover:text-red-600 transition-all" title="Delete Team" onclick="deleteTeam('${team.username}')">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                     </button>
@@ -859,6 +862,11 @@ async function saveTeam() {
         // Add Copy Option for Credentials
         showCredentialsPrompt(username, password);
         closeModal();
+
+        // Prompt for Email
+        if (confirm(`Authorize Team [${username}] complete. Would you like to send credentials via email now?`)) {
+            sendTeamEmailPrompt(username, password);
+        }
     } catch (e) { alert(e.message); }
 }
 
@@ -904,6 +912,43 @@ function showCredentialsPrompt(user, pass) {
     if (confirm(msg + '\n\nCopy to clipboard?')) {
         navigator.clipboard.writeText(`BuildVerse Credentials\nIdentity: ${user}\nPasskey: ${pass}`)
             .catch(() => alert('Manual copy required:\n' + user + ' / ' + pass));
+    }
+}
+
+async function sendTeamEmailPrompt(username, rawPassword = null) {
+    const toEmail = prompt(`Enter Participant's Gmail Address for team [${username}]:`);
+    if (!toEmail) return;
+
+    if (!toEmail.toLowerCase().endsWith('@gmail.com')) {
+        alert('Invalid entry. Only @gmail.com addresses are supported.');
+        return;
+    }
+
+    let password = rawPassword;
+    if (!password) {
+        password = prompt(`Verify the team password for [${username}] (Required to send email):`);
+        if (!password) return;
+    }
+
+    try {
+        const token = localStorage.getItem('bv_token');
+        const response = await fetch('/api/send-team-email', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ toEmail, username, password })
+        });
+
+        const result = await response.json();
+        if (response.ok) {
+            alert('PROTOCOL_SUCCESS: Credentials transmitted to ' + toEmail);
+        } else {
+            alert('PROTOCOL_FAILURE: ' + result.message);
+        }
+    } catch (e) {
+        alert('ERR: Connection failed while transmitting email.');
     }
 }
 

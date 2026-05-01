@@ -10,14 +10,14 @@ const nodemailer = require('nodemailer');
 const app = express();
 app.use(express.json());
 app.use(cors());
-app.use(express.static(path.join(__dirname)));
+app.use(express.static(path.join(__dirname, '../public')));
 
 // ----------------------------------------------------------------------------
 // Firebase Initialization
 // ----------------------------------------------------------------------------
 const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT 
   ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT) 
-  : require('./serviceAccountKey.json');
+  : require('../serviceAccountKey.json');
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
@@ -514,7 +514,4 @@ KLE Technological University`,
 // ----------------------------------------------------------------------------
 // Server Listen
 // ----------------------------------------------------------------------------
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+module.exports = app;
