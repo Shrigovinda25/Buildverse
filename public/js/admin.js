@@ -47,6 +47,60 @@ const CAT_PRIORITY = {
     'Miscellaneous': 9
 };
 
+// ----------------------------------------------------------------------------
+// Global Event Listeners & State
+// ----------------------------------------------------------------------------
+let isGlobalPaused = false;
+let areImagesHidden = false;
+
+// Listen for global settings
+firestore.collection('settings').doc('system').onSnapshot(doc => {
+    if (doc.exists) {
+        const data = doc.data();
+        isGlobalPaused = data.orderingPaused || false;
+        areImagesHidden = data.hideComponentImages || false;
+        
+        // Update Pause Button
+        const pauseBtn = document.getElementById('global-pause-btn');
+        if (pauseBtn) {
+            if (isGlobalPaused) {
+                pauseBtn.innerHTML = '<span class="text-sm">▶️</span> Resume Event';
+                pauseBtn.classList.remove('bg-slate-100', 'text-slate-500');
+                pauseBtn.classList.add('bg-red-500', 'text-white', 'hover:bg-red-600', 'hover:text-white', 'shadow-md', 'shadow-red-200', 'animate-pulse');
+            } else {
+                pauseBtn.innerHTML = '<span class="text-sm">⏸️</span> Pause Event';
+                pauseBtn.classList.remove('bg-red-500', 'text-white', 'hover:bg-red-600', 'hover:text-white', 'shadow-md', 'shadow-red-200', 'animate-pulse');
+                pauseBtn.classList.add('bg-slate-100', 'text-slate-500');
+            }
+        }
+
+        // Handle global image visibility
+        if (areImagesHidden) {
+            document.body.classList.add('hide-component-images');
+        } else {
+            document.body.classList.remove('hide-component-images');
+        }
+
+        const hideBtn = document.getElementById('hide-imgs-btn');
+        if (hideBtn) {
+            if (areImagesHidden) {
+                hideBtn.innerHTML = '<span class="text-sm">👁️</span> Show Imgs';
+                hideBtn.classList.remove('bg-slate-100', 'text-slate-500');
+                hideBtn.classList.add('bg-bvBlue', 'text-white', 'hover:bg-bvBlue/80');
+            } else {
+                hideBtn.innerHTML = '<span class="text-sm">🖼️</span> Hide Imgs';
+                hideBtn.classList.remove('bg-bvBlue', 'text-white', 'hover:bg-bvBlue/80');
+                hideBtn.classList.add('bg-slate-100', 'text-slate-500');
+            }
+        }
+
+        // Trigger re-render to update masked names/categories
+        if (typeof renderInventoryList === 'function') {
+            renderInventoryList();
+        }
+    }
+});
+
 function sortComponents(array) {
     return array.sort((a, b) => {
         const pA = CAT_PRIORITY[a.category] || 99;
@@ -57,7 +111,7 @@ function sortComponents(array) {
 }
 
 const PREDEFINED_COMPONENTS = [
-    { category: "Controller", name: "ESP32 Controller + USB Cable", totalQuantity: 25, price: 180, imageUrl: "assets/components/ESP32%20Controller%20%2B%20USB%20Cable.jpg" },
+    { category: "Controller", name: "ESP32 Controller + USB Cable", totalQuantity: 25, price: 180, maxPerTeam: 2, imageUrl: "assets/components/ESP32%20Controller%20%2B%20USB%20Cable.jpg" },
     { category: "Sensor", name: "Ultrasonic Sensor", totalQuantity: 30, price: 30 },
     { category: "Sensor", name: "IR Sensor", totalQuantity: 40, price: 20 },
     { category: "Sensor", name: "LDR Sensor", totalQuantity: 20, price: 15 },
@@ -83,16 +137,17 @@ const PREDEFINED_COMPONENTS = [
     { category: "Hardware", name: "Breadboard (800 pts)", totalQuantity: 20, price: 40 },
     { category: "Hardware", name: "1in L Clamp", totalQuantity: 40, price: 5 },
     { category: "Hardware", name: "½in L Clamp", totalQuantity: 40, price: 10 },
-    { category: "Hardware", name: "Female to Female Jumper wire", totalQuantity: 100, price: 1 },
-    { category: "Hardware", name: "Male to Female Jumper wire", totalQuantity: 100, price: 1 },
+    { category: "Hardware", name: "Female to Female Jumper wire", totalQuantity: 100, price: 1, maxPerTeam: 2, description: "1 pack has 10 wires" },
+    { category: "Hardware", name: "Male to Female Jumper wire", totalQuantity: 100, price: 1, maxPerTeam: 2, description: "1 pack has 10 wires" },
+    { category: "Hardware", name: "Male to Male Jumper wire", totalQuantity: 20, price: 15, maxPerTeam: 2, description: "1 pack has 10 wires" },
     { category: "Hardware", name: "M4 Nut & Bolts", totalQuantity: 100, price: 5 },
     { category: "Hardware", name: "Resistor Pack", totalQuantity: 20, price: 10 },
 
-    { category: "Power", name: "12V Power Adapter", totalQuantity: 20, price: 100 },
-    { category: "Power", name: "5V Power Adapter", totalQuantity: 20, price: 80 },
+    { category: "Power", name: "12V Power Adapter", totalQuantity: 20, price: 100, maxPerTeam: 1 },
+    { category: "Power", name: "5V Power Adapter", totalQuantity: 20, price: 80, maxPerTeam: 1 },
     { category: "Power", name: "Male & Female Jack", totalQuantity: 20, price: 20 },
-    { category: "Power", name: "Single Strand Wire (1m)", totalQuantity: 10, price: 5 },
-    { category: "Miscellaneous", name: "5mm Foam Board (2ft x 1ft)", totalQuantity: 40, price: 60, maxPerTeam: 1, imageUrl: "assets/components/5mm%20Foam%20Board.jpg" },
+    { category: "Power", name: "Single Strand Wire (1m)", totalQuantity: 10, price: 5, maxPerTeam: 2 },
+    { category: "Miscellaneous", name: "5mm Foam Board (2ft x 1ft)", totalQuantity: 40, price: 60, maxPerTeam: 2, imageUrl: "assets/components/5mm%20Foam%20Board.jpg" },
     { category: "Miscellaneous", name: "Wire Stripper", totalQuantity: 10, price: 30 }
 ];
 
@@ -162,8 +217,9 @@ function renderInventoryList() {
                         <div class="comp-number" style="width: 48px; height: 48px; font-size: 1.2rem; border-width: 2px;">${index + 1}</div>
                         <img src="${getComponentImageUrl(item)}" onerror="this.outerHTML='<div class=\\'w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-[8px] text-slate-300 font-black\\'>N/A</div>'" class="w-12 h-12 object-contain rounded-xl border border-slate-100 bg-white shadow-sm mix-blend-multiply" alt="${item.name}">
                         <div class="flex flex-col">
-                            <span class="text-[9px] font-black text-bvBlue uppercase tracking-widest mb-1 opacity-60">${item.category || 'RESOURCES'}</span>
-                            <p class="font-black text-slate-800 text-lg uppercase tracking-tight leading-none">${item.name}</p>
+                            <span class="text-[9px] font-black text-bvBlue uppercase tracking-widest mb-1 opacity-60">${areImagesHidden ? 'RESOURCE_CATEGORY' : (item.category || 'RESOURCES')}</span>
+                            <p class="font-black text-slate-800 text-lg uppercase tracking-tight leading-none">${areImagesHidden ? `Resource #${index + 1}` : item.name}</p>
+                            ${item.description ? `<span class="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1 italic">${item.description}</span>` : ''}
                             ${isLowStock ? '<span class="text-[8px] font-bold text-red-500 uppercase tracking-widest mt-1 animate-pulse">Low Stock</span>' : ''}
                         </div>
                     </div>
@@ -180,7 +236,7 @@ function renderInventoryList() {
                     </div>
                 </td>
                 <td class="px-2 py-6 text-right space-x-1">
-                    <button class="p-2 hover:bg-slate-100 rounded-xl text-bvBlue transition-all shadow-sm border border-slate-100" title="Configure" onclick="editComponent('${item.id}', '${item.name}', ${item.totalQuantity}, ${item.price}, '${item.category}')">
+                    <button class="p-2 hover:bg-slate-100 rounded-xl text-bvBlue transition-all shadow-sm border border-slate-100" title="Configure" onclick="editComponent('${item.id}', '${item.name}', ${item.totalQuantity}, ${item.price}, '${item.category}', '${(item.description || '').replace(/'/g, "\\'")}')">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                     </button>
                     <button class="p-2 hover:bg-red-50 rounded-xl text-red-600 transition-all shadow-sm border border-red-100" title="Purge" onclick="deleteComponent('${item.id}')">
@@ -303,28 +359,32 @@ window.renderTeamReqModalContent = (username) => {
         return;
     }
 
-    let rows = teamOrders.map((order, i) => `
-        <tr class="hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-0">
-            <td class="px-4 py-4 font-black text-slate-800 text-sm uppercase">${order.componentName}</td>
-            <td class="px-4 py-4 font-black text-bvRed text-lg italic tracking-tighter">x${order.quantity}</td>
-            <td class="px-4 py-4">
-                <span class="inline-flex items-center px-3 py-1.5 rounded-full text-[8px] font-black uppercase tracking-[0.15em] border status-${order.status}">${order.status}</span>
-            </td>
-            <td class="px-4 py-4 text-right space-x-1.5">
-                ${order.status === 'Pending' ? `
-                    <button class="bg-bvBlue hover:bg-emerald-600 text-white p-2.5 rounded-xl shadow-lg shadow-blue-100/50 transition-all active:scale-90 tooltip-src" title="Approve Item" onclick="processOrder('${order.id}', 'approve')">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                    </button>
-                    <button class="bg-red-50 hover:bg-red-500 text-slate-400 hover:text-white p-2.5 rounded-xl shadow-sm transition-all active:scale-90 tooltip-src" title="Reject Item" onclick="processOrder('${order.id}', 'reject')">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
-                    </button>
-                ` : ''}
-                ${order.status === 'Approved' ? `
-                    <button class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2.5 rounded-xl font-black text-[9px] shadow-lg shadow-emerald-100 transition-all active:scale-95 uppercase tracking-widest" onclick="processOrder('${order.id}', 'give')">Validate Handoff</button>
-                ` : ''}
-            </td>
-        </tr>
-    `).join('');
+    let rows = teamOrders.map((order, i) => {
+        const isHidden = document.body.classList.contains('hide-component-images');
+        const displayName = isHidden ? `Resource #${allComponentsData.findIndex(c => c.id === order.componentId) + 1}` : order.componentName;
+        return `
+            <tr class="hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-0">
+                <td class="px-4 py-4 font-black text-slate-800 text-sm uppercase">${displayName}</td>
+                <td class="px-4 py-4 font-black text-bvRed text-lg italic tracking-tighter">x${order.quantity}</td>
+                <td class="px-4 py-4">
+                    <span class="inline-flex items-center px-3 py-1.5 rounded-full text-[8px] font-black uppercase tracking-[0.15em] border status-${order.status}">${order.status}</span>
+                </td>
+                <td class="px-4 py-4 text-right space-x-1.5">
+                    ${order.status === 'Pending' ? `
+                        <button class="bg-bvBlue hover:bg-emerald-600 text-white p-2.5 rounded-xl shadow-lg shadow-blue-100/50 transition-all active:scale-90 tooltip-src" title="Approve Item" onclick="processOrder('${order.id}', 'approve')">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                        </button>
+                        <button class="bg-red-50 hover:bg-red-500 text-slate-400 hover:text-white p-2.5 rounded-xl shadow-sm transition-all active:scale-90 tooltip-src" title="Reject Item" onclick="processOrder('${order.id}', 'reject')">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                    ` : ''}
+                    ${order.status === 'Approved' ? `
+                        <button class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2.5 rounded-xl font-black text-[9px] shadow-lg shadow-emerald-100 transition-all active:scale-95 uppercase tracking-widest" onclick="processOrder('${order.id}', 'give')">Validate Handoff</button>
+                    ` : ''}
+                </td>
+            </tr>
+        `;
+    }).join('');
 
     content.innerHTML = `
         <div class="table-scroll rounded-2xl border border-slate-100 max-h-[500px] overflow-y-auto">
@@ -600,6 +660,10 @@ function openModal(type, data = {}) {
                         </select>
                     </div>
                 </div>
+                <div>
+                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-2">Resource Description (Optional)</label>
+                    <input type="text" id="comp-description" class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-[24px] focus:ring-4 focus:ring-bvRed/10 focus:border-bvRed outline-none transition-all font-bold text-slate-700" value="${data.description || ''}" placeholder="e.g. 1 pack has 10 wires">
+                </div>
                 <div class="grid grid-cols-2 gap-6">
                     <div>
                         <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-2">Inventory Depth</label>
@@ -709,6 +773,7 @@ function applyTemplate(index) {
     document.getElementById('comp-category').value = item.category;
     document.getElementById('comp-qty').value = item.totalQuantity;
     document.getElementById('comp-price').value = item.price;
+    document.getElementById('comp-description').value = item.description || '';
 }
 
 async function saveComponent() {
@@ -716,6 +781,7 @@ async function saveComponent() {
     const category = document.getElementById('comp-category').value;
     const totalQuantity = parseInt(document.getElementById('comp-qty').value);
     const price = parseFloat(document.getElementById('comp-price').value);
+    const description = document.getElementById('comp-description').value.trim();
 
     try {
         if (!name) {
@@ -731,13 +797,20 @@ async function saveComponent() {
             }
         }
 
+        let additionalData = {};
+        const templateItem = PREDEFINED_COMPONENTS.find(c => c.name === name);
+        if (templateItem) {
+            if (templateItem.maxPerTeam) additionalData.maxPerTeam = templateItem.maxPerTeam;
+            if (templateItem.imageUrl) additionalData.imageUrl = templateItem.imageUrl;
+        }
+
         if (activeId) {
             await firestore.collection('components').doc(activeId).update({
-                name, category, totalQuantity, availableQuantity: totalQuantity, price
+                name, category, totalQuantity, availableQuantity: totalQuantity, price, description, ...additionalData
             });
         } else {
             await firestore.collection('components').add({
-                name, category, totalQuantity, availableQuantity: totalQuantity, price
+                name, category, totalQuantity, availableQuantity: totalQuantity, price, description, ...additionalData
             });
         }
         closeModal();
@@ -844,7 +917,9 @@ async function processOrder(orderId, action) {
             const data = docRef.data();
             if (data.status !== 'Pending') return alert("Order already processed");
 
-            const qtyStr = prompt(`Approve how many ${data.componentName}? (Requested: ${data.quantity})`, data.quantity);
+            const isHidden = document.body.classList.contains('hide-component-images');
+            const displayName = isHidden ? `Resource #${allComponentsData.findIndex(c => c.id === data.componentId) + 1}` : data.componentName;
+            const qtyStr = prompt(`Approve how many ${displayName}? (Requested: ${data.quantity})`, data.quantity);
             if (qtyStr === null) return;
             approvedQty = parseInt(qtyStr, 10);
             if (isNaN(approvedQty) || approvedQty < 1 || approvedQty > data.quantity) {
@@ -859,7 +934,9 @@ async function processOrder(orderId, action) {
             const data = docRef.data();
             
             if (data.quantity > 1) {
-                const qtyStr = prompt(`How many ${data.componentName} are being returned? (Held: ${data.quantity})`, data.quantity);
+                const isHidden = document.body.classList.contains('hide-component-images');
+                const displayName = isHidden ? `Resource #${allComponentsData.findIndex(c => c.id === data.componentId) + 1}` : data.componentName;
+                const qtyStr = prompt(`How many ${displayName} are being returned? (Held: ${data.quantity})`, data.quantity);
                 if (qtyStr === null) return;
                 returnQty = parseInt(qtyStr, 10);
                 if (isNaN(returnQty) || returnQty < 1 || returnQty > data.quantity) {
@@ -890,16 +967,25 @@ async function processOrder(orderId, action) {
                     const compData = compDoc.data();
                     const userData = userDoc.data();
                     const refundAmount = diff * Number(orderData.pricePerUnit || 0);
+                    const currentInventory = userData.inventory || {};
 
                     t.update(compRef, { availableQuantity: Number(compData.availableQuantity || 0) + diff });
-                    t.update(userRef, { points: Number(userData.points || 0) + refundAmount });
+                    t.update(userRef, { 
+                        points: Number(userData.points || 0) + refundAmount,
+                        inventory: {
+                            ...currentInventory,
+                            [orderData.componentId]: Math.max(0, (currentInventory[orderData.componentId] || 0) - diff)
+                        }
+                    });
 
+                    const isHidden = document.body.classList.contains('hide-component-images');
+                    const displayName = isHidden ? `Resource #${allComponentsData.findIndex(c => c.id === orderData.componentId) + 1}` : orderData.componentName;
                     const transRef = firestore.collection('transactions').doc();
                     t.set(transRef, {
                         username: orderData.username,
                         type: 'credit',
                         amount: refundAmount,
-                        reason: `Refund: Partial approval of ${orderData.componentName} (Requested ${orderData.quantity}, Approved ${approvedQty})`,
+                        reason: `Refund: Partial approval of ${displayName} (Requested ${orderData.quantity}, Approved ${approvedQty})`,
                         timestamp: firebase.firestore.FieldValue.serverTimestamp()
                     });
                 }
@@ -918,17 +1004,26 @@ async function processOrder(orderId, action) {
                 const compData = compDoc.data();
                 const userData = userDoc.data();
                 const refundAmount = Number(orderData.quantity) * Number(orderData.pricePerUnit || 0);
+                const currentInventory = userData.inventory || {};
 
                 t.update(compRef, { availableQuantity: Number(compData.availableQuantity || 0) + Number(orderData.quantity) });
-                t.update(userRef, { points: Number(userData.points || 0) + refundAmount });
+                t.update(userRef, { 
+                    points: Number(userData.points || 0) + refundAmount,
+                    inventory: {
+                        ...currentInventory,
+                        [orderData.componentId]: Math.max(0, (currentInventory[orderData.componentId] || 0) - Number(orderData.quantity))
+                    }
+                });
                 t.update(orderRef, { status: 'Rejected' });
 
+                const isHidden = document.body.classList.contains('hide-component-images');
+                const displayName = isHidden ? `Resource #${allComponentsData.findIndex(c => c.id === orderData.componentId) + 1}` : orderData.componentName;
                 const transRef = firestore.collection('transactions').doc();
                 t.set(transRef, {
                     username: orderData.username,
                     type: 'credit',
                     amount: refundAmount,
-                    reason: `Refund: Rejected order for ${orderData.quantity}x ${orderData.componentName}`,
+                    reason: `Refund: Rejected order for ${orderData.quantity}x ${displayName}`,
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
@@ -943,12 +1038,19 @@ async function processOrder(orderId, action) {
 
                 const compData = compDoc.data();
                 const userData = userDoc.data();
+                const currentInventory = userData.inventory || {};
                 
                 // Calculate refund for returnQty (50% of buying price)
                 const refund = (orderData.pricePerUnit * returnQty) * 0.5;
 
                 t.update(compRef, { availableQuantity: Number(compData.availableQuantity || 0) + returnQty });
-                t.update(userRef, { points: Number(userData.points || 0) + refund });
+                t.update(userRef, { 
+                    points: Number(userData.points || 0) + refund,
+                    inventory: {
+                        ...currentInventory,
+                        [orderData.componentId]: Math.max(0, (currentInventory[orderData.componentId] || 0) - returnQty)
+                    }
+                });
                 
                 if (returnQty === orderData.quantity) {
                     // Full return
@@ -967,12 +1069,14 @@ async function processOrder(orderId, action) {
                     });
                 }
 
+                const isHidden = document.body.classList.contains('hide-component-images');
+                const displayName = isHidden ? `Resource #${allComponentsData.findIndex(c => c.id === orderData.componentId) + 1}` : compData.name;
                 const transRef = firestore.collection('transactions').doc();
                 t.set(transRef, {
                     username: orderData.username,
                     type: 'credit',
                     amount: refund,
-                    reason: `Refund: ${returnQty}x ${compData.name} returned`,
+                    reason: `Refund: ${returnQty}x ${displayName} returned`,
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
             }
@@ -995,8 +1099,8 @@ async function deleteComponent(id) {
     } catch (e) { alert(e.message); }
 }
 
-function editComponent(id, name, qty, price, category) {
-    openModal('editComponent', { id, name, qty, price, category });
+function editComponent(id, name, qty, price, category, description) {
+    openModal('editComponent', { id, name, qty, price, category, description });
 }
 
 function modifyPoints(username, points) {
@@ -1012,15 +1116,27 @@ async function savePoints(username) {
 }
 
 async function clearProcessedOrders() {
-    if (!confirm('Reset Queue: This will permanently delete all Rejected and Returned orders. Continue?')) return;
+    if (!confirm('Reset Queue: This will permanently delete all Rejected, Returned, and Cancelled orders. Continue?')) return;
     try {
-        const snap1 = await firestore.collection('orders').where('status', '==', 'Rejected').get();
-        const snap2 = await firestore.collection('orders').where('status', '==', 'Returned').get();
-        const batch = firestore.batch();
-        snap1.forEach(doc => batch.delete(doc.ref));
-        snap2.forEach(doc => batch.delete(doc.ref));
-        await batch.commit();
-    } catch (e) { alert(e.message); }
+        const statuses = ['Rejected', 'Returned', 'Cancelled'];
+        let totalDeleted = 0;
+
+        for (const status of statuses) {
+            const snap = await firestore.collection('orders').where('status', '==', status).get();
+            if (snap.empty) continue;
+
+            // Chunk deletions into batches of 500
+            const docs = snap.docs;
+            for (let i = 0; i < docs.length; i += 500) {
+                const batch = firestore.batch();
+                const chunk = docs.slice(i, i + 500);
+                chunk.forEach(doc => batch.delete(doc.ref));
+                await batch.commit();
+                totalDeleted += chunk.length;
+            }
+        }
+        alert(`SUCCESS: Purged ${totalDeleted} processed records from queue.`);
+    } catch (e) { alert('Error clearing queue: ' + e.message); }
 }
 
 async function deleteTeam(username) {
@@ -1067,27 +1183,33 @@ async function deduplicateComponents() {
     try {
         const snap = await firestore.collection('components').get();
         const seen = new Set();
-        const batch = firestore.batch();
+        const toDelete = [];
         let dupCount = 0;
 
         snap.forEach(doc => {
             const data = doc.data();
             const name = (data.name || "").trim().toLowerCase();
             if (seen.has(name)) {
-                batch.delete(doc.ref);
+                toDelete.push(doc.ref);
                 dupCount++;
             } else {
                 seen.add(name);
             }
         });
 
-        if (dupCount > 0) {
-            await batch.commit();
+        if (toDelete.length > 0) {
+            // Chunk deletions into batches of 500
+            for (let i = 0; i < toDelete.length; i += 500) {
+                const batch = firestore.batch();
+                const chunk = toDelete.slice(i, i + 500);
+                chunk.forEach(ref => batch.delete(ref));
+                await batch.commit();
+            }
             alert(`SUCCESS: Removed ${dupCount} duplicate entries.`);
         } else {
             alert('No duplicates found.');
         }
-    } catch (e) { alert(e.message); }
+    } catch (e) { alert('Error during deduplication: ' + e.message); }
 }
 
 async function purgeComponents() {
@@ -1097,11 +1219,23 @@ async function purgeComponents() {
 
     try {
         const snap = await firestore.collection('components').get();
-        const batch = firestore.batch();
-        snap.forEach(doc => batch.delete(doc.ref));
-        await batch.commit();
-        alert('Repository purged successfully.');
-    } catch (e) { alert(e.message); }
+        const docs = snap.docs;
+        
+        if (docs.length === 0) {
+            alert('Repository is already empty.');
+            return;
+        }
+
+        // Chunk deletions into batches of 500
+        for (let i = 0; i < docs.length; i += 500) {
+            const batch = firestore.batch();
+            const chunk = docs.slice(i, i + 500);
+            chunk.forEach(doc => batch.delete(doc.ref));
+            await batch.commit();
+        }
+        
+        alert(`SUCCESS: Repository purged. ${docs.length} resources removed.`);
+    } catch (e) { alert('Error purging repository: ' + e.message); }
 }
 
 async function viewTeamDetails(username) {
@@ -1213,18 +1347,22 @@ function renderDetailTable(items, headers) {
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-50 text-[11px] font-bold text-slate-700">
-                    ${items.map(item => `
+                    ${items.map(item => {
+                        const isHidden = document.body.classList.contains('hide-component-images');
+                        const displayName = isHidden ? `Resource #${allComponentsData.findIndex(c => c.id === item.componentId) + 1}` : item.componentName;
+                        return `
                         <tr>
-                            <td class="px-6 py-4 font-black uppercase text-slate-800">${item.componentName}</td>
+                            <td class="px-6 py-4 font-black uppercase text-slate-800">${displayName}</td>
                             <td class="px-6 py-4">x${item.quantity}</td>
                             <td class="px-6 py-4">
                                 ${headers[2] === 'Cost' ? (item.totalCost || (item.pricePerUnit * item.quantity)) + ' PTS' :
-            headers[2] === 'Loss (50%)' ? ((item.totalCost || (item.pricePerUnit * item.quantity)) * 0.5) + ' PTS' :
-                `<span class="status-${item.status} px-3 py-1 rounded-full text-[9px] uppercase tracking-tighter">${item.status}</span>`}
+                                    headers[2] === 'Loss (50%)' ? ((item.totalCost || (item.pricePerUnit * item.quantity)) * 0.5) + ' PTS' :
+                                        `<span class="status-${item.status} px-3 py-1 rounded-full text-[9px] uppercase tracking-tighter">${item.status}</span>`}
                             </td>
                             ${headers[3] === 'Manage' ? `<td class="px-6 py-4 text-right"><button class="bg-bvYellow text-bvRed px-5 py-2 rounded-full font-black text-[10px] shadow-sm hover:brightness-110 active:scale-95 transition-all uppercase tracking-widest inline-flex items-center gap-2" onclick="processOrder('${item.id}', 'return'); closeModal(); setTimeout(() => viewTeamDetails('${item.username}'), 400)">Process Return</button></td>` : ''}
                         </tr>
-                    `).join('')}
+                        `;
+                    }).join('')}
                 </tbody>
             </table>
         </div>
@@ -1305,6 +1443,10 @@ async function returnAllComponents(username) {
                 }
             }
 
+            const userData = userDoc.data();
+            const currentInventory = userData.inventory || {};
+            const newInventory = { ...currentInventory };
+
             // Apply updates
             for (const update of updates) {
                 const { orderRef, orderData, compRef, compData } = update;
@@ -1314,18 +1456,25 @@ async function returnAllComponents(username) {
                 t.update(compRef, { availableQuantity: Number(compData.availableQuantity || 0) + Number(orderData.quantity) });
                 t.update(orderRef, { status: 'Returned' });
                 
+                // Update map
+                newInventory[orderData.componentId] = Math.max(0, (newInventory[orderData.componentId] || 0) - Number(orderData.quantity));
+
+                const isHidden = document.body.classList.contains('hide-component-images');
+                const displayName = isHidden ? `Resource #${allComponentsData.findIndex(c => c.id === orderData.componentId) + 1}` : orderData.componentName;
                 const transRef = firestore.collection('transactions').doc();
                 t.set(transRef, {
                     username: username,
                     type: 'credit',
                     amount: refund,
-                    reason: `Bulk Refund: ${orderData.quantity}x ${orderData.componentName} returned`,
+                    reason: `Bulk Refund: ${orderData.quantity}x ${displayName} returned`,
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
             }
 
-            const userData = userDoc.data();
-            t.update(userRef, { points: Number(userData.points || 0) + totalRefund });
+            t.update(userRef, { 
+                points: Number(userData.points || 0) + totalRefund,
+                inventory: newInventory
+            });
         });
 
         alert(`Successfully returned all components for ${username}.`);
@@ -1333,23 +1482,6 @@ async function returnAllComponents(username) {
         alert('Error processing bulk return: ' + e.message);
     }
 }
-
-let isGlobalPaused = false;
-firestore.collection('settings').doc('system').onSnapshot(doc => {
-    if (doc.exists) {
-        isGlobalPaused = doc.data().orderingPaused || false;
-        const btn = document.getElementById('global-pause-btn');
-        if (isGlobalPaused) {
-            btn.innerHTML = '<span class="text-sm">▶️</span> Resume Event';
-            btn.classList.remove('bg-slate-100', 'text-slate-500');
-            btn.classList.add('bg-red-500', 'text-white', 'hover:bg-red-600', 'hover:text-white', 'shadow-md', 'shadow-red-200', 'animate-pulse');
-        } else {
-            btn.innerHTML = '<span class="text-sm">⏸️</span> Pause Event';
-            btn.classList.remove('bg-red-500', 'text-white', 'hover:bg-red-600', 'hover:text-white', 'shadow-md', 'shadow-red-200', 'animate-pulse');
-            btn.classList.add('bg-slate-100', 'text-slate-500');
-        }
-    }
-});
 
 async function toggleGlobalPause() {
     try {
@@ -1370,28 +1502,6 @@ async function toggleGlobalPause() {
         alert('Error toggling global pause: ' + e.message);
     }
 }
-
-// ── GLOBAL IMAGE TOGGLE ──
-let areImagesHidden = false;
-firestore.collection('settings').doc('system').onSnapshot(doc => {
-    if (doc.exists) {
-        areImagesHidden = doc.data().hideComponentImages || false;
-        const btn = document.getElementById('hide-imgs-btn');
-        if (btn) {
-            if (areImagesHidden) {
-                btn.innerHTML = '<span class="text-sm">👁️</span> Show Imgs';
-                btn.classList.remove('bg-slate-100', 'text-slate-500');
-                btn.classList.add('bg-bvBlue', 'text-white', 'hover:bg-bvBlue/80');
-                document.body.classList.add('hide-component-images');
-            } else {
-                btn.innerHTML = '<span class="text-sm">🖼️</span> Hide Imgs';
-                btn.classList.remove('bg-bvBlue', 'text-white', 'hover:bg-bvBlue/80');
-                btn.classList.add('bg-slate-100', 'text-slate-500');
-                document.body.classList.remove('hide-component-images');
-            }
-        }
-    }
-});
 
 async function toggleHideImages() {
     try {

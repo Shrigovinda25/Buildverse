@@ -6,8 +6,9 @@ if (user) {
     startSessionHeartbeat(user.username, sessionId);
 }
 
-let cart = {};
-let orderedCounts = {}; // Track items already ordered/held by the team
+// Load cart from localStorage if exists
+let cart = JSON.parse(localStorage.getItem('bv_cart') || '{}');
+let orderedCounts = {}; // Track items already ordered/held by the team (for UI)
 
 
 // ----------------------------------------------------------------------------
@@ -72,13 +73,15 @@ function switchTab(tab) {
 // ----------------------------------------------------------------------------
 
 let isGlobalPaused = false;
+let areImagesHidden = false;
 firestore.collection('settings').doc('system').onSnapshot(doc => {
     if (doc.exists) {
         const data = doc.data();
         isGlobalPaused = data.orderingPaused || false;
+        areImagesHidden = data.hideComponentImages || false;
         
         // Handle global image visibility
-        if (data.hideComponentImages) {
+        if (areImagesHidden) {
             document.body.classList.add('hide-component-images');
         } else {
             document.body.classList.remove('hide-component-images');
@@ -161,9 +164,10 @@ function renderCatalog() {
                 </div>
                 <div class="flex justify-between items-start mb-6">
                     <div class="flex flex-col">
-                        <span class="text-[9px] font-black text-bvBlue uppercase tracking-widest mb-1 opacity-60">${item.category || 'RESOURCES'}</span>
-                        <h3 class="font-black text-slate-800 text-xl leading-tight uppercase tracking-tight italic">${item.name}</h3>
+                        <span class="text-[9px] font-black text-bvBlue uppercase tracking-widest mb-1 opacity-60">${areImagesHidden ? 'HIDDEN_PROTOCOL' : (item.category || 'RESOURCES')}</span>
+                        <h3 class="font-black text-slate-800 text-xl leading-tight uppercase tracking-tight italic">${areImagesHidden ? `Resource #${index + 1}` : item.name}</h3>
                         ${item.maxPerTeam ? `<p class="text-[9px] font-bold text-bvRed uppercase tracking-widest mt-1 opacity-80">LIMIT: ${item.maxPerTeam} PER TEAM</p>` : ''}
+                        ${(item.description && !areImagesHidden) ? `<p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-2 bg-slate-100/50 p-2 rounded-xl border border-slate-200/50 italic">${item.description}</p>` : ''}
                     </div>
                     <div class="bg-red-50 text-bvRed px-3 py-1.5 rounded-2xl text-xs font-black italic shadow-sm">
                         ${item.price} <span class="not-italic text-[10px] opacity-60">PTS</span>
@@ -182,7 +186,7 @@ function renderCatalog() {
                     ${(!isGlobalPaused && liveUser.orderingEnabled && item.availableQuantity > 0) ? `
                         <div class="flex items-center justify-between w-full mt-2 bg-slate-50 rounded-[20px] p-1.5 border border-slate-100">
                             <button class="w-10 h-10 rounded-[14px] bg-white text-slate-400 hover:text-bvRed shadow-sm transition-all flex items-center justify-center" onclick="updateCartItem(event, '${item.id}', '${item.name.replace(/'/g, "\\'")}', ${item.price}, -1)">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/></svg>
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14"/></svg>
                             </button>
                             <span class="font-black text-lg italic w-10 text-center text-slate-700" id="cart-qty-${item.id}">${cartCount}</span>
                             <button class="w-10 h-10 rounded-[14px] ${limitReached ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-bvYellow text-bvRed shadow-yellow-100/50 hover:scale-105'} shadow-sm transition-all active:scale-95 flex items-center justify-center" 
@@ -211,9 +215,12 @@ firestore.collection('orders').orderBy('timestamp', 'asc').onSnapshot(snapshot =
         if (change.type === 'modified') {
             const order = change.doc.data();
             if (order.username === user.username) {
-                if (order.status === 'Approved') showToast('success', 'Order Approved', `Admin approved ${order.quantity}x ${order.componentName}`);
-                else if (order.status === 'Rejected') showToast('error', 'Order Rejected', `Admin rejected ${order.quantity}x ${order.componentName}`);
-                else if (order.status === 'Given') showToast('info', 'Items Received', `You received ${order.quantity}x ${order.componentName}`);
+                const isHidden = document.body.classList.contains('hide-component-images');
+                const maskedName = isHidden ? `Resource #${components.findIndex(c => c.id === order.componentId) + 1}` : order.componentName;
+                
+                if (order.status === 'Approved') showToast('success', 'Order Approved', `Admin approved ${order.quantity}x ${maskedName}`);
+                else if (order.status === 'Rejected') showToast('error', 'Order Rejected', `Admin rejected ${order.quantity}x ${maskedName}`);
+                else if (order.status === 'Given') showToast('info', 'Items Received', `You received ${order.quantity}x ${maskedName}`);
             }
         }
     });
@@ -235,6 +242,9 @@ firestore.collection('orders').orderBy('timestamp', 'asc').onSnapshot(snapshot =
         const order = doc.data();
         if (order.username !== user.username) return;
 
+        const isHidden = document.body.classList.contains('hide-component-images');
+        const displayName = isHidden ? `Resource #${components.findIndex(c => c.id === order.componentId) + 1}` : order.componentName;
+
         // Track items for limits (count Pending, Approved, and Given)
         if (['Pending', 'Approved', 'Given'].includes(order.status)) {
             newOrderedCounts[order.componentId] = (newOrderedCounts[order.componentId] || 0) + order.quantity;
@@ -246,7 +256,7 @@ firestore.collection('orders').orderBy('timestamp', 'asc').onSnapshot(snapshot =
         const row = `
             <tr class="hover:bg-slate-50 transition-colors group">
                 <td class="px-2 py-6">
-                    <p class="font-black text-slate-800 text-lg uppercase tracking-tight italic">${order.componentName}</p>
+                    <p class="font-black text-slate-800 text-lg uppercase tracking-tight italic">${displayName}</p>
                     ${order.status === 'Rejected' ? `<p class="text-[8px] text-red-500 font-bold mt-1 uppercase tracking-widest animate-pulse">This component is rejected</p>` : ''}
                 </td>
                 <td class="px-2 py-6">
@@ -274,7 +284,7 @@ firestore.collection('orders').orderBy('timestamp', 'asc').onSnapshot(snapshot =
             const heldRow = `
                 <tr class="hover:bg-slate-50 transition-colors">
                     <td class="px-2 py-6">
-                        <p class="font-black text-slate-800 text-lg uppercase tracking-tight italic">${order.componentName}</p>
+                        <p class="font-black text-slate-800 text-lg uppercase tracking-tight italic">${displayName}</p>
                     </td>
                     <td class="px-2 py-6">
                         <span class="font-black text-bvBlue text-xl italic">x${order.quantity}</span>
@@ -397,6 +407,9 @@ function updateCartItem(event, id, name, price, delta) {
         if (el) el.textContent = cart[id].qty;
     }
 
+    // Sync with localStorage
+    localStorage.setItem('bv_cart', JSON.stringify(cart));
+
     updateCartUI();
     renderCatalog(); // Re-render to update add button state
 }
@@ -426,10 +439,12 @@ function openCartModal() {
     Object.keys(cart).forEach(id => {
         const item = cart[id];
         totalPts += item.qty * item.price;
+        const isHidden = document.body.classList.contains('hide-component-images');
+        const displayName = isHidden ? `Resource #${components.findIndex(c => c.id === id) + 1}` : item.name;
         itemsHtml += `
             <div class="flex justify-between items-center bg-slate-50 p-4 rounded-2xl border border-slate-100">
                 <div>
-                    <p class="font-black text-slate-800 text-sm italic uppercase">${item.name}</p>
+                    <p class="font-black text-slate-800 text-sm italic uppercase">${displayName}</p>
                     <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">${item.price} PTS / EA</p>
                 </div>
                 <div class="font-black text-bvRed text-lg italic tracking-tighter">x${item.qty}</div>
@@ -480,22 +495,37 @@ document.getElementById('modal-submit').onclick = async () => {
             if (!userDoc.exists) throw new Error("User document not found");
             
             const userData = userDoc.data();
+            const currentInventory = userData.inventory || {}; // Map of compId -> count (Pending/Approved/Given)
+            
             let totalCartCost = 0;
             const componentDataMap = {};
 
-            // 1. Fetch all component docs and check stock
+            // 1. Fetch all component docs and check stock & limits
             for (const id of Object.keys(cart)) {
                 const compRef = firestore.collection('components').doc(id);
                 const compDoc = await transaction.get(compRef);
-                if (!compDoc.exists) throw new Error(`Component ${cart[id].name} no longer exists.`);
+                if (!compDoc.exists) throw new Error(`Component no longer exists.`);
                 
                 const compData = compDoc.data();
+                
+                // --- SECURITY FIX: Use DB price, not client price ---
+                const dbPrice = Number(compData.price || 0);
+                totalCartCost += cart[id].qty * dbPrice;
+
+                // --- STOCK CHECK ---
                 if (compData.availableQuantity < cart[id].qty) {
-                    throw new Error(`Insufficient stock for ${cart[id].name}. Available: ${compData.availableQuantity}`);
+                    throw new Error(`Insufficient stock for ${compData.name}. Available: ${compData.availableQuantity}`);
+                }
+
+                // --- LIMIT CHECK (maxPerTeam) ---
+                if (compData.maxPerTeam) {
+                    const alreadyOwned = Number(currentInventory[id] || 0);
+                    if (alreadyOwned + cart[id].qty > compData.maxPerTeam) {
+                        throw new Error(`Limit exceeded for ${compData.name}. Max allowed: ${compData.maxPerTeam}. You already have ${alreadyOwned} in queue/possession.`);
+                    }
                 }
                 
-                totalCartCost += cart[id].qty * cart[id].price;
-                componentDataMap[id] = compData;
+                componentDataMap[id] = { ...compData, dbPrice };
             }
 
             // 2. Check points
@@ -504,8 +534,8 @@ document.getElementById('modal-submit').onclick = async () => {
             }
 
             // 3. Apply updates
-            transaction.update(userRef, { points: userData.points - totalCartCost });
-
+            const newInventory = { ...currentInventory };
+            
             for (const [id, item] of Object.entries(cart)) {
                 const compRef = firestore.collection('components').doc(id);
                 const currentQty = Number(componentDataMap[id].availableQuantity || 0);
@@ -515,31 +545,44 @@ document.getElementById('modal-submit').onclick = async () => {
                     availableQuantity: currentQty - orderQty 
                 });
 
+                // Update team inventory map for limit tracking
+                newInventory[id] = (newInventory[id] || 0) + orderQty;
+
                 const newOrderRef = firestore.collection('orders').doc();
                 transaction.set(newOrderRef, {
                     username: user.username,
                     componentId: id,
-                    componentName: item.name,
+                    componentName: componentDataMap[id].name, // Use DB name
                     quantity: orderQty,
-                    pricePerUnit: Number(item.price),
-                    totalCost: orderQty * Number(item.price),
+                    pricePerUnit: componentDataMap[id].dbPrice, // Use DB price
+                    totalCost: orderQty * componentDataMap[id].dbPrice,
                     status: 'Pending',
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
             }
 
+            transaction.update(userRef, { 
+                points: userData.points - totalCartCost,
+                inventory: newInventory
+            });
+
             // 4. Log transaction
+            const isHidden = document.body.classList.contains('hide-component-images');
             const transRef = firestore.collection('transactions').doc();
             transaction.set(transRef, {
                 username: user.username,
                 type: 'debit',
                 amount: totalCartCost,
-                reason: `Order Placement: ${Object.values(cart).map(i => `${i.qty}x ${i.name}`).join(', ')}`,
+                reason: `Order Placement: ${Object.entries(cart).map(([id, i]) => {
+                    const displayName = isHidden ? `Resource #${components.findIndex(c => c.id === id) + 1}` : i.name;
+                    return `${i.qty}x ${displayName}`;
+                }).join(', ')}`,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             });
         });
 
         cart = {};
+        localStorage.removeItem('bv_cart');
         updateCartUI();
         document.querySelectorAll('[id^="cart-qty-"]').forEach(el => el.textContent = '0');
         closeModal();
@@ -575,17 +618,27 @@ async function cancelOrder(orderId, componentId, quantity, totalCost) {
             if (userDoc.exists && compDoc.exists) {
                 const userData = userDoc.data();
                 const compData = compDoc.data();
+                const currentInventory = userData.inventory || {};
                 
-                transaction.update(userRef, { points: Number(userData.points) + Number(totalCost) });
+                // Update points and stock
+                transaction.update(userRef, { 
+                    points: Number(userData.points) + Number(totalCost),
+                    inventory: {
+                        ...currentInventory,
+                        [componentId]: Math.max(0, (currentInventory[componentId] || 0) - Number(quantity))
+                    }
+                });
                 transaction.update(compRef, { availableQuantity: Number(compData.availableQuantity) + Number(quantity) });
                 transaction.update(orderRef, { status: 'Cancelled' });
                 
+                const isHidden = document.body.classList.contains('hide-component-images');
+                const displayName = isHidden ? `Resource #${components.findIndex(c => c.id === componentId) + 1}` : compData.name;
                 const transRef = firestore.collection('transactions').doc();
                 transaction.set(transRef, {
                     username: user.username,
                     type: 'credit',
                     amount: totalCost,
-                    reason: `Refund: Cancelled order for ${quantity}x ${compData.name}`,
+                    reason: `Refund: Cancelled order for ${quantity}x ${displayName}`,
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 });
             }

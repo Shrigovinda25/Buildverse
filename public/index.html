@@ -1360,6 +1360,33 @@
 
         // DYNAMIC INVENTORY
         if (typeof firestore !== 'undefined') {
+            let lastComponentsSnapshot = null;
+            function renderPublicInventory(snapshot) {
+                const grid = document.getElementById('public-matrix');
+                if (!grid || !snapshot) return;
+                grid.innerHTML = '';
+                snapshot.docs.forEach((doc, index) => {
+                    const comp = doc.data();
+                    const sanitizedName = comp.name
+                        .replace(/\+/g, 'Plus')
+                        .replace(/½/g, 'Half ')
+                        .replace(/\//g, ' ')
+                        .replace(/&/g, '%26')
+                        .replace(/ /g, '%20');
+                    const imgPath = `assets/components/${sanitizedName}.jpg`;
+                    const isHidden = document.body.classList.contains('hide-component-images');
+                    const displayName = isHidden ? `Resource #${index + 1}` : comp.name;
+                    const card = `
+                    <div class="matrix-card">
+                        <div class="comp-number">${index + 1}</div>
+                        <img src="${imgPath}" alt="${comp.name}" onerror="this.src='assets/logo.png'">
+                        <div class="matrix-name">${displayName}</div>
+                    </div>
+                `;
+                    grid.insertAdjacentHTML('beforeend', card);
+                });
+            }
+
             // Listen for global settings
             firestore.collection('settings').doc('system').onSnapshot(doc => {
                 if (doc.exists) {
@@ -1368,32 +1395,14 @@
                     } else {
                         document.body.classList.remove('hide-component-images');
                     }
+                    // Re-render if we have data
+                    renderPublicInventory(lastComponentsSnapshot);
                 }
             });
 
             firestore.collection('components').onSnapshot(snapshot => {
-                const grid = document.getElementById('public-matrix');
-                if (!grid) return;
-                grid.innerHTML = '';
-                snapshot.docs.forEach((doc, index) => {
-                    const comp = doc.data();
-                    // IMAGE LOGIC: Match local assets directory, sanitize for URL safety
-                    const sanitizedName = comp.name
-                        .replace(/\+/g, 'Plus')
-                        .replace(/½/g, 'Half ')
-                        .replace(/\//g, ' ')
-                        .replace(/&/g, '%26')
-                        .replace(/ /g, '%20');
-                    const imgPath = `assets/components/${sanitizedName}.jpg`;
-                    const card = `
-                    <div class="matrix-card">
-                        <div class="comp-number">${index + 1}</div>
-                        <img src="${imgPath}" alt="${comp.name}" onerror="this.src='assets/logo.png'">
-                        <div class="matrix-name">${comp.name}</div>
-                    </div>
-                `;
-                    grid.insertAdjacentHTML('beforeend', card);
-                });
+                lastComponentsSnapshot = snapshot;
+                renderPublicInventory(snapshot);
             });
         }
     </script>

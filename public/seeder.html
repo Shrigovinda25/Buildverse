@@ -7,6 +7,19 @@
     <title>BUILDVERSE | System Seeder</title>
     <link rel="icon" type="image/png" href="assets/logo.png">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bvRed: '#C8102E',
+                        bvYellow: '#FFD700',
+                        bvBlue: '#0047AB',
+                    }
+                }
+            }
+        }
+    </script>
     <link rel="stylesheet" href="css/style.css">
     <style>
         .grid-blob {
@@ -57,7 +70,7 @@
             </button>
             <button id="seed-items-btn"
                 class="w-full py-5 rounded-full bg-bvYellow text-bvRed font-black uppercase tracking-[0.2em] shadow-2xl shadow-yellow-100 transition-all active:scale-95 hover:brightness-110">
-                Inject Resource Matrix
+                Seed Resources
             </button>
         </div>
 
@@ -104,7 +117,7 @@
         }
 
         const components = [
-            { category: "Controller", name: "ESP32 Controller + USB Cable", totalQuantity: 25, price: 180, imageUrl: "assets/components/ESP32%20Controller%20%2B%20USB%20Cable.jpg" },
+            { category: "Controller", name: "ESP32 Controller + USB Cable", totalQuantity: 25, price: 180, maxPerTeam: 2, imageUrl: "assets/components/ESP32%20Controller%20%2B%20USB%20Cable.jpg" },
             { category: "Sensor", name: "Ultrasonic Sensor", totalQuantity: 30, price: 30 },
             { category: "Sensor", name: "IR Sensor", totalQuantity: 40, price: 20 },
             { category: "Sensor", name: "LDR Sensor", totalQuantity: 20, price: 15 },
@@ -130,17 +143,17 @@
             { category: "Hardware", name: "Breadboard (800 pts)", totalQuantity: 20, price: 40 },
             { category: "Hardware", name: "1in L Clamp", totalQuantity: 40, price: 5 },
             { category: "Hardware", name: "½in L Clamp", totalQuantity: 40, price: 10 },
-            { category: "Hardware", name: "Female to Female Jumper wire", totalQuantity: 100, price: 1 },
-            { category: "Hardware", name: "Male to Female Jumper wire", totalQuantity: 100, price: 1 },
-            { category: "Hardware", name: "M3 Nut & Bolts", totalQuantity: 100, price: 5 },
+            { category: "Hardware", name: "Female to Female Jumper wire", totalQuantity: 100, price: 1, maxPerTeam: 2, description: "1 pack has 10 wires" },
+            { category: "Hardware", name: "Male to Female Jumper wire", totalQuantity: 100, price: 1, maxPerTeam: 2, description: "1 pack has 10 wires" },
+            { category: "Hardware", name: "Male to Male Jumper wire", totalQuantity: 20, price: 15, maxPerTeam: 2, description: "1 pack has 10 wires" },
+            { category: "Hardware", name: "M4 Nut & Bolts", totalQuantity: 100, price: 5 },
             { category: "Hardware", name: "Resistor Pack", totalQuantity: 20, price: 10 },
 
-            { category: "Power", name: "12V Power Adapter", totalQuantity: 20, price: 100 },
-            { category: "Power", name: "5V Power Adapter", totalQuantity: 20, price: 80 },
+            { category: "Power", name: "12V Power Adapter", totalQuantity: 20, price: 100, maxPerTeam: 1 },
+            { category: "Power", name: "5V Power Adapter", totalQuantity: 20, price: 80, maxPerTeam: 1 },
             { category: "Power", name: "Male & Female Jack", totalQuantity: 20, price: 20 },
-            { category: "Power", name: "Single Strand Wire (1m)", totalQuantity: 10, price: 5 },
-            { category: "Miscellaneous", name: "5mm Foam Board", totalQuantity: 40, price: 60, maxPerTeam: 1 },
-            { category: "Miscellaneous", name: "3mm Foam Board", totalQuantity: 40, price: 50, maxPerTeam: 1 },
+            { category: "Power", name: "Single Strand Wire (1m)", totalQuantity: 10, price: 5, maxPerTeam: 2 },
+            { category: "Miscellaneous", name: "5mm Foam Board (2ft x 1ft)", totalQuantity: 40, price: 60, maxPerTeam: 2, imageUrl: "assets/components/5mm%20Foam%20Board.jpg" },
             { category: "Miscellaneous", name: "Wire Stripper", totalQuantity: 10, price: 30 }
         ];
 
