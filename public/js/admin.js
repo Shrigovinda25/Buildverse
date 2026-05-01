@@ -990,7 +990,11 @@ async function processOrder(orderId, action) {
                     });
                 }
                 
-                t.update(orderRef, { status: 'Approved', quantity: approvedQty });
+                t.update(orderRef, { 
+                    status: 'Approved', 
+                    quantity: approvedQty,
+                    totalCost: approvedQty * Number(orderData.pricePerUnit || 0)
+                });
 
             } else if (action === 'reject') {
                 if (orderData.status !== 'Pending') throw new Error('Order already processed');
@@ -1040,8 +1044,8 @@ async function processOrder(orderId, action) {
                 const userData = userDoc.data();
                 const currentInventory = userData.inventory || {};
                 
-                // Calculate refund for returnQty (50% of buying price)
-                const refund = (orderData.pricePerUnit * returnQty) * 0.5;
+                // Calculate refund for returnQty (50% of buying price), rounded to nearest integer
+                const refund = Math.round((orderData.pricePerUnit * returnQty) * 0.5);
 
                 t.update(compRef, { availableQuantity: Number(compData.availableQuantity || 0) + returnQty });
                 t.update(userRef, { 
@@ -1057,13 +1061,18 @@ async function processOrder(orderId, action) {
                     t.update(orderRef, { status: 'Returned' });
                 } else {
                     // Partial return
-                    t.update(orderRef, { quantity: orderData.quantity - returnQty });
+                    const remainingQty = orderData.quantity - returnQty;
+                    t.update(orderRef, { 
+                        quantity: remainingQty,
+                        totalCost: remainingQty * Number(orderData.pricePerUnit || 0)
+                    });
                     
                     // Create new record for returned units
                     const newOrderRef = firestore.collection('orders').doc();
                     t.set(newOrderRef, {
                         ...orderData,
                         quantity: returnQty,
+                        totalCost: returnQty * Number(orderData.pricePerUnit || 0),
                         status: 'Returned',
                         timestamp: firebase.firestore.FieldValue.serverTimestamp()
                     });
@@ -1450,7 +1459,7 @@ async function returnAllComponents(username) {
             // Apply updates
             for (const update of updates) {
                 const { orderRef, orderData, compRef, compData } = update;
-                const refund = (orderData.pricePerUnit * orderData.quantity) * 0.5;
+                const refund = Math.round((orderData.pricePerUnit * orderData.quantity) * 0.5);
                 totalRefund += refund;
 
                 t.update(compRef, { availableQuantity: Number(compData.availableQuantity || 0) + Number(orderData.quantity) });

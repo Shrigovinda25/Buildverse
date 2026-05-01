@@ -38,9 +38,8 @@ function getComponentImageUrl(item) {
     if (item.imageUrl) return item.imageUrl;
     let name = item.name || '';
 
-    // Use the specific ESP32 default image for all ESP32 variants
     if (name.toUpperCase().includes('ESP32')) {
-        return 'assets/components/ESP32_Default.jpg';
+        return encodeURI('assets/components/ESP32 Controller + USB Cable.jpg');
     }
 
     // Support names with special characters by mapping to sanitized filenames
@@ -343,6 +342,7 @@ firestore.collection('users').where('role', '==', 'participant').onSnapshot(snap
 // ----------------------------------------------------------------------------
 function updateCartItem(event, id, name, price, delta) {
     if (!cart[id]) cart[id] = { name, price, qty: 0 };
+    else cart[id].price = price;
 
     // Check per-team limit
     if (delta > 0) {
