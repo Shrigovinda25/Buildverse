@@ -17,9 +17,7 @@ app.get('/api/health', (req, res) => res.json({ status: 'ok', message: 'BuildVer
 // ----------------------------------------------------------------------------
 // Firebase Initialization
 // ----------------------------------------------------------------------------
-const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT 
-  ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT) 
-  : require('../serviceAccountKey.json');
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
