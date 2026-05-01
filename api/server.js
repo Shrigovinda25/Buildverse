@@ -34,10 +34,16 @@ const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
-  if (!token) return res.status(401).json({ message: 'No token provided' });
+  if (!token) {
+    console.log('AUTH_FAIL: No token provided');
+    return res.status(401).json({ message: 'No token provided' });
+  }
 
   jwt.verify(token, SECRET_KEY, (err, user) => {
-    if (err) return res.status(403).json({ message: 'Invalid or expired token' });
+    if (err) {
+      console.log('AUTH_FAIL: Invalid or expired token', err.message);
+      return res.status(403).json({ message: 'Invalid or expired token' });
+    }
     req.user = user;
     next();
   });
@@ -45,6 +51,7 @@ const authenticateToken = (req, res, next) => {
 
 const isAdmin = (req, res, next) => {
   if (req.user.role !== 'admin') {
+    console.log('AUTH_FAIL: User is not admin', req.user.username, 'Role:', req.user.role);
     return res.status(403).json({ message: 'Admin access required' });
   }
   next();
