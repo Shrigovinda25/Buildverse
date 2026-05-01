@@ -10,7 +10,7 @@ const nodemailer = require('nodemailer');
 const app = express();
 app.use(express.json());
 app.use(cors());
-app.use(express.static(path.join(__dirname, '../public')));
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok', message: 'BuildVerse API is live' }));
 
@@ -19,7 +19,7 @@ app.get('/api/health', (req, res) => res.json({ status: 'ok', message: 'BuildVer
 // ----------------------------------------------------------------------------
 const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT 
   ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT) 
-  : require('../serviceAccountKey.json');
+  : require('./serviceAccountKey.json');
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
