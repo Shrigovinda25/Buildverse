@@ -1,16 +1,11 @@
 {
   "version": 2,
-  "functions": {
-    "index.js": {
-      "runtime": "vercel-node@latest"
-    }
-  },
   "rewrites": [
-    { "source": "/api/:path*", "destination": "/index.js" },
-    { "source": "/auth/:path*", "destination": "/index.js" },
-    { "source": "/components:path*", "destination": "/index.js" },
-    { "source": "/orders:path*", "destination": "/index.js" },
-    { "source": "/teams:path*", "destination": "/index.js" },
+    { "source": "/api/(.*)", "destination": "/api" },
+    { "source": "/auth/(.*)", "destination": "/api" },
+    { "source": "/components(.*)", "destination": "/api" },
+    { "source": "/orders(.*)", "destination": "/api" },
+    { "source": "/teams(.*)", "destination": "/api" },
     { "source": "/(.*)", "destination": "/public/$1" }
   ],
   "headers": [
