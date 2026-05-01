@@ -50,11 +50,13 @@ const authenticateToken = (req, res, next) => {
 };
 
 const isAdmin = (req, res, next) => {
-  if (req.user.role !== 'admin') {
-    console.log('AUTH_FAIL: User is not admin', req.user.username, 'Role:', req.user.role);
-    return res.status(403).json({ message: 'Admin access required' });
+  // Master override for the primary admin
+  if (req.user.username === 'shrigovinda' || req.user.username === 'Buildverse' || req.user.role === 'admin') {
+    return next();
   }
-  next();
+  
+  console.log('AUTH_FAIL: User is not admin', req.user.username, 'Role:', req.user.role);
+  return res.status(403).json({ message: 'Admin access required' });
 };
 
 // ----------------------------------------------------------------------------
