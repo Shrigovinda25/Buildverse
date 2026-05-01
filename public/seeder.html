@@ -68,6 +68,10 @@
                 class="w-full py-5 rounded-full bg-bvBlue text-white font-black uppercase tracking-[0.2em] shadow-2xl shadow-blue-100 transition-all active:scale-95 hover:bg-slate-900">
                 Register Admin Node 2 — Shrigovinda
             </button>
+            <button id="seed-admin3-btn"
+                class="w-full py-5 rounded-full bg-emerald-600 text-white font-black uppercase tracking-[0.2em] shadow-2xl shadow-emerald-100 transition-all active:scale-95 hover:bg-slate-900">
+                Register Admin Node 3 — Akshay
+            </button>
             <button id="seed-items-btn"
                 class="w-full py-5 rounded-full bg-bvYellow text-bvRed font-black uppercase tracking-[0.2em] shadow-2xl shadow-yellow-100 transition-all active:scale-95 hover:brightness-110">
                 Seed Resources
@@ -194,6 +198,26 @@
                 });
 
                 log('SUCCESS: Admin Node 2 [shrigovinda] established.', 'success');
+            } catch (e) { log('ERR: ' + e.message, 'error'); }
+        };
+
+        document.getElementById('seed-admin3-btn').onclick = async () => {
+            try {
+                log('Initiating Admin Node 3 registration...');
+                const salt = dcodeIO.bcrypt.genSaltSync(10);
+                const hashedPassword = dcodeIO.bcrypt.hashSync('98457', salt);
+
+                await db.collection('users').doc('Akshay').set({
+                    username: 'Akshay',
+                    password: hashedPassword,
+                    role: 'admin',
+                    activeSessionId: null,
+                    lastHeartbeat: 0,
+                    points: 0,
+                    orderingEnabled: true
+                });
+
+                log('SUCCESS: Admin Node 3 [Akshay] established.', 'success');
             } catch (e) { log('ERR: ' + e.message, 'error'); }
         };
 
