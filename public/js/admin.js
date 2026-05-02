@@ -1587,3 +1587,42 @@ async function toggleHideImages() {
         alert('Error toggling image visibility: ' + e.message);
     }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LEADERBOARD LOGIC
+// ─────────────────────────────────────────────────────────────────────────────
+firestore.collection('users').where('role', '==', 'participant').onSnapshot(snapshot => {
+    const list = document.getElementById('admin-leaderboard-list');
+    if (!list) return;
+
+    const users = snapshot.docs.map(doc => doc.data());
+    // Sort by points descending
+    users.sort((a, b) => (b.points || 0) - (a.points || 0));
+
+    list.innerHTML = '';
+    users.forEach((team, index) => {
+        const pos = index + 1;
+        let rankColor = 'bg-slate-100 text-slate-500';
+        if (pos === 1) rankColor = 'bg-yellow-100 text-yellow-700 shadow-sm border border-yellow-200';
+        else if (pos === 2) rankColor = 'bg-slate-200 text-slate-600';
+        else if (pos === 3) rankColor = 'bg-orange-100 text-orange-700';
+
+        const row = `
+            <tr class="hover:bg-slate-50 transition-colors group">
+                <td class="px-2 py-6 text-center">
+                    <div class="w-10 h-10 rounded-2xl ${rankColor} flex items-center justify-center font-black text-sm italic shadow-sm mx-auto transition-transform group-hover:scale-110">${pos}</div>
+                </td>
+                <td class="px-2 py-6">
+                    <p class="font-black text-slate-800 text-lg italic uppercase tracking-tighter">${team.username}</p>
+                </td>
+                <td class="px-2 py-6">
+                    <p class="font-bold text-slate-500 text-xs uppercase tracking-widest">${team.representativeName || 'PROVISIONAL_ENTITY'}</p>
+                </td>
+                <td class="px-2 py-6 text-right">
+                    <span class="font-black text-bvBlue text-xl italic">${team.points} <span class="text-[10px] uppercase text-slate-400 not-italic tracking-widest">PTS</span></span>
+                </td>
+            </tr>
+        `;
+        list.insertAdjacentHTML('beforeend', row);
+    });
+});

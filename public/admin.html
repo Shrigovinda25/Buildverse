@@ -850,6 +850,9 @@
             <button class="sidebar-btn" data-tab="logs" onclick="switchTab('logs')">
                 <span class="sb-icon">📝</span> System Logs
             </button>
+            <button class="sidebar-btn" data-tab="leaderboard" onclick="switchTab('leaderboard')">
+                <span class="sb-icon">🏆</span> Leaderboard
+            </button>
 
             <div class="sidebar-divider"></div>
             <p class="sidebar-section-label">System</p>
@@ -1009,6 +1012,33 @@
                                 </tr>
                             </thead>
                             <tbody id="logs-list">
+                                <!-- Loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ── LEADERBOARD TAB ── -->
+            <section id="leaderboard-tab" class="hidden fade-in">
+                <div class="section-card">
+                    <div class="section-card-header">
+                        <div>
+                            <p class="section-title">Team Leaderboard</p>
+                            <p class="section-sub">Global Point Standings</p>
+                        </div>
+                    </div>
+                    <div class="table-scroll">
+                        <table class="bv-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 80px; text-align: center;">Rank</th>
+                                    <th>Entity Identity</th>
+                                    <th>Team Name</th>
+                                    <th style="text-align:right;">Remaining PTS</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-leaderboard-list">
                                 <!-- Loaded dynamically -->
                             </tbody>
                         </table>
