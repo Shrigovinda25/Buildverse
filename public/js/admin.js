@@ -168,6 +168,11 @@ function getComponentImageUrl(item) {
         return encodeURI('assets/components/ESP32 Controller + USB Cable.jpg');
     }
 
+    // Fix for Foam Board name mismatch
+    if (name.includes('5mm Foam Board')) {
+        return encodeURI('assets/components/5mm Foam Board.jpg');
+    }
+
     // Support names with special characters by mapping to sanitized filenames
     const sanitizedName = name.replace(/\+/g, 'Plus')
                               .replace(/½/g, 'Half ')
