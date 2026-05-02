@@ -359,6 +359,10 @@ function updateCartItem(event, id, name, price, delta) {
                 // Limit exceeded
                 return;
             }
+            if (currentCartQty + delta > component.availableQuantity) {
+                // Stock exceeded
+                return;
+            }
         }
         
         // --- Fly-to-Cart Animation ---

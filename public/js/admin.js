@@ -1346,15 +1346,21 @@ async function viewTeamDetails(username) {
                 </div>
 
                 <!-- Entity Stats -->
-                <div class="flex gap-12 border-b border-slate-100 pb-8">
-                    <div>
-                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Representative</p>
-                        <p class="font-black text-slate-800 text-lg uppercase">${userData.representativeName || 'NOT_SET'}</p>
+                <div class="flex flex-wrap items-center justify-between border-b border-slate-100 pb-8 gap-6">
+                    <div class="flex gap-12">
+                        <div>
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Representative</p>
+                            <p class="font-black text-slate-800 text-lg uppercase">${userData.representativeName || 'NOT_SET'}</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Deployment Team</p>
+                            <p class="text-xs font-bold text-slate-500">${userData.members?.join(' • ') || 'SOLO'}</p>
+                        </div>
                     </div>
-                    <div>
-                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Deployment Team</p>
-                        <p class="text-xs font-bold text-slate-500">${userData.members?.join(' • ') || 'SOLO'}</p>
-                    </div>
+                    <button class="bg-bvBlue text-white px-6 py-3 rounded-full font-black text-[10px] shadow-lg shadow-blue-100 hover:brightness-110 active:scale-95 transition-all uppercase tracking-widest flex items-center gap-2" 
+                            onclick="addComponentToTeamPrompt('${username}')">
+                        <span>＋</span> Add Resource to Team
+                    </button>
                 </div>
 
                 <!-- Resource Logs -->
@@ -1461,81 +1467,85 @@ function logout() {
     window.location.href = 'index.html';
 }
 
-async function returnAllComponents(username) {
-    if (!confirm(`Are you sure you want to return ALL components held by ${username}?`)) return;
+async function addComponentToTeamPrompt(username) {
+    const componentNames = allComponentsData.map(c => c.name);
+    const selectedName = prompt(`Enter EXACT resource name to add to [${username}]:\n\nOptions:\n${componentNames.join('\n')}`);
+    if (!selectedName) return;
+
+    const component = allComponentsData.find(c => c.name.toLowerCase() === selectedName.toLowerCase());
+    if (!component) {
+        alert('Resource not found. Please enter the exact name from the repository.');
+        return;
+    }
+
+    const qtyStr = prompt(`How many units of [${component.name}] to add to ${username}? (Max per team limit: ${component.maxPerTeam || 'None'})`, '1');
+    const qty = parseInt(qtyStr);
+    if (isNaN(qty) || qty <= 0) return;
 
     try {
-        const ordersSnapshot = await firestore.collection('orders')
-            .where('username', '==', username)
-            .where('status', '==', 'Given')
-            .get();
-
-        if (ordersSnapshot.empty) {
-            alert('This team does not currently hold any components.');
-            return;
-        }
-
         await firestore.runTransaction(async (t) => {
             const userRef = firestore.collection('users').doc(username);
+            const compRef = firestore.collection('components').doc(component.id);
             const userDoc = await t.get(userRef);
-            if (!userDoc.exists) throw new Error('User not found');
+            const compDoc = await t.get(compRef);
+
+            if (!userDoc.exists || !compDoc.exists) throw new Error('Data sync failure.');
             
-            let totalRefund = 0;
-            const updates = [];
-
-            // Read all component data first
-            for (const doc of ordersSnapshot.docs) {
-                const orderData = doc.data();
-                const compRef = firestore.collection('components').doc(orderData.componentId);
-                const compDoc = await t.get(compRef);
-                
-                if (compDoc.exists) {
-                    updates.push({
-                        orderRef: doc.ref,
-                        orderData: orderData,
-                        compRef: compRef,
-                        compData: compDoc.data()
-                    });
-                }
-            }
-
             const userData = userDoc.data();
+            const compData = compDoc.data();
             const currentInventory = userData.inventory || {};
-            const newInventory = { ...currentInventory };
+            const alreadyOwned = Number(currentInventory[component.id] || 0);
 
-            // Apply updates
-            for (const update of updates) {
-                const { orderRef, orderData, compRef, compData } = update;
-                const refund = Math.round((orderData.pricePerUnit * orderData.quantity) * 0.5);
-                totalRefund += refund;
-
-                t.update(compRef, { availableQuantity: Number(compData.availableQuantity || 0) + Number(orderData.quantity) });
-                t.update(orderRef, { status: 'Returned' });
-                
-                // Update map
-                newInventory[orderData.componentId] = Math.max(0, (newInventory[orderData.componentId] || 0) - Number(orderData.quantity));
-
-                const isHidden = document.body.classList.contains('hide-component-images');
-                const displayName = isHidden ? `Resource #${allComponentsData.findIndex(c => c.id === orderData.componentId) + 1}` : orderData.componentName;
-                const transRef = firestore.collection('transactions').doc();
-                t.set(transRef, {
-                    username: username,
-                    type: 'credit',
-                    amount: refund,
-                    reason: `Bulk Refund: ${orderData.quantity}x ${displayName} returned`,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                });
+            // LIMIT CHECK
+            if (compData.maxPerTeam && (alreadyOwned + qty > compData.maxPerTeam)) {
+                throw new Error(`PER-TEAM_LIMIT_EXCEEDED: This team already has ${alreadyOwned} in queue/possession. Max allowed: ${compData.maxPerTeam}`);
             }
 
+            // STOCK CHECK
+            if (compData.availableQuantity < qty) {
+                throw new Error(`INSUFFICIENT_STOCK: Only ${compData.availableQuantity} units available.`);
+            }
+
+            // POINTS CHECK
+            const totalCost = qty * compData.price;
+            if (userData.points < totalCost) {
+                throw new Error(`INSUFFICIENT_POINTS: Required: ${totalCost}, Team has: ${userData.points}`);
+            }
+
+            // APPLY UPDATES
+            t.update(compRef, { availableQuantity: compData.availableQuantity - qty });
             t.update(userRef, { 
-                points: Number(userData.points || 0) + totalRefund,
-                inventory: newInventory
+                points: userData.points - totalCost,
+                inventory: { ...currentInventory, [component.id]: alreadyOwned + qty }
+            });
+
+            const newOrderRef = firestore.collection('orders').doc();
+            t.set(newOrderRef, {
+                username,
+                componentId: component.id,
+                componentName: compData.name,
+                quantity: qty,
+                pricePerUnit: compData.price,
+                totalCost,
+                status: 'Given',
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            const transRef = firestore.collection('transactions').doc();
+            t.set(transRef, {
+                username,
+                type: 'debit',
+                amount: totalCost,
+                reason: `Admin Manual Grant: ${qty}x ${compData.name}`,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
             });
         });
 
-        alert(`Successfully returned all components for ${username}.`);
+        alert(`Successfully added ${qty}x ${component.name} to ${username}.`);
+        closeModal();
+        setTimeout(() => viewTeamDetails(username), 400);
     } catch (e) {
-        alert('Error processing bulk return: ' + e.message);
+        alert('ERR: ' + e.message);
     }
 }
 
