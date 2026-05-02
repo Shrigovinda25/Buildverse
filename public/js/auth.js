@@ -132,25 +132,41 @@ async function logout() {
 function startSessionHeartbeat(username, sessionId) {
     if (!username || !sessionId) return;
     
-    // Update immediately and then every 15s
+    let failureCount = 0;
+
     const update = async () => {
+        // Prevent heartbeat if page is unloading
+        if (document.visibilityState === 'hidden' && !navigator.onLine) return;
+
         try {
             const doc = await firestore.collection('users').doc(username).get();
             const data = doc.data();
             
-            // If someone else logged in or session was cleared
+            // If session is officially invalid
             if (!data || data.activeSessionId !== sessionId) {
-                console.error('SESSION_COLLISION_DETECTED');
-                alert('ACCESS_TERMINATED: Account active on another device.');
-                localStorage.clear();
-                window.location.href = 'index.html';
+                failureCount++;
+                // Only logout after 2 consecutive verified failures to account for rapid refreshes/latency
+                if (failureCount >= 2) {
+                    console.error('SESSION_COLLISION_DETECTED');
+                    alert('ACCESS_TERMINATED: Account active on another device or session expired.');
+                    localStorage.removeItem('bv_token');
+                    localStorage.removeItem('bv_sessionId');
+                    localStorage.removeItem('bv_user');
+                    window.location.href = 'index.html';
+                }
                 return;
             }
+
+            // Reset failure count on success
+            failureCount = 0;
 
             await firestore.collection('users').doc(username).update({
                 lastHeartbeat: Date.now()
             });
-        } catch (e) { console.error('Heartbeat failure:', e.message); }
+        } catch (e) { 
+            console.warn('Heartbeat hiccup:', e.message);
+            // Don't logout on network errors, just wait for the next interval
+        }
     };
 
     update();

@@ -429,58 +429,100 @@ app.post('/api/send-team-email', async (req, res) => {
     const websiteLink = process.env.WEBSITE_LINK || 'https://buildverse-official.vercel.app';
 
     const mailOptions = {
-      from: `"Buildverse Official" <${process.env.SMTP_USER}>`,
+      from: `"Buildverse Team" <${process.env.SMTP_USER}>`,
       to: toEmail,
       replyTo: process.env.SMTP_USER,
-      subject: `[IMPORTANT] Team Credentials: ${username} | Buildverse 2026`,
+      subject: `Buildverse Event – Team Credentials & Website Access`,
       headers: {
         'X-Priority': '1',
         'X-MSMail-Priority': 'High',
-        'Importance': 'high'
+        'Importance': 'high',
+        'X-Entity-Ref-ID': Date.now().toString()
       },
       text: `Dear Participant,
 
-Welcome to Buildverse 2026 at Pleiades, KLE Technological University.
+Greetings from the Buildverse Team!
 
-Your team has been successfully registered. Please use the credentials below to access the inventory platform:
+We are excited to welcome you to the Buildverse Event at Pleadies 2026, hosted by KLE Technological University.
 
-TEAM IDENTITY: ${username}
-PASSWORD: ${password}
+As part of the event setup, each team has been assigned unique login credentials. These credentials will be used to access the official Buildverse platform.
 
-ACCESS PORTAL: ${websiteLink}
+Your Team Credentials:
+- Team Identity: ${username}
+- Password: ${password}
 
-Note: Keep these credentials secure. Do not share them with other teams.
+Website Access:
+You can access the Buildverse platform using the link below:
+${websiteLink}
 
-Through this portal, you will manage your component acquisitions and build requirements in real-time.
+Through this website, your team will be able to browse components, place orders, and manage requirements.
 
 Regards,
-Buildverse Technical Team
+Buildverse Team
 KLE Technological University`,
       html: `
-        <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #1a1a1a; max-width: 600px; margin: 0 auto; border: 1px solid #e5e7eb; padding: 40px; border-radius: 8px;">
-          <h2 style="color: #C8102E; margin-bottom: 24px; font-size: 22px;">BUILDVERSE 2026 Credentials</h2>
-          
-          <p>Dear Participant,</p>
-          <p>Your team is now authorized to access the Buildverse platform for <strong>Pleiades 2026</strong> at KLE Technological University.</p>
-          
-          <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 25px; margin: 30px 0; border-radius: 12px;">
-            <p style="margin: 0 0 10px 0; font-size: 13px; color: #64748b; text-transform: uppercase; font-weight: bold;">Official Credentials</p>
-            <p style="margin: 5px 0; font-size: 16px;"><strong>Team ID:</strong> <span style="font-family: monospace; background: #fff; padding: 2px 6px; border-radius: 4px;">${username}</span></p>
-            <p style="margin: 5px 0; font-size: 16px;"><strong>Passcode:</strong> <span style="font-family: monospace; background: #fff; padding: 2px 6px; border-radius: 4px;">${password}</span></p>
+        <div style="background-color: #f4f7f9; padding: 40px 20px; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6;">
+          <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #e1e8ed;">
+            
+            <!-- Header Banner -->
+            <div style="background-color: #C8102E; padding: 30px; text-align: center;">
+              <h1 style="color: #ffffff; margin: 0; font-size: 24px; letter-spacing: 2px; text-transform: uppercase; font-weight: 900;">BUILDVERSE <span style="font-weight: 300; opacity: 0.8;">2026</span></h1>
+            </div>
+
+            <!-- Content Body -->
+            <div style="padding: 40px; color: #333;">
+              <p style="font-size: 16px; margin-top: 0;">Dear Participant,</p>
+              <p style="font-size: 15px;">Greetings from the <strong>Buildverse Team</strong>!</p>
+              <p style="font-size: 15px;">
+                We are excited to welcome you to the <strong>Buildverse Event</strong> at <strong>Pleiades 2026</strong>, hosted by KLE Technological University.
+              </p>
+              <p style="font-size: 15px;">
+                As part of the event setup, each team has been assigned unique login credentials. These credentials will be used to access the official Buildverse platform.
+              </p>
+
+              <!-- Credentials Box -->
+              <div style="margin: 30px 0; background-color: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0; padding: 25px;">
+                <h3 style="margin-top: 0; font-size: 14px; color: #C8102E; text-transform: uppercase; letter-spacing: 1px;">Your Team Credentials:</h3>
+                <p style="margin: 10px 0; font-size: 16px;"><strong>Team Identity:</strong> <code style="background: #eee; padding: 3px 6px; border-radius: 4px;">${username}</code></p>
+                <p style="margin: 10px 0; font-size: 16px;"><strong>Password:</strong> <code style="background: #eee; padding: 3px 6px; border-radius: 4px;">${password}</code></p>
+                <p style="font-size: 12px; color: #666; margin-top: 15px; font-style: italic;">Please keep these details confidential and use them only for your team activities.</p>
+              </div>
+
+              <h3 style="font-size: 16px; color: #0047AB; text-transform: uppercase;">Website Access:</h3>
+              <p style="font-size: 15px;">You can access the Buildverse platform using the link below:</p>
+              
+              <!-- Action Button -->
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${websiteLink}" style="display: inline-block; background-color: #0047AB; color: #ffffff; padding: 18px 45px; text-decoration: none; border-radius: 50px; font-weight: bold; font-size: 14px; text-transform: uppercase; box-shadow: 0 5px 15px rgba(0,71,171,0.3);">Access Platform</a>
+              </div>
+
+              <p style="font-size: 15px;">Through this website, your team will be able to:</p>
+              <ul style="font-size: 15px; color: #444;">
+                <li>Browse and select required components</li>
+                <li>Place orders for materials needed during the event</li>
+                <li>Manage your build requirements efficiently</li>
+              </ul>
+
+              <p style="font-size: 15px;">
+                We recommend that you log in at the earliest and familiarize yourself with the platform before the event begins.
+              </p>
+              
+              <p style="font-size: 15px;">
+                If you face any issues while accessing the website or using your credentials, feel free to reach out to us.
+              </p>
+
+              <p style="font-size: 15px; margin-bottom: 0;">
+                We look forward to your active participation and wish you the best for the competition!
+              </p>
+            </div>
+
+            <!-- Footer -->
+            <div style="background-color: #fcfdfe; padding: 30px; text-align: left; border-top: 1px solid #f1f5f9;">
+              <p style="margin: 0; font-size: 14px; color: #333;">Regards,</p>
+              <p style="margin: 5px 0; font-weight: bold; color: #1e293b;">Buildverse Team</p>
+              <p style="margin: 0; font-size: 13px; color: #64748b;">KLE Technological University</p>
+            </div>
           </div>
-          
-          <p style="margin-bottom: 30px;">Use the button below to log in and begin your hardware selection protocol:</p>
-          
-          <div style="text-align: center;">
-            <a href="${websiteLink}" style="background-color: #C8102E; color: #ffffff; padding: 15px 35px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Log in to Buildverse</a>
-          </div>
-          
-          <hr style="border: 0; border-top: 1px solid #eee; margin: 40px 0;">
-          
-          <p style="font-size: 12px; color: #94a3b8;">
-            This is an automated transactional message from the Buildverse Authorization Protocol. 
-            If you did not expect this email, please contact the event organizers at KLE Technological University.
-          </p>
         </div>
       `
     };
