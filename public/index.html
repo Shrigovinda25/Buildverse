@@ -230,11 +230,7 @@
         .branding-logo-left {
             width: 140px;
             height: 140px;
-            background: #fff;
-            border-radius: 50%;
-            padding: 15px;
             object-fit: contain;
-            box-shadow: 0 15px 45px rgba(0, 0, 0, 0.2);
             animation: float 6s ease-in-out infinite;
         }
 
@@ -629,14 +625,31 @@
         }
 
         .animate-shake {
-            animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+            animation: shake 0.4s cubic-bezier(.36, .07, .19, .97) both;
         }
 
         @keyframes shake {
-            10%, 90% { transform: translate3d(-1px, 0, 0); }
-            20%, 80% { transform: translate3d(2px, 0, 0); }
-            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-            40%, 60% { transform: translate3d(4px, 0, 0); }
+
+            10%,
+            90% {
+                transform: translate3d(-1px, 0, 0);
+            }
+
+            20%,
+            80% {
+                transform: translate3d(2px, 0, 0);
+            }
+
+            30%,
+            50%,
+            70% {
+                transform: translate3d(-4px, 0, 0);
+            }
+
+            40%,
+            60% {
+                transform: translate3d(4px, 0, 0);
+            }
         }
 
         .info-box {
@@ -1094,7 +1107,8 @@
                     <p class="partner-desc">Empowering innovators with industrial-grade components and precision
                         engineering solutions for the next generation of hardware.</p>
                 </div>
-                <a href="https://www.justdial.com/Hubli/Core-Technologies-Opp-BVB-COLLEGE-Vidyanagar-Hubli/0836PX836-X836-190517113342-H5F3_BZDET" target="_blank" class="partner-link">Explore Portal</a>
+                <a href="https://www.justdial.com/Hubli/Core-Technologies-Opp-BVB-COLLEGE-Vidyanagar-Hubli/0836PX836-X836-190517113342-H5F3_BZDET"
+                    target="_blank" class="partner-link">Explore Portal</a>
             </div>
         </div>
     </section>
@@ -1294,9 +1308,14 @@
                     </button>
                 </form>
 
-                <div id="error-message" class="mt-6 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 hidden animate-shake">
-                    <svg class="w-5 h-5 text-red-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                    <p id="error-text" class="text-red-700 text-xs font-black uppercase tracking-tight leading-tight"></p>
+                <div id="error-message"
+                    class="mt-6 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 hidden animate-shake">
+                    <svg class="w-5 h-5 text-red-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <p id="error-text" class="text-red-700 text-xs font-black uppercase tracking-tight leading-tight">
+                    </p>
                 </div>
 
                 <div class="info-box">

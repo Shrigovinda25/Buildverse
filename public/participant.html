@@ -294,7 +294,8 @@
         .marquee-label {
             font-size: 0.55rem;
             font-weight: 800;
-            color: #FFD700; /* Golden Color */
+            color: #FFD700;
+            /* Golden Color */
             text-transform: uppercase;
             letter-spacing: 0.25em;
         }
@@ -312,8 +313,13 @@
         }
 
         @keyframes marquee-scroll {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-50%);
+            }
         }
 
         /* ── BANNER ── */
@@ -897,6 +903,7 @@
             align-items: center;
             gap: 0.5rem;
         }
+
         /* ── FLY TO CART ANIMATION ── */
         .fly-item {
             position: fixed;
@@ -904,7 +911,7 @@
             pointer-events: none;
             transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
             border-radius: 50%;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
             opacity: 1;
             transform: scale(1);
         }
@@ -995,7 +1002,8 @@
             <!-- Sponsor Contact -->
             <div class="sponsor-contact-card">
                 <div class="flex items-center gap-3 mb-4">
-                    <img src="assets/Core Electronics.png" alt="Core Electronics" class="w-10 h-10 object-contain bg-white rounded-xl p-1.5 shadow-sm">
+                    <img src="assets/Core Electronics.png" alt="Core Electronics"
+                        class="w-10 h-10 object-contain bg-white rounded-xl p-1.5 shadow-sm">
                     <div>
                         <p class="sponsor-title mb-0" style="margin-bottom: 0;">Powered by</p>
                         <p class="font-black text-white text-[0.8rem] leading-tight">CORE TECHNOLOGIES</p>
@@ -1052,8 +1060,12 @@
                             <p class="section-sub">Available inventory for acquisition</p>
                         </div>
                         <div class="flex items-center gap-3">
-                            <input type="text" id="catalog-search" placeholder="Search resources..." class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-bold text-slate-700 focus:outline-none focus:border-bvBlue w-full md:w-64 transition-all" oninput="renderCatalog()">
-                            <select id="catalog-category" class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-bold text-slate-700 focus:outline-none focus:border-bvBlue transition-all bg-white" onchange="renderCatalog()">
+                            <input type="text" id="catalog-search" placeholder="Search resources..."
+                                class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-bold text-slate-700 focus:outline-none focus:border-bvBlue w-full md:w-64 transition-all"
+                                oninput="renderCatalog()">
+                            <select id="catalog-category"
+                                class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-bold text-slate-700 focus:outline-none focus:border-bvBlue transition-all bg-white"
+                                onchange="renderCatalog()">
                                 <option value="ALL">All Categories</option>
                                 <option value="Controller">Controllers</option>
                                 <option value="Sensor">Sensors</option>
