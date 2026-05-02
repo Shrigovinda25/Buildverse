@@ -423,6 +423,15 @@ function updateCartItem(event, id, name, price, delta) {
 
     updateCartUI();
     renderCatalog(); // Re-render to update add button state
+
+    // If modal is open, re-render it to show updated qtys/total
+    const modalBackdrop = document.getElementById('modal-backdrop');
+    if (modalBackdrop && !modalBackdrop.classList.contains('hidden')) {
+        // Only re-render if it's the cart modal (Review Processing Queue)
+        if (document.getElementById('modal-title').textContent === 'Review Processing Queue') {
+            openCartModal();
+        }
+    }
 }
 
 function updateCartUI() {
@@ -455,10 +464,19 @@ function openCartModal() {
         itemsHtml += `
             <div class="flex justify-between items-center bg-slate-50 p-4 rounded-2xl border border-slate-100">
                 <div>
-                    <p class="font-black text-slate-800 text-sm italic uppercase">${displayName}</p>
-                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">${item.price} PTS / EA</p>
+                    <p class="font-black text-slate-800 text-[11px] italic uppercase leading-none">${displayName}</p>
+                    <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-1">${item.price} PTS / EA</p>
                 </div>
-                <div class="font-black text-bvRed text-lg italic tracking-tighter">x${item.qty}</div>
+                <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-1 bg-white rounded-xl border border-slate-200 p-1">
+                        <button class="w-7 h-7 flex items-center justify-center text-slate-400 hover:bg-slate-50 rounded-lg transition-colors font-black text-sm" onclick="updateCartItem(null, '${id}', '${item.name.replace(/'/g, "\\'")}', ${item.price}, -1)">−</button>
+                        <span class="font-black text-slate-800 w-5 text-center text-xs italic">x${item.qty}</span>
+                        <button class="w-7 h-7 flex items-center justify-center text-bvBlue hover:bg-slate-50 rounded-lg transition-colors font-black text-sm" onclick="updateCartItem(null, '${id}', '${item.name.replace(/'/g, "\\'")}', ${item.price}, 1)">+</button>
+                    </div>
+                    <button class="text-slate-300 hover:text-red-500 transition-colors p-1" onclick="updateCartItem(null, '${id}', '${item.name.replace(/'/g, "\\'")}', ${item.price}, -${item.qty})">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    </button>
+                </div>
             </div>
         `;
     });
@@ -597,6 +615,8 @@ document.getElementById('modal-submit').onclick = async () => {
         updateCartUI();
         document.querySelectorAll('[id^="cart-qty-"]').forEach(el => el.textContent = '0');
         closeModal();
+
+        showToast('success', 'Protocol Executed', 'Order has been successfully placed and added to the processing queue.');
 
     } catch (e) {
         alert('Error: ' + e.message);
