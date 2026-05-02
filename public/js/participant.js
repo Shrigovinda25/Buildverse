@@ -157,8 +157,9 @@ function renderCatalog() {
         const cartCount = cart[item.id]?.qty || 0;
         const totalTeamCount = alreadyCount + cartCount;
         const limitReached = item.maxPerTeam && totalTeamCount >= item.maxPerTeam;
+        const stockReached = cartCount >= item.availableQuantity;
 
-        const canOrder = !isGlobalPaused && liveUser.orderingEnabled && item.availableQuantity > 0 && !limitReached;
+        const canOrder = !isGlobalPaused && liveUser.orderingEnabled && item.availableQuantity > 0;
 
         const card = `
             <div class="bg-white rounded-[32px] shadow-sm border border-slate-100 overflow-hidden flex flex-col p-8 h-full transition-all hover:shadow-xl hover:-translate-y-1 group">
@@ -193,13 +194,14 @@ function renderCatalog() {
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14"/></svg>
                             </button>
                             <span class="font-black text-lg italic w-10 text-center text-slate-700" id="cart-qty-${item.id}">${cartCount}</span>
-                            <button class="w-10 h-10 rounded-[14px] ${limitReached ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-bvYellow text-bvRed shadow-yellow-100/50 hover:scale-105'} shadow-sm transition-all active:scale-95 flex items-center justify-center" 
-                                    ${limitReached ? 'disabled' : ''}
+                            <button class="w-10 h-10 rounded-[14px] ${(limitReached || stockReached) ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-bvYellow text-bvRed shadow-yellow-100/50 hover:scale-105'} shadow-sm transition-all active:scale-95 flex items-center justify-center" 
+                                    ${(limitReached || stockReached) ? 'disabled' : ''}
                                     onclick="updateCartItem(event, '${item.id}', '${item.name.replace(/'/g, "\\'")}', ${item.price}, 1)">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                             </button>
                         </div>
-                        ${limitReached ? `<p class="text-center text-[8px] font-black text-bvRed uppercase mt-3 tracking-widest animate-pulse">Team quota reached</p>` : ''}
+                        ${limitReached ? `<p class="text-center text-[8px] font-black text-bvRed uppercase mt-3 tracking-widest animate-pulse">Team quota reached</p>` : 
+                          stockReached ? `<p class="text-center text-[8px] font-black text-bvRed uppercase mt-3 tracking-widest animate-pulse">Stock protocol limit</p>` : ''}
                     ` : `
                         <button class="w-full py-4 rounded-3xl font-black text-xs uppercase tracking-[0.2em] transition-all bg-slate-100 text-slate-300 cursor-not-allowed" disabled>
                             ${isGlobalPaused ? 'Paused' : (!liveUser.orderingEnabled ? 'Locked' : 'Depleted')}
@@ -352,10 +354,10 @@ function updateCartItem(event, id, name, price, delta) {
     // Check per-team limit
     if (delta > 0) {
         const component = components.find(c => c.id === id);
-        if (component && component.maxPerTeam) {
+        if (component) {
             const alreadyCount = orderedCounts[id] || 0;
             const currentCartQty = cart[id].qty;
-            if (alreadyCount + currentCartQty + delta > component.maxPerTeam) {
+            if (component.maxPerTeam && (alreadyCount + currentCartQty + delta > component.maxPerTeam)) {
                 // Limit exceeded
                 return;
             }
