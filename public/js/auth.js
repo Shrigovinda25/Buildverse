@@ -30,45 +30,47 @@ if (loginForm) {
         const password = document.getElementById('password').value;
 
         try {
-            // 1. Query Firestore for the user
-            const userDoc = await firestore.collection('users').doc(username).get();
+            // 1. Call Backend API for Authentication (SECURE)
+            const response = await fetch('/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
 
-            if (!userDoc.exists) {
-                throw new Error('Invalid username or password');
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Login failed');
             }
 
-            const userData = userDoc.data();
+            // 2. Authenticate with Firebase using Custom Token (Secure Firestore Access)
+            if (data.firebaseToken) {
+                await firebase.auth().signInWithCustomToken(data.firebaseToken);
+            }
+
+            const userData = data.user;
             
             // 3. SECURE SESSION CHECK (Concurrent Login Prevention)
+            const userDoc = await firestore.collection('users').doc(username).get();
+            const dbData = userDoc.data();
             const currentTime = Date.now();
-            const lastHeartbeat = userData.lastHeartbeat || 0;
+            const lastHeartbeat = dbData.lastHeartbeat || 0;
             const existingSessionId = localStorage.getItem('bv_sessionId');
             
-            // 45 second grace period, bypass if they are the SAME browser reclaiming their session
-            if (currentTime - lastHeartbeat < 45000 && userData.activeSessionId !== existingSessionId) {
-                throw new Error('Concurrent Session: Account is already active on another device. Please wait 60s or log out elsewhere.');
+            // 45 second grace period
+            if (currentTime - lastHeartbeat < 45000 && dbData.activeSessionId !== existingSessionId) {
+                throw new Error('Concurrent Session: Account is already active on another device.');
             }
 
-            // 4. Verify Password using bcrypt (Browser version)
-            const bcrypt = getBcrypt();
-            if (!bcrypt) throw new Error('Encryption library not loaded. Please refresh.');
-            
-            const isMatch = bcrypt.compareSync(password, userData.password);
-
-            if (!isMatch) {
-                throw new Error('Invalid username or password');
-            }
-
-            // 5. Initialize Unique Session
+            // 4. Initialize Unique Session
             const sessionId = Math.random().toString(36).substring(2, 15);
             await firestore.collection('users').doc(username).update({
                 activeSessionId: sessionId,
                 lastHeartbeat: currentTime
             });
 
-            // 6. Store local session
-            const fakeToken = btoa(JSON.stringify({ username, role: userData.role, exp: Date.now() + 86400000 }));
-            localStorage.setItem('bv_token', fakeToken);
+            // 5. Store local session
+            localStorage.setItem('bv_token', data.token); // Store JWT
             localStorage.setItem('bv_sessionId', sessionId);
             localStorage.setItem('bv_user', JSON.stringify({
                 username: userData.username,
@@ -77,7 +79,7 @@ if (loginForm) {
                 orderingEnabled: userData.orderingEnabled
             }));
 
-            // 4. Redirect based on role
+            // 6. Redirect based on role
             if (userData.role === 'admin') {
                 window.location.href = 'admin.html';
             } else {
@@ -89,11 +91,7 @@ if (loginForm) {
             if (errText && errContainer) {
                 errText.textContent = error.message;
                 errContainer.classList.remove('hidden');
-                
-                // Re-hide after 7 seconds
-                setTimeout(() => {
-                    errContainer.classList.add('hidden');
-                }, 7000);
+                setTimeout(() => errContainer.classList.add('hidden'), 7000);
             }
         }
     });

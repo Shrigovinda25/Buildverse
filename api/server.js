@@ -50,13 +50,15 @@ const authenticateToken = (req, res, next) => {
 };
 
 const isAdmin = (req, res, next) => {
-  // Emergency override: If username is shrigovinda, let them in.
-  if (req.user && (req.user.username === 'shrigovinda' || req.user.username === 'Buildverse' || req.user.role === 'admin')) {
+  // Authorized Admin List
+  const AUTHORIZED_ADMINS = ['shrigovinda', 'Akshay'];
+  
+  if (req.user && (AUTHORIZED_ADMINS.includes(req.user.username) || req.user.role === 'admin')) {
     return next();
   }
   
-  console.log('AUTH_FAIL: User is not admin', req.user ? req.user.username : 'No User', 'Role:', req.user ? req.user.role : 'No Role');
-  return res.status(403).json({ message: 'Admin access required' });
+  console.log('AUTH_FAIL: Unauthorized Admin Access Attempt', req.user ? req.user.username : 'No User');
+  return res.status(403).json({ message: 'Restricted: Admin clearance required.' });
 };
 
 // ----------------------------------------------------------------------------
@@ -408,7 +410,8 @@ app.put('/teams/:username/toggle', authenticateToken, isAdmin, async (req, res) 
 // Email System
 // ----------------------------------------------------------------------------
 
-app.post('/api/send-team-email', async (req, res) => {
+// Protected route: requires admin clearance
+app.post('/api/send-team-email', authenticateToken, isAdmin, async (req, res) => {
   const { toEmail, username, password } = req.body;
 
   if (!toEmail || !toEmail.endsWith('@gmail.com')) {
