@@ -938,8 +938,16 @@
             <div class="topbar-sep"></div>
             <span class="topbar-brand">Build<span>Verse</span></span>
         </div>
-        <div style="display:flex;align-items:center;gap:1rem;">
-            <span class="topbar-badge" id="welcome-msg">Entity Portal</span>
+        <div style="display:flex;align-items:center;gap:1.5rem;">
+            <div class="flex items-center gap-3 px-6 py-2 bg-slate-50 border border-slate-100 rounded-2xl">
+                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Event<br>Timer</span>
+                <span id="event-timer-display" class="text-xl font-black text-bvRed italic tracking-tighter tabular-nums opacity-30">00:00:00</span>
+            </div>
+            <div class="flex flex-col items-end">
+                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Authenticated Entity</span>
+                <span class="text-xs font-black text-bvBlue uppercase italic tracking-tighter leading-none" id="welcome-msg">...</span>
+            </div>
+            <span class="topbar-badge">Participant Terminal</span>
         </div>
     </header>
 

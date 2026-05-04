@@ -42,8 +42,12 @@
         <div class="mb-10">
             <h1 class="text-4xl font-[900] tracking-tighter text-slate-800 italic uppercase">System_Seed<span
                     class="text-bvRed">.v2</span></h1>
-            <p class="text-[10px] font-black tracking-[0.4em] text-slate-400 mt-2">DEPLOYMENT PROTOCOL: INITIALIZATION
-            </p>
+            <p class="text-[10px] font-black tracking-[0.4em] text-slate-400 mt-2">DEPLOYMENT PROTOCOL: INITIALIZATION</p>
+            
+            <div class="mt-6 flex items-center justify-center gap-3 px-6 py-3 bg-white border border-slate-100 rounded-3xl w-fit mx-auto shadow-sm">
+                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Event<br>Timer</span>
+                <span id="event-timer-display" class="text-2xl font-black text-bvRed italic tracking-tighter tabular-nums opacity-30">00:00:00</span>
+            </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
@@ -88,7 +92,7 @@
                 class="text-[10px] font-black text-bvRed uppercase tracking-widest hover:underline decoration-2 underline-offset-8">Return
                 to Portal</a>
         </div>
-    </div>
+    <div id="toast-container" class="fixed bottom-6 right-6 z-[2000] flex flex-col gap-3 pointer-events-none"></div>
 
     <!-- Firebase Compat SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -109,6 +113,45 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
+        // ── EVENT TIMER LOGIC ──
+        let eventEndTime = null;
+        let timerInterval = null;
+
+        db.collection('settings').doc('system').onSnapshot(doc => {
+            if (doc.exists) {
+                eventEndTime = doc.data().timerEndTime || null;
+                updateTimerUI();
+                if (eventEndTime && !timerInterval) {
+                    timerInterval = setInterval(updateTimerUI, 1000);
+                } else if (!eventEndTime && timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+            }
+        });
+
+        function updateTimerUI() {
+            const timerDisplay = document.getElementById('event-timer-display');
+            if (!timerDisplay) return;
+            if (!eventEndTime) {
+                timerDisplay.textContent = "00:00:00";
+                timerDisplay.classList.add('opacity-30');
+                return;
+            }
+            timerDisplay.classList.remove('opacity-30');
+            const diff = eventEndTime - Date.now();
+            if (diff <= 0) {
+                timerDisplay.textContent = "00:00:00";
+                timerDisplay.classList.add('text-red-600', 'animate-pulse');
+                return;
+            }
+            timerDisplay.classList.remove('text-red-600', 'animate-pulse');
+            const hrs = Math.floor(diff / 3600000).toString().padStart(2, '0');
+            const mins = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
+            const secs = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
+            timerDisplay.textContent = `${hrs}:${mins}:${secs}`;
+        }
+
         const logEl = document.getElementById('log');
         function log(msg, type = 'info') {
             const time = new Date().toLocaleTimeString();
@@ -121,7 +164,7 @@
         }
 
         const components = [
-            { category: "Controller", name: "ESP32 Controller + USB Cable", totalQuantity: 25, price: 200, maxPerTeam: 2, imageUrl: "assets/components/ESP32%20Controller%20%2B%20USB%20Cable.jpg" },
+            { category: "Controller", name: "ESP32 Controller + USB Cable", totalQuantity: 25, price: 200, maxPerTeam: 1, imageUrl: "assets/components/ESP32%20Controller%20%2B%20USB%20Cable.jpg" },
             { category: "Sensor", name: "Ultrasonic Sensor", totalQuantity: 30, price: 30 },
             { category: "Sensor", name: "IR Sensor", totalQuantity: 40, price: 20 },
             { category: "Sensor", name: "LDR Sensor", totalQuantity: 20, price: 15 },
@@ -147,9 +190,9 @@
             { category: "Hardware", name: "Breadboard (800 pts)", totalQuantity: 20, price: 40 },
             { category: "Hardware", name: "1in L Clamp", totalQuantity: 40, price: 5 },
             { category: "Hardware", name: "½in L Clamp", totalQuantity: 40, price: 10 },
-            { category: "Hardware", name: "Female to Female Jumper wire", totalQuantity: 100, price: 1, maxPerTeam: 2, description: "1 pack has 10 wires" },
-            { category: "Hardware", name: "Male to Female Jumper wire", totalQuantity: 100, price: 1, maxPerTeam: 2, description: "1 pack has 10 wires" },
-            { category: "Hardware", name: "Male to Male Jumper wire", totalQuantity: 20, price: 15, maxPerTeam: 2, description: "1 pack has 10 wires" },
+            { category: "Hardware", name: "Female to Female Jumper wire", totalQuantity: 20, price: 10, maxPerTeam: 2, description: "1 pack has 10 wires" },
+            { category: "Hardware", name: "Male to Female Jumper wire", totalQuantity: 20, price: 10, maxPerTeam: 2, description: "1 pack has 10 wires" },
+            { category: "Hardware", name: "Male to Male Jumper wire", totalQuantity: 20, price: 10, maxPerTeam: 2, description: "1 pack has 10 wires" },
             { category: "Hardware", name: "M4 Nut & Bolts", totalQuantity: 100, price: 5 },
             { category: "Hardware", name: "Resistor Pack", totalQuantity: 20, price: 10 },
 

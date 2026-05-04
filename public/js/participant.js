@@ -78,11 +78,15 @@ function switchTab(tab) {
 
 let isGlobalPaused = false;
 let areImagesHidden = false;
+let eventEndTime = null;
+let timerInterval = null;
+
 firestore.collection('settings').doc('system').onSnapshot(doc => {
     if (doc.exists) {
         const data = doc.data();
         isGlobalPaused = data.orderingPaused || false;
         areImagesHidden = data.hideComponentImages || false;
+        eventEndTime = data.timerEndTime || null;
         
         // Handle global image visibility
         if (areImagesHidden) {
@@ -91,10 +95,50 @@ firestore.collection('settings').doc('system').onSnapshot(doc => {
             document.body.classList.remove('hide-component-images');
         }
 
+        // Handle Event Timer
+        updateTimerUI();
+        if (eventEndTime) {
+            if (!timerInterval) {
+                timerInterval = setInterval(updateTimerUI, 1000);
+            }
+        } else {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
         updateBannerState();
         renderCatalog();
     }
 });
+
+function updateTimerUI() {
+    const timerDisplay = document.getElementById('event-timer-display');
+    if (!timerDisplay) return;
+
+    if (!eventEndTime) {
+        timerDisplay.textContent = "00:00:00";
+        timerDisplay.classList.add('opacity-30');
+        return;
+    }
+
+    timerDisplay.classList.remove('opacity-30');
+    const now = Date.now();
+    const diff = eventEndTime - now;
+
+    if (diff <= 0) {
+        timerDisplay.textContent = "00:00:00";
+        timerDisplay.classList.add('text-red-600', 'animate-pulse');
+        return;
+    }
+
+    timerDisplay.classList.remove('text-red-600', 'animate-pulse');
+    const hrs = Math.floor(diff / (1000 * 60 * 60)).toString().padStart(2, '0');
+    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
+    const secs = Math.floor((diff % (1000 * 60)) / 1000).toString().padStart(2, '0');
+    timerDisplay.textContent = `${hrs}:${mins}:${secs}`;
+}
 
 function updateBannerState() {
     const banner = document.getElementById('ordering-status-banner');

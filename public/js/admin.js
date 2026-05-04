@@ -52,6 +52,8 @@ const CAT_PRIORITY = {
 // ----------------------------------------------------------------------------
 let isGlobalPaused = false;
 let areImagesHidden = false;
+let eventEndTime = null;
+let timerInterval = null;
 
 // Listen for global settings
 firestore.collection('settings').doc('system').onSnapshot(doc => {
@@ -59,6 +61,7 @@ firestore.collection('settings').doc('system').onSnapshot(doc => {
         const data = doc.data();
         isGlobalPaused = data.orderingPaused || false;
         areImagesHidden = data.hideComponentImages || false;
+        eventEndTime = data.timerEndTime || null;
         
         // Update Pause Button
         const pauseBtn = document.getElementById('global-pause-btn');
@@ -94,12 +97,101 @@ firestore.collection('settings').doc('system').onSnapshot(doc => {
             }
         }
 
+        // Handle Event Timer
+        updateTimerUI();
+        if (eventEndTime) {
+            if (!timerInterval) {
+                timerInterval = setInterval(updateTimerUI, 1000);
+            }
+        } else {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
         // Trigger re-render to update masked names/categories
         if (typeof renderInventoryList === 'function') {
             renderInventoryList();
         }
     }
 });
+
+function updateTimerUI() {
+    const timerDisplay = document.getElementById('event-timer-display');
+    const timerBtn = document.getElementById('timer-control-btn');
+    if (!timerDisplay) return;
+
+    if (!eventEndTime) {
+        timerDisplay.textContent = "00:00:00";
+        timerDisplay.classList.add('opacity-30');
+        if (timerBtn) {
+            timerBtn.innerHTML = '<span class="text-sm">⏱️</span> Start Timer';
+            timerBtn.classList.remove('bg-bvBlue', 'text-white');
+            timerBtn.classList.add('bg-slate-100', 'text-slate-500');
+        }
+        return;
+    }
+
+    timerDisplay.classList.remove('opacity-30');
+    if (timerBtn) {
+        timerBtn.innerHTML = '<span class="text-sm">🔄</span> Reset Timer';
+        timerBtn.classList.remove('bg-slate-100', 'text-slate-500');
+        timerBtn.classList.add('bg-bvBlue', 'text-white');
+    }
+
+    const now = Date.now();
+    const diff = eventEndTime - now;
+
+    if (diff <= 0) {
+        timerDisplay.textContent = "00:00:00";
+        timerDisplay.classList.add('text-red-600', 'animate-pulse');
+        return;
+    }
+
+    timerDisplay.classList.remove('text-red-600', 'animate-pulse');
+    const hrs = Math.floor(diff / (1000 * 60 * 60)).toString().padStart(2, '0');
+    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
+    const secs = Math.floor((diff % (1000 * 60)) / 1000).toString().padStart(2, '0');
+    timerDisplay.textContent = `${hrs}:${mins}:${secs}`;
+}
+
+async function toggleTimer() {
+    try {
+        if (!eventEndTime) {
+            // Start 6 hour timer
+            if (!confirm('Start the 6-hour event countdown? This will be visible to all participants.')) return;
+            const endTime = Date.now() + (6 * 60 * 60 * 1000);
+            await firestore.collection('settings').doc('system').set({
+                timerEndTime: endTime
+            }, { merge: true });
+            
+            await firestore.collection('transactions').add({
+                username: user.username || 'Admin',
+                type: 'system',
+                amount: 0,
+                reason: '6-hour event timer STARTED',
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        } else {
+            // Reset timer
+            if (!confirm('Reset the event timer? This will clear the countdown for everyone.')) return;
+            await firestore.collection('settings').doc('system').set({
+                timerEndTime: null
+            }, { merge: true });
+
+            await firestore.collection('transactions').add({
+                username: user.username || 'Admin',
+                type: 'system',
+                amount: 0,
+                reason: 'Event timer RESET',
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        }
+    } catch (e) {
+        alert('Timer Error: ' + e.message);
+    }
+}
 
 function sortComponents(array) {
     return array.sort((a, b) => {
@@ -111,7 +203,7 @@ function sortComponents(array) {
 }
 
 const PREDEFINED_COMPONENTS = [
-    { category: "Controller", name: "ESP32 Controller + USB Cable", totalQuantity: 25, price: 180, maxPerTeam: 2, imageUrl: "assets/components/ESP32%20Controller%20%2B%20USB%20Cable.jpg" },
+    { category: "Controller", name: "ESP32 Controller + USB Cable", totalQuantity: 25, price: 200, maxPerTeam: 1, imageUrl: "assets/components/ESP32%20Controller%20%2B%20USB%20Cable.jpg" },
     { category: "Sensor", name: "Ultrasonic Sensor", totalQuantity: 30, price: 30, maxPerTeam: 2 },
     { category: "Sensor", name: "IR Sensor", totalQuantity: 30, price: 20, maxPerTeam: 2 },
     { category: "Sensor", name: "LDR Sensor", totalQuantity: 40, price: 15, maxPerTeam: 3 },
@@ -1196,10 +1288,39 @@ async function clearProcessedOrders() {
 }
 
 async function deleteTeam(username) {
-    if (!confirm(`Permanently terminate Entity [${username}]?`)) return;
+    if (!confirm(`PERMANENT TERMINATION: This will delete Entity [${username}] and PURGE all their associated orders and transaction logs. This cannot be undone. Proceed?`)) return;
+
     try {
-        await firestore.collection('users').doc(username).delete();
-    } catch (e) { alert(e.message); }
+        const batchSize = 500;
+        let totalPurged = 0;
+
+        // 1. Collect all document references to delete
+        const refs = [];
+        
+        // Orders
+        const ordersSnap = await firestore.collection('orders').where('username', '==', username).get();
+        ordersSnap.forEach(doc => refs.push(doc.ref));
+        
+        // Transactions
+        const transSnap = await firestore.collection('transactions').where('username', '==', username).get();
+        transSnap.forEach(doc => refs.push(doc.ref));
+        
+        // User Account
+        refs.push(firestore.collection('users').doc(username));
+
+        // 2. Batch Delete in chunks of 500
+        for (let i = 0; i < refs.length; i += batchSize) {
+            const batch = firestore.batch();
+            const chunk = refs.slice(i, i + batchSize);
+            chunk.forEach(ref => batch.delete(ref));
+            await batch.commit();
+            totalPurged += chunk.length;
+        }
+
+        alert(`SUCCESS: Entity [${username}] has been completely purged. (${totalPurged} records removed)`);
+    } catch (e) {
+        alert('PROTOCOL_ERROR: Failed to purge team data: ' + e.message);
+    }
 }
 
 async function forceLogout(username) {
@@ -1478,7 +1599,7 @@ async function addComponentToTeamPrompt(username) {
         return;
     }
 
-    const qtyStr = prompt(`How many units of [${component.name}] to add to ${username}? (Max per team limit: ${component.maxPerTeam || 'None'})`, '1');
+    const qtyStr = prompt(`How many units of [${component.name}] to add to ${username}?`, '1');
     const qty = parseInt(qtyStr);
     if (isNaN(qty) || qty <= 0) return;
 
@@ -1495,11 +1616,6 @@ async function addComponentToTeamPrompt(username) {
             const compData = compDoc.data();
             const currentInventory = userData.inventory || {};
             const alreadyOwned = Number(currentInventory[component.id] || 0);
-
-            // LIMIT CHECK
-            if (compData.maxPerTeam && (alreadyOwned + qty > compData.maxPerTeam)) {
-                throw new Error(`PER-TEAM_LIMIT_EXCEEDED: This team already has ${alreadyOwned} in queue/possession. Max allowed: ${compData.maxPerTeam}`);
-            }
 
             // STOCK CHECK
             if (compData.availableQuantity < qty) {

@@ -805,6 +805,15 @@
             <span class="topbar-brand">Build<span>Verse</span></span>
         </div>
         <div style="display:flex;align-items:center;gap:1rem;">
+            <div class="flex items-center gap-3 px-6 py-2 bg-slate-50 border border-slate-100 rounded-2xl mr-4">
+                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">Event<br>Timer</span>
+                <span id="event-timer-display" class="text-xl font-black text-bvRed italic tracking-tighter tabular-nums opacity-30">00:00:00</span>
+            </div>
+            <button id="timer-control-btn"
+                class="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-bvBlue/10 text-slate-500 hover:text-bvBlue rounded-xl font-black text-[10px] uppercase tracking-widest transition-all mr-2"
+                onclick="toggleTimer()">
+                <span class="text-sm">⏱️</span> Start Timer
+            </button>
             <button id="hide-imgs-btn"
                 class="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-bvBlue/10 text-slate-500 hover:text-bvBlue rounded-xl font-black text-[10px] uppercase tracking-widest transition-all mr-2"
                 onclick="toggleHideImages()">
