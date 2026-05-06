@@ -4,8 +4,8 @@
   "description": "Component management system with Karnataka Theme",
   "main": "api/server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js",
+    "start": "node api/server.js",
+    "dev": "node api/server.js",
     "seed": "node scripts/seed.js"
   },
   "dependencies": {

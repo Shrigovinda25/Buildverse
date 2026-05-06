@@ -17,7 +17,18 @@ app.get('/api/health', (req, res) => res.json({ status: 'ok', message: 'BuildVer
 // ----------------------------------------------------------------------------
 // Firebase Initialization
 // ----------------------------------------------------------------------------
-const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+let serviceAccount;
+try {
+  if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+    serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+  } else {
+    // Fallback for local development
+    serviceAccount = require('../serviceAccountKey.json');
+  }
+} catch (e) {
+  console.error("CRITICAL: Failed to load Firebase Service Account. Check FIREBASE_SERVICE_ACCOUNT env or serviceAccountKey.json");
+  process.exit(1);
+}
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
@@ -539,6 +550,20 @@ KLE Technological University`,
 });
 
 // ----------------------------------------------------------------------------
-// Server Listen
+// Server Listen (Only when running directly)
 // ----------------------------------------------------------------------------
+if (require.main === module) {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`
+🚀 BuildVerse Server Initialized
+--------------------------------
+📡 Status: ONLINE
+🔗 Local: http://localhost:${PORT}
+📁 Static: Serving ./public
+--------------------------------
+    `);
+  });
+}
+
 module.exports = app;

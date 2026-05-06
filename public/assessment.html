@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assessment Sheet | BUILDVERSE</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,800&family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bvRed: '#C8102E',
+                        bvYellow: '#FFD700',
+                        bvBlue: '#0047AB'
+                    },
+                    borderRadius: {
+                        '4xl': '2rem',
+                        '5xl': '3rem',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --red: #C8102E;
+            --red-dark: #8B0000;
+            --red-light: #ffeef1;
+            --slate-900: #0f172a;
+            --slate-800: #1e293b;
+            --slate-600: #475569;
+            --slate-400: #94a3b8;
+            --slate-100: #f1f5f9;
+            --slate-50: #f8fafc;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: #f0f4f8;
+            color: #1e293b;
+            min-height: 100vh;
+            background-image:
+                radial-gradient(at 20% 10%, rgba(200, 16, 46, 0.05) 0px, transparent 50%),
+                radial-gradient(at 80% 90%, rgba(0, 71, 171, 0.04) 0px, transparent 50%);
+        }
+
+        /* ─── Glass Card ─── */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02), 0 20px 50px rgba(0, 0, 0, 0.06);
+        }
+
+        /* ─── Nav ─── */
+        .nav-pill {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+        }
+
+        /* ─── Sliders ─── */
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 10px;
+            outline: none;
+            transition: height 0.2s;
+        }
+
+        input[type="range"]:hover {
+            height: 8px;
+        }
+
+        input[type="range"].color-innovation {
+            background: linear-gradient(to right, #6366f1 var(--pct, 0%), #e2e8f0 var(--pct, 0%));
+        }
+
+        input[type="range"].color-functionality {
+            background: linear-gradient(to right, #10b981 var(--pct, 0%), #e2e8f0 var(--pct, 0%));
+        }
+
+        input[type="range"].color-design {
+            background: linear-gradient(to right, #f59e0b var(--pct, 0%), #e2e8f0 var(--pct, 0%));
+        }
+
+        input[type="range"].color-resource {
+            background: linear-gradient(to right, #3b82f6 var(--pct, 0%), #e2e8f0 var(--pct, 0%));
+        }
+
+        input[type="range"].color-presentation {
+            background: linear-gradient(to right, #ec4899 var(--pct, 0%), #e2e8f0 var(--pct, 0%));
+        }
+
+        input[type="range"].color-feasibility {
+            background: linear-gradient(to right, #14b8a6 var(--pct, 0%), #e2e8f0 var(--pct, 0%));
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            background: white;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid currentColor;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        input[type="range"].color-innovation::-webkit-slider-thumb {
+            color: #6366f1;
+            border-color: #6366f1;
+        }
+
+        input[type="range"].color-functionality::-webkit-slider-thumb {
+            color: #10b981;
+            border-color: #10b981;
+        }
+
+        input[type="range"].color-design::-webkit-slider-thumb {
+            color: #f59e0b;
+            border-color: #f59e0b;
+        }
+
+        input[type="range"].color-resource::-webkit-slider-thumb {
+            color: #3b82f6;
+            border-color: #3b82f6;
+        }
+
+        input[type="range"].color-presentation::-webkit-slider-thumb {
+            color: #ec4899;
+            border-color: #ec4899;
+        }
+
+        input[type="range"].color-feasibility::-webkit-slider-thumb {
+            color: #14b8a6;
+            border-color: #14b8a6;
+        }
+
+        /* ─── Score Input ─── */
+        .score-input {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .score-input:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(200, 16, 46, 0.12);
+            border-color: #C8102E !important;
+        }
+
+        /* ─── Total Badge ─── */
+        .total-badge {
+            background: linear-gradient(135deg, #C8102E, #8B0000);
+            box-shadow: 0 12px 40px rgba(200, 16, 46, 0.35);
+            transition: background 0.5s ease;
+        }
+
+        /* ─── Criteria Label ─── */
+        .criteria-label {
+            font-size: 0.7rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: #94a3b8;
+        }
+
+        /* ─── Animations ─── */
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pop {
+            0% {
+                transform: scale(0.92);
+                opacity: 0;
+            }
+
+            60% {
+                transform: scale(1.03);
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulseScore {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.08);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .animate-fadeUp {
+            animation: fadeUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
+        }
+
+        .animate-pop {
+            animation: pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+        }
+
+        .animate-slideIn {
+            animation: slideIn 0.35s ease both;
+        }
+
+        .pulse-score {
+            animation: pulseScore 0.35s ease;
+        }
+
+        /* ─── Toast ─── */
+        #toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 9999;
+            padding: 1rem 1.5rem;
+            border-radius: 1rem;
+            font-weight: 800;
+            font-size: 0.85rem;
+            letter-spacing: 0.03em;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            transform: translateY(8px);
+            opacity: 0;
+            transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            pointer-events: none;
+        }
+
+        #toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        #toast.success {
+            background: #0f172a;
+            color: #fff;
+        }
+
+        #toast.error {
+            background: #C8102E;
+            color: #fff;
+        }
+
+        #toast.warning {
+            background: #f59e0b;
+            color: #fff;
+        }
+
+        /* ─── Confirmation Modal ─── */
+        #confirm-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 9998;
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        #confirm-modal.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        #confirm-modal .modal-box {
+            background: white;
+            border-radius: 2rem;
+            padding: 2.5rem;
+            max-width: 420px;
+            width: 90%;
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.2);
+            transform: scale(0.92) translateY(20px);
+            transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        #confirm-modal.show .modal-box {
+            transform: scale(1) translateY(0);
+        }
+
+        /* ─── Table row hover ─── */
+        tbody tr {
+            transition: background 0.2s;
+        }
+
+        tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        /* ─── Status pill ─── */
+        .pill {
+            font-size: 0.6rem;
+            font-weight: 900;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 0.2rem 0.6rem;
+            border-radius: 999px;
+        }
+
+        /* ─── Bonus field ─── */
+        #bonus-num {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border: 2px solid #fbbf24;
+            color: #92400e;
+        }
+
+        /* ─── Section divider ─── */
+        .section-divider {
+            height: 1px;
+            background: linear-gradient(to right, transparent, #e2e8f0, transparent);
+            margin: 0.5rem 0;
+        }
+
+        /* ─── Locked overlay ─── */
+        .locked-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(3px);
+            border-radius: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .locked-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        /* Score rating label */
+        .rating-label {
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 2px 8px;
+            border-radius: 999px;
+            transition: all 0.3s;
+        }
+
+        select {
+            background-image: none;
+        }
+
+        /* Progress arc */
+        .progress-ring circle {
+            transition: stroke-dashoffset 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ═══════════════════════════════════════════════════════════
+     NAV
+════════════════════════════════════════════════════════════ -->
+    <nav class="fixed top-5 left-1/2 -translate-x-1/2 z-50 w-full max-w-4xl px-4">
+        <div class="nav-pill px-8 py-3 rounded-full flex items-center justify-between">
+            <a href="index.html" class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-bvRed rounded-lg flex items-center justify-center">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                            d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                </div>
+                <span class="font-black text-bvRed tracking-tighter text-lg">BUILD<span
+                        class="text-slate-800">VERSE</span></span>
+            </a>
+            <div class="flex items-center gap-6">
+                <div class="h-5 w-px bg-slate-200"></div>
+                <a href="admin.html"
+                    class="text-xs font-bold uppercase tracking-widest text-slate-400 hover:text-bvRed transition-colors">Admin</a>
+                <span
+                    class="text-xs font-black uppercase tracking-widest text-bvRed border-b-2 border-bvRed pb-0.5">Assessment</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ═══════════════════════════════════════════════════════════
+     MAIN
+════════════════════════════════════════════════════════════ -->
+    <main class="pt-28 pb-20 px-4 max-w-6xl mx-auto">
+
+        <!-- Header -->
+        <header class="text-center mb-10 animate-fadeUp">
+            <span class="text-bvRed font-black uppercase tracking-[0.4em] text-[0.65rem] mb-3 block">Judging
+                Phase</span>
+            <h1 class="text-4xl md:text-5xl font-black text-slate-900 mb-3"
+                style="font-family:'Playfair Display',serif">Project Assessment</h1>
+            <p class="text-slate-400 max-w-xl mx-auto font-medium text-sm">Evaluate teams across 6 criteria. Be fair, be
+                precise — every point shapes the leaderboard.</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- ──────────────────────────────────
+             LEFT PANEL
+        ─────────────────────────────────── -->
+            <div class="lg:col-span-1 space-y-5">
+
+                <!-- Judge Identity -->
+                <div class="glass-card p-6 rounded-4xl animate-fadeUp" style="animation-delay:0.05s">
+                    <h3 class="criteria-label mb-4">Judge Info</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 mb-1 block">Judge Name</label>
+                            <input type="text" id="judge-name" placeholder="e.g. Dr. Ramesh Kumar"
+                                class="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-semibold text-slate-700 focus:border-bvRed outline-none transition-all text-sm">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 mb-1 block">Judge ID</label>
+                            <input type="text" id="judge-id" placeholder="e.g. JDG-01"
+                                class="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-semibold text-slate-700 focus:border-bvRed outline-none transition-all text-sm">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 mb-1 block">Round</label>
+                            <div class="relative">
+                                <select id="round-select"
+                                    class="w-full p-3 bg-slate-50 border-2 border-slate-100 rounded-xl font-bold text-slate-700 focus:border-bvRed outline-none transition-all appearance-none cursor-pointer text-sm">
+                                    <option value="R1">Round 1 — Prototype</option>
+                                    <option value="R2">Round 2 — Demo Day</option>
+                                    <option value="Finals">Finals — Grand Showcase</option>
+                                </select>
+                                <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Team Selector -->
+                <div class="glass-card p-6 rounded-4xl sticky top-28 animate-fadeUp" style="animation-delay:0.1s">
+                    <h3 class="criteria-label mb-4">Select Team</h3>
+                    <div class="relative mb-6">
+                        <select id="team-select"
+                            class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl font-bold text-slate-700 focus:border-bvRed outline-none transition-all appearance-none cursor-pointer">
+                            <option value="">Choose a Team...</option>
+                            <option value="T01">Team Alpha — T01</option>
+                            <option value="T02">Team Byte — T02</option>
+                            <option value="T03">Team Cyber — T03</option>
+                            <option value="T04">Team Delta — T04</option>
+                            <option value="T05">Team Echo — T05</option>
+                            <option value="T06">Team Forge — T06</option>
+                            <option value="T07">Team Nexus — T07</option>
+                            <option value="T08">Team Orion — T08</option>
+                        </select>
+                        <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                            <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Team info (hidden initially) -->
+                    <div id="team-info" class="hidden">
+                        <div class="flex items-center gap-4 mb-5">
+                            <div
+                                class="w-14 h-14 bg-bvRed/10 rounded-2xl flex items-center justify-center flex-shrink-0">
+                                <span id="team-id-display" class="text-lg font-black text-bvRed">T01</span>
+                            </div>
+                            <div>
+                                <h2 id="team-name-display" class="text-xl font-black text-slate-900">Team Alpha</h2>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <span id="team-status-pill"
+                                        class="pill bg-yellow-100 text-yellow-700">Pending</span>
+                                    <span class="pill bg-slate-100 text-slate-500" id="round-badge">R1</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-center p-3 bg-slate-50 rounded-xl">
+                                <span class="text-xs font-bold text-slate-400 uppercase">Members</span>
+                                <span class="text-xs font-bold text-slate-700">4 Participants</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-slate-50 rounded-xl">
+                                <span class="text-xs font-bold text-slate-400 uppercase">Category</span>
+                                <span class="text-xs font-bold text-slate-700">Engineering</span>
+                            </div>
+                            <div class="flex justify-between items-center p-3 bg-slate-50 rounded-xl">
+                                <span class="text-xs font-bold text-slate-400 uppercase">Time</span>
+                                <span class="text-xs font-bold text-slate-700" id="current-time">—</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- No team -->
+                    <div id="no-team-selected" class="text-center py-10">
+                        <div class="w-14 h-14 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <svg class="w-7 h-7 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                        </div>
+                        <p class="text-slate-300 text-xs font-bold uppercase tracking-widest">Select a team to begin</p>
+                    </div>
+
+                    <!-- Score Arc Preview -->
+                    <div id="score-preview"
+                        class="hidden mt-5 pt-5 border-t border-slate-100 flex flex-col items-center">
+                        <svg class="progress-ring" width="110" height="110" viewBox="0 0 110 110">
+                            <circle cx="55" cy="55" r="46" fill="none" stroke="#f1f5f9" stroke-width="10" />
+                            <circle id="arc-circle" cx="55" cy="55" r="46" fill="none" stroke="#C8102E"
+                                stroke-width="10" stroke-linecap="round" stroke-dasharray="289"
+                                stroke-dashoffset="289" />
+                        </svg>
+                        <div class="text-center -mt-16 mb-6">
+                            <span id="arc-score" class="text-3xl font-black text-slate-900">0</span>
+                            <span class="text-slate-400 font-bold text-xs">/105</span>
+                            <div id="arc-label"
+                                class="text-xs font-black uppercase tracking-wider text-slate-400 mt-0.5">Not Rated
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ──────────────────────────────────
+             RIGHT: SCORE CARD
+        ─────────────────────────────────── -->
+            <div class="lg:col-span-2 space-y-6">
+                <div class="glass-card p-8 rounded-4xl relative animate-fadeUp" style="animation-delay:0.15s">
+
+                    <!-- Locked overlay (shown before team selected) -->
+                    <div class="locked-overlay active" id="locked-overlay">
+                        <div class="text-center">
+                            <div
+                                class="w-16 h-16 bg-white rounded-2xl shadow-xl flex items-center justify-center mx-auto mb-3">
+                                <svg class="w-7 h-7 text-slate-400" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                </svg>
+                            </div>
+                            <p class="font-black text-slate-500 text-sm uppercase tracking-widest">Select a team first
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Header -->
+                    <div class="flex justify-between items-end mb-8">
+                        <div>
+                            <h3 class="criteria-label mb-1">Assessment Metrics</h3>
+                            <h2 class="text-3xl font-black text-slate-900" style="font-family:'Playfair Display',serif">
+                                Score Card</h2>
+                        </div>
+                        <div class="total-badge p-5 rounded-3xl text-center min-w-[110px]">
+                            <span
+                                class="block text-[9px] font-black uppercase tracking-widest opacity-70 mb-0.5">Total</span>
+                            <span id="total-score" class="text-4xl font-black text-white block leading-none">0</span>
+                            <span class="text-[10px] font-bold opacity-50 text-white">/ 105</span>
+                        </div>
+                    </div>
+
+                    <!-- ── Criteria ── -->
+                    <div class="space-y-8">
+
+                        <!-- 1. Innovation -->
+                        <div class="group">
+                            <div class="flex justify-between items-center mb-3">
+                                <label class="flex items-center gap-3">
+                                    <span
+                                        class="w-9 h-9 bg-indigo-100 text-indigo-500 rounded-xl flex items-center justify-center font-black text-sm">1</span>
+                                    <div>
+                                        <span class="block text-sm font-black text-slate-800">Innovation</span>
+                                        <span
+                                            class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Uniqueness
+                                            & Originality</span>
+                                    </div>
+                                </label>
+                                <div class="flex items-center gap-2">
+                                    <span id="rating-innovation"
+                                        class="rating-label bg-slate-100 text-slate-400">—</span>
+                                    <input type="number" id="innovation-num" min="0" max="30" value="0"
+                                        class="score-input w-16 p-2 text-center bg-slate-50 border-2 border-slate-100 rounded-xl font-black text-lg focus:border-bvRed outline-none">
+                                    <span class="text-slate-300 font-bold text-sm">/ 30</span>
+                                </div>
+                            </div>
+                            <input type="range" id="innovation-range" min="0" max="30" value="0"
+                                class="w-full cursor-pointer color-innovation">
+                        </div>
+                        <div class="section-divider"></div>
+
+                        <!-- 2. Functionality -->
+                        <div class="group">
+                            <div class="flex justify-between items-center mb-3">
+                                <label class="flex items-center gap-3">
+                                    <span
+                                        class="w-9 h-9 bg-emerald-100 text-emerald-500 rounded-xl flex items-center justify-center font-black text-sm">2</span>
+                                    <div>
+                                        <span class="block text-sm font-black text-slate-800">Functionality</span>
+                                        <span
+                                            class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Reliability
+                                            & Execution</span>
+                                    </div>
+                                </label>
+                                <div class="flex items-center gap-2">
+                                    <span id="rating-functionality"
+                                        class="rating-label bg-slate-100 text-slate-400">—</span>
+                                    <input type="number" id="functionality-num" min="0" max="30" value="0"
+                                        class="score-input w-16 p-2 text-center bg-slate-50 border-2 border-slate-100 rounded-xl font-black text-lg focus:border-bvRed outline-none">
+                                    <span class="text-slate-300 font-bold text-sm">/ 30</span>
+                                </div>
+                            </div>
+                            <input type="range" id="functionality-range" min="0" max="30" value="0"
+                                class="w-full cursor-pointer color-functionality">
+                        </div>
+                        <div class="section-divider"></div>
+
+                        <!-- 3. Engineering Design -->
+                        <div class="group">
+                            <div class="flex justify-between items-center mb-3">
+                                <label class="flex items-center gap-3">
+                                    <span
+                                        class="w-9 h-9 bg-amber-100 text-amber-500 rounded-xl flex items-center justify-center font-black text-sm">3</span>
+                                    <div>
+                                        <span class="block text-sm font-black text-slate-800">Engineering Design</span>
+                                        <span
+                                            class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Robustness
+                                            & Complexity</span>
+                                    </div>
+                                </label>
+                                <div class="flex items-center gap-2">
+                                    <span id="rating-design" class="rating-label bg-slate-100 text-slate-400">—</span>
+                                    <input type="number" id="design-num" min="0" max="20" value="0"
+                                        class="score-input w-16 p-2 text-center bg-slate-50 border-2 border-slate-100 rounded-xl font-black text-lg focus:border-bvRed outline-none">
+                                    <span class="text-slate-300 font-bold text-sm">/ 20</span>
+                                </div>
+                            </div>
+                            <input type="range" id="design-range" min="0" max="20" value="0"
+                                class="w-full cursor-pointer color-design">
+                        </div>
+                        <div class="section-divider"></div>
+
+                        <!-- 4. Resource Efficiency -->
+                        <div class="group">
+                            <div class="flex justify-between items-center mb-3">
+                                <label class="flex items-center gap-3">
+                                    <span
+                                        class="w-9 h-9 bg-blue-100 text-blue-500 rounded-xl flex items-center justify-center font-black text-sm">4</span>
+                                    <div>
+                                        <span class="block text-sm font-black text-slate-800">Resource Efficiency</span>
+                                        <span
+                                            class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Cost-Effective
+                                            Thinking</span>
+                                    </div>
+                                </label>
+                                <div class="flex items-center gap-2">
+                                    <span id="rating-resource" class="rating-label bg-slate-100 text-slate-400">—</span>
+                                    <input type="number" id="resource-num" min="0" max="20" value="0"
+                                        class="score-input w-16 p-2 text-center bg-slate-50 border-2 border-slate-100 rounded-xl font-black text-lg focus:border-bvRed outline-none">
+                                    <span class="text-slate-300 font-bold text-sm">/ 20</span>
+                                </div>
+                            </div>
+                            <input type="range" id="resource-range" min="0" max="20" value="0"
+                                class="w-full cursor-pointer color-resource">
+                        </div>
+                        <div class="section-divider"></div>
+
+                        <!-- 5. Presentation ← NEW -->
+                        <div class="group">
+                            <div class="flex justify-between items-center mb-3">
+                                <label class="flex items-center gap-3">
+                                    <span
+                                        class="w-9 h-9 bg-pink-100 text-pink-500 rounded-xl flex items-center justify-center font-black text-sm">5</span>
+                                    <div>
+                                        <span class="block text-sm font-black text-slate-800">Presentation</span>
+                                        <span
+                                            class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Communication
+                                            & Clarity</span>
+                                    </div>
+                                </label>
+                                <div class="flex items-center gap-2">
+                                    <span id="rating-presentation"
+                                        class="rating-label bg-slate-100 text-slate-400">—</span>
+                                    <input type="number" id="presentation-num" min="0" max="30" value="0"
+                                        class="score-input w-16 p-2 text-center bg-slate-50 border-2 border-slate-100 rounded-xl font-black text-lg focus:border-bvRed outline-none">
+                                    <span class="text-slate-300 font-bold text-sm">/ 30</span>
+                                </div>
+                            </div>
+                            <input type="range" id="presentation-range" min="0" max="30" value="0"
+                                class="w-full cursor-pointer color-presentation">
+                        </div>
+                        <div class="section-divider"></div>
+
+                        <!-- 6. Feasibility ← NEW -->
+                        <div class="group">
+                            <div class="flex justify-between items-center mb-3">
+                                <label class="flex items-center gap-3">
+                                    <span
+                                        class="w-9 h-9 bg-teal-100 text-teal-500 rounded-xl flex items-center justify-center font-black text-sm">6</span>
+                                    <div>
+                                        <span class="block text-sm font-black text-slate-800">Feasibility &
+                                            Impact</span>
+                                        <span
+                                            class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Real-World
+                                            Applicability</span>
+                                    </div>
+                                </label>
+                                <div class="flex items-center gap-2">
+                                    <span id="rating-feasibility"
+                                        class="rating-label bg-slate-100 text-slate-400">—</span>
+                                    <input type="number" id="feasibility-num" min="0" max="20" value="0"
+                                        class="score-input w-16 p-2 text-center bg-slate-50 border-2 border-slate-100 rounded-xl font-black text-lg focus:border-bvRed outline-none">
+                                    <span class="text-slate-300 font-bold text-sm">/ 20</span>
+                                </div>
+                            </div>
+                            <input type="range" id="feasibility-range" min="0" max="20" value="0"
+                                class="w-full cursor-pointer color-feasibility">
+                        </div>
+
+                        <!-- Bonus Points ← NEW -->
+                        <div class="p-5 bg-amber-50 border-2 border-amber-100 rounded-2xl">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <span class="text-2xl">⭐</span>
+                                    <div>
+                                        <span class="block text-sm font-black text-amber-800">Bonus Points</span>
+                                        <span
+                                            class="text-[10px] font-bold text-amber-500 uppercase tracking-wider">Exceptional
+                                            WOW Factor (max +5)</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <input type="number" id="bonus-num" min="0" max="5" value="0"
+                                        class="score-input w-16 p-2 text-center rounded-xl font-black text-lg outline-none">
+                                    <span class="text-amber-300 font-bold text-sm">/ 5</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Comments -->
+                        <div class="pt-2">
+                            <label class="criteria-label mb-2 block">Judge's Comments</label>
+                            <textarea id="comments" rows="4"
+                                placeholder="Mention key highlights, standout moments, or areas for improvement..."
+                                class="w-full p-5 bg-slate-50 border-2 border-slate-100 rounded-3xl font-medium text-slate-700 focus:border-bvRed outline-none transition-all resize-none text-sm leading-relaxed"></textarea>
+                            <p class="text-right text-xs text-slate-300 font-bold mt-1" id="char-count">0 / 500</p>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="flex gap-3">
+                            <button id="save-btn"
+                                class="flex-1 bg-slate-900 text-white font-black uppercase tracking-widest p-4 rounded-2xl hover:bg-bvRed transition-all duration-300 shadow-lg active:scale-95 text-sm">
+                                ✓ Save Assessment
+                            </button>
+                            <button id="reset-btn"
+                                class="px-6 bg-slate-100 text-slate-400 font-black uppercase tracking-widest rounded-2xl hover:bg-red-50 hover:text-bvRed transition-all text-sm">
+                                ↺ Reset
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── Recent Assessments Table ── -->
+                <div class="glass-card p-8 rounded-4xl animate-fadeUp" style="animation-delay:0.2s">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h3 class="criteria-label mb-1">History</h3>
+                            <h2 class="text-xl font-black text-slate-900">Recent Assessments</h2>
+                        </div>
+                        <button id="clear-history-btn"
+                            class="text-xs font-bold text-slate-300 hover:text-red-400 transition-colors uppercase tracking-widest">Clear
+                            All</button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr
+                                    class="text-[9px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                                    <th class="pb-3 pr-3">Team</th>
+                                    <th class="pb-3 pr-3">Judge</th>
+                                    <th class="pb-3 pr-2">Inno.</th>
+                                    <th class="pb-3 pr-2">Func.</th>
+                                    <th class="pb-3 pr-2">Eng.</th>
+                                    <th class="pb-3 pr-2">Res.</th>
+                                    <th class="pb-3 pr-2">Pres.</th>
+                                    <th class="pb-3 pr-2">Feas.</th>
+                                    <th class="pb-3 pr-2">Bonus</th>
+                                    <th class="pb-3 pr-3">Total</th>
+                                    <th class="pb-3">Time</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-body">
+                                <tr>
+                                    <td colspan="11"
+                                        class="py-10 text-center text-xs font-bold text-slate-200 uppercase tracking-widest">
+                                        No assessments yet</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ═══════════════════════════════════════════════════════════
+     CONFIRM MODAL
+════════════════════════════════════════════════════════════ -->
+    <div id="confirm-modal">
+        <div class="modal-box">
+            <div class="w-14 h-14 bg-slate-900 rounded-2xl flex items-center justify-center mb-5">
+                <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+            <h3 class="text-xl font-black text-slate-900 mb-2" id="modal-title">Confirm Assessment</h3>
+            <p class="text-slate-500 text-sm font-medium mb-6" id="modal-body">Are you sure you want to save this
+                assessment? This action will be recorded with a timestamp.</p>
+            <div class="flex gap-3">
+                <button id="modal-confirm"
+                    class="flex-1 bg-slate-900 text-white font-black uppercase tracking-widest p-4 rounded-xl hover:bg-bvRed transition-all text-sm active:scale-95">Confirm
+                    Save</button>
+                <button id="modal-cancel"
+                    class="px-6 bg-slate-100 text-slate-500 font-black uppercase tracking-widest rounded-xl hover:bg-slate-200 transition-all text-sm">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast">
+        <span id="toast-icon">✓</span>
+        <span id="toast-msg">Saved!</span>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════════════════════ -->
+    <script>
+        // ─── Config ───────────────────────────────────────────────
+        const CRITERIA = [
+            { key: 'innovation', max: 30, color: '#6366f1' },
+            { key: 'functionality', max: 30, color: '#10b981' },
+            { key: 'design', max: 20, color: '#f59e0b' },
+            { key: 'resource', max: 20, color: '#3b82f6' },
+            { key: 'presentation', max: 30, color: '#ec4899' },
+            { key: 'feasibility', max: 20, color: '#14b8a6' }
+        ];
+        const MAX_BASE = 150;
+        const MAX_TOTAL = 155; // including bonus 5
+
+        // ─── DOM Refs ─────────────────────────────────────────────
+        const el = id => document.getElementById(id);
+        const inputs = {};
+        CRITERIA.forEach(c => {
+            inputs[c.key] = {
+                num: el(`${c.key}-num`),
+                range: el(`${c.key}-range`),
+                max: c.max
+            };
+        });
+
+        const bonusNum = el('bonus-num');
+        const totalDisplay = el('total-score');
+        const teamSelect = el('team-select');
+        const teamInfo = el('team-info');
+        const noTeam = el('no-team-selected');
+        const teamIdDisp = el('team-id-display');
+        const teamNameDisp = el('team-name-display');
+        const lockedOverlay = el('locked-overlay');
+        const arcCircle = el('arc-circle');
+        const arcScore = el('arc-score');
+        const arcLabel = el('arc-label');
+        const scorePreview = el('score-preview');
+        const modal = el('confirm-modal');
+        const toast = el('toast');
+        const commentsTA = el('comments');
+        const charCount = el('char-count');
+        const roundSelect = el('round-select');
+        const roundBadge = el('round-badge');
+        const tbody = el('history-body');
+
+        // ─── Rating labels ────────────────────────────────────────
+        const RATINGS = [
+            { min: 0, max: 25, label: 'Poor', bg: '#fee2e2', color: '#dc2626' },
+            { min: 26, max: 50, label: 'Average', bg: '#fef3c7', color: '#d97706' },
+            { min: 51, max: 75, label: 'Good', bg: '#d1fae5', color: '#059669' },
+            { min: 76, max: 90, label: 'Great', bg: '#dbeafe', color: '#2563eb' },
+            { min: 91, max: 100, label: 'Excellent', bg: '#ede9fe', color: '#7c3aed' }
+        ];
+
+        function getRating(score, max) {
+            const pct = (score / max) * 100;
+            return RATINGS.find(r => pct >= r.min && pct <= r.max) || RATINGS[0];
+        }
+
+        // ─── Sync sliders ─────────────────────────────────────────
+        CRITERIA.forEach(c => {
+            const { num, range, max } = inputs[c.key];
+
+            const sync = (fromRange) => {
+                let val = parseInt(fromRange ? range.value : num.value) || 0;
+                val = Math.max(0, Math.min(max, val));
+                num.value = val;
+                range.value = val;
+                updateSliderFill(range, val, max);
+                updateRating(c.key, val, max);
+                updateTotal();
+            };
+
+            num.addEventListener('input', () => sync(false));
+            range.addEventListener('input', () => sync(true));
+        });
+
+        bonusNum.addEventListener('input', () => {
+            let v = parseInt(bonusNum.value) || 0;
+            v = Math.max(0, Math.min(5, v));
+            bonusNum.value = v;
+            updateTotal();
+        });
+
+        function updateSliderFill(range, val, max) {
+            const pct = (val / max * 100).toFixed(1) + '%';
+            range.style.setProperty('--pct', pct);
+        }
+
+        function updateRating(key, val, max) {
+            const pill = el(`rating-${key}`);
+            if (!pill) return;
+            const r = getRating(val, max);
+            pill.textContent = val === 0 ? '—' : r.label;
+            pill.style.background = val === 0 ? '#f1f5f9' : r.bg;
+            pill.style.color = val === 0 ? '#94a3b8' : r.color;
+        }
+
+        function updateTotal() {
+            const base = CRITERIA.reduce((s, c) => s + (parseInt(inputs[c.key].num.value) || 0), 0);
+            const bonus = parseInt(bonusNum.value) || 0;
+            const total = base + bonus;
+
+            totalDisplay.textContent = total;
+            totalDisplay.classList.add('pulse-score');
+            setTimeout(() => totalDisplay.classList.remove('pulse-score'), 400);
+
+            // Badge gradient
+            const pct = total / MAX_TOTAL;
+            if (pct >= 0.8) el('total-score').closest('.total-badge').style.background = 'linear-gradient(135deg,#10b981,#059669)';
+            else if (pct >= 0.5) el('total-score').closest('.total-badge').style.background = 'linear-gradient(135deg,#f59e0b,#d97706)';
+            else el('total-score').closest('.total-badge').style.background = 'linear-gradient(135deg,#C8102E,#8B0000)';
+
+            // Arc
+            updateArc(total);
+        }
+
+        function updateArc(total) {
+            if (!arcCircle) return;
+            const r = 46;
+            const c = 2 * Math.PI * r;
+            const pct = Math.min(total / MAX_TOTAL, 1);
+            const off = c - pct * c;
+            arcCircle.style.strokeDashoffset = off;
+            arcScore.textContent = total;
+
+            const pctInt = Math.round(pct * 100);
+            if (pctInt >= 80) { arcCircle.style.stroke = '#10b981'; arcLabel.textContent = 'Excellent'; arcLabel.style.color = '#10b981'; }
+            else if (pctInt >= 60) { arcCircle.style.stroke = '#3b82f6'; arcLabel.textContent = 'Good'; arcLabel.style.color = '#3b82f6'; }
+            else if (pctInt >= 40) { arcCircle.style.stroke = '#f59e0b'; arcLabel.textContent = 'Average'; arcLabel.style.color = '#f59e0b'; }
+            else { arcCircle.style.stroke = '#C8102E'; arcLabel.textContent = 'Needs Work'; arcLabel.style.color = '#C8102E'; }
+        }
+
+        // ─── Team Select ──────────────────────────────────────────
+        teamSelect.addEventListener('change', e => {
+            const id = e.target.value;
+            if (id) {
+                const name = e.target.options[e.target.selectedIndex].text.split(' — ')[0];
+                teamIdDisp.textContent = id;
+                teamNameDisp.textContent = name;
+                teamInfo.classList.remove('hidden');
+                teamInfo.classList.add('animate-pop');
+                noTeam.classList.add('hidden');
+                lockedOverlay.classList.remove('active');
+                scorePreview.classList.remove('hidden');
+                scorePreview.classList.add('animate-pop');
+                tickTime();
+            } else {
+                teamInfo.classList.add('hidden');
+                noTeam.classList.remove('hidden');
+                lockedOverlay.classList.add('active');
+                scorePreview.classList.add('hidden');
+            }
+        });
+
+        // ─── Round badge ──────────────────────────────────────────
+        roundSelect.addEventListener('change', () => {
+            roundBadge.textContent = roundSelect.value;
+        });
+
+        // ─── Clock ────────────────────────────────────────────────
+        function tickTime() {
+            const t = el('current-time');
+            if (!t) return;
+            const now = new Date();
+            t.textContent = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+        }
+        setInterval(tickTime, 10000);
+
+        // ─── Comments char count ──────────────────────────────────
+        commentsTA.addEventListener('input', () => {
+            const l = commentsTA.value.length;
+            if (l > 500) commentsTA.value = commentsTA.value.slice(0, 500);
+            charCount.textContent = `${Math.min(l, 500)} / 500`;
+        });
+
+        // ─── Toast ────────────────────────────────────────────────
+        function showToast(msg, type = 'success', icon = '✓') {
+            toast.className = `show ${type}`;
+            el('toast-msg').textContent = msg;
+            el('toast-icon').textContent = icon;
+            clearTimeout(toast._t);
+            toast._t = setTimeout(() => toast.className = type, 3000);
+        }
+
+        // ─── Modal helpers ────────────────────────────────────────
+        function openModal(title, body, onConfirm) {
+            el('modal-title').textContent = title;
+            el('modal-body').textContent = body;
+            modal.classList.add('show');
+            el('modal-confirm').onclick = () => { closeModal(); onConfirm(); };
+        }
+        function closeModal() { modal.classList.remove('show'); }
+        el('modal-cancel').addEventListener('click', closeModal);
+        modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+
+        // ─── LocalStorage helpers ─────────────────────────────────
+        function saveToStorage(records) {
+            localStorage.setItem('bv_assessments', JSON.stringify(records));
+        }
+        function loadFromStorage() {
+            try { return JSON.parse(localStorage.getItem('bv_assessments')) || []; }
+            catch { return []; }
+        }
+
+        // ─── Render history ───────────────────────────────────────
+        function renderHistory(records) {
+            if (!records.length) {
+                tbody.innerHTML = `<tr><td colspan="11" class="py-10 text-center text-xs font-bold text-slate-200 uppercase tracking-widest">No assessments yet</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = records.slice().reverse().map(r => `
+        <tr class="border-b border-slate-50 text-xs font-bold transition-colors">
+            <td class="py-3 pr-3 font-black text-slate-800">${r.teamId}</td>
+            <td class="py-3 pr-3 text-slate-400">${r.judgeId || '—'}</td>
+            <td class="py-3 pr-2 text-indigo-500">${r.innovation}</td>
+            <td class="py-3 pr-2 text-emerald-500">${r.functionality}</td>
+            <td class="py-3 pr-2 text-amber-500">${r.design}</td>
+            <td class="py-3 pr-2 text-blue-500">${r.resource}</td>
+            <td class="py-3 pr-2 text-pink-500">${r.presentation}</td>
+            <td class="py-3 pr-2 text-teal-500">${r.feasibility}</td>
+            <td class="py-3 pr-2 text-amber-600">+${r.bonus}</td>
+            <td class="py-3 pr-3 font-black text-bvRed text-sm">${r.total}</td>
+            <td class="py-3 text-slate-300">${r.time}</td>
+        </tr>
+    `).join('');
+        }
+
+        // On load, render saved history
+        renderHistory(loadFromStorage());
+
+        // ─── Save ─────────────────────────────────────────────────
+        el('save-btn').addEventListener('click', () => {
+            if (!teamSelect.value) {
+                showToast('Please select a team first!', 'error', '✕');
+                return;
+            }
+            const judgeN = el('judge-name').value.trim();
+            const judgeI = el('judge-id').value.trim();
+            if (!judgeN || !judgeI) {
+                showToast('Enter your Judge Name & ID first!', 'warning', '⚠');
+                return;
+            }
+
+            openModal(
+                'Confirm Assessment',
+                `Save scores for ${teamNameDisp.textContent} (${roundSelect.value}) by ${judgeN}? This cannot be undone.`,
+                () => {
+                    const now = new Date();
+                    const time = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) +
+                        ' · ' + now.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
+                    const record = {
+                        teamId: teamSelect.value,
+                        teamName: teamNameDisp.textContent,
+                        judgeId: judgeI,
+                        judgeName: judgeN,
+                        round: roundSelect.value,
+                        innovation: inputs.innovation.num.value,
+                        functionality: inputs.functionality.num.value,
+                        design: inputs.design.num.value,
+                        resource: inputs.resource.num.value,
+                        presentation: inputs.presentation.num.value,
+                        feasibility: inputs.feasibility.num.value,
+                        bonus: bonusNum.value,
+                        total: totalDisplay.textContent,
+                        comments: commentsTA.value.trim(),
+                        time
+                    };
+
+                    const records = loadFromStorage();
+                    records.push(record);
+                    saveToStorage(records);
+                    renderHistory(records);
+
+                    showToast(`Saved! ${teamSelect.value} → ${totalDisplay.textContent}/155`, 'success', '✓');
+
+                    // Update status pill
+                    el('team-status-pill').textContent = 'Assessed';
+                    el('team-status-pill').className = 'pill bg-green-100 text-green-700';
+                }
+            );
+        });
+
+        // ─── Reset ────────────────────────────────────────────────
+        el('reset-btn').addEventListener('click', () => {
+            openModal('Reset Scores', 'Clear all scores for the current session? This only resets the form, not saved records.', () => {
+                CRITERIA.forEach(c => {
+                    inputs[c.key].num.value = 0;
+                    inputs[c.key].range.value = 0;
+                    updateSliderFill(inputs[c.key].range, 0, c.max);
+                    updateRating(c.key, 0, c.max);
+                });
+                bonusNum.value = 0;
+                commentsTA.value = '';
+                charCount.textContent = '0 / 500';
+                updateTotal();
+                showToast('Scores reset.', 'success', '↺');
+            });
+        });
+
+        // ─── Clear History ────────────────────────────────────────
+        el('clear-history-btn').addEventListener('click', () => {
+            openModal('Clear All Records', 'This will permanently delete all saved assessment records from this device.', () => {
+                localStorage.removeItem('bv_assessments');
+                renderHistory([]);
+                showToast('History cleared.', 'warning', '🗑');
+            });
+        });
+
+        // ─── Init sliders visual state ────────────────────────────
+        CRITERIA.forEach(c => updateSliderFill(inputs[c.key].range, 0, c.max));
+    </script>
+</body>
+
+</html>
