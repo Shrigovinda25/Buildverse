@@ -237,12 +237,12 @@ const PREDEFINED_COMPONENTS = [
     { category: "Actuator", name: "Stepper Motor", totalQuantity: 20, price: 80, maxPerTeam: 2 },
     { category: "Actuator", name: "ULN 2003 Driver", totalQuantity: 20, price: 30, maxPerTeam: 2 },
     { category: "Actuator", name: "30 RPM Motor", totalQuantity: 15, price: 50, maxPerTeam: 2 },
-    { category: "Actuator", name: "45 RPM Motor", totalQuantity: 15, price: 40, maxPerTeam: 2 },
+    { category: "Actuator", name: "100 RPM Motor", totalQuantity: 15, price: 40, maxPerTeam: 2 },
     { category: "Actuator", name: "60 RPM Motor", totalQuantity: 10, price: 30, maxPerTeam: 2 },
     { category: "Actuator", name: "L298N Motor Driver", totalQuantity: 10, price: 60, maxPerTeam: 2 },
     { category: "Actuator", name: "Relay Module", totalQuantity: 20, price: 40, maxPerTeam: 2 },
     { category: "Actuator", name: "Buzzer", totalQuantity: 20, price: 15, maxPerTeam: 1 },
-    { category: "Indicator", name: "LED Pack (Assorted)", totalQuantity: 100, price: 5, maxPerTeam: 1 },
+    { category: "Indicator", name: "LED", totalQuantity: 100, price: 5, maxPerTeam: 1 },
     { category: "Indicator", name: "RGB LED", totalQuantity: 20, price: 15, maxPerTeam: 1 },
     { category: "Display", name: "7-Segment Display", totalQuantity: 20, price: 30, maxPerTeam: 1 },
     { category: "Display", name: "LCD 16x2 Display", totalQuantity: 10, price: 80, maxPerTeam: 1 },
@@ -338,7 +338,10 @@ function renderInventoryList() {
                             <span class="text-[9px] font-black text-bvBlue uppercase tracking-widest mb-1 opacity-60">${areImagesHidden ? 'RESOURCE_CATEGORY' : (item.category || 'RESOURCES')}</span>
                             <p class="font-black text-slate-800 text-lg uppercase tracking-tight leading-none">${areImagesHidden ? `Resource #${index + 1}` : item.name}</p>
                             ${item.description ? `<span class="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1 italic">${item.description}</span>` : ''}
-                            ${isLowStock ? '<span class="text-[8px] font-bold text-red-500 uppercase tracking-widest mt-1 animate-pulse">Low Stock</span>' : ''}
+                            <div class="flex items-center gap-2 mt-1">
+                                ${isLowStock ? '<span class="text-[8px] font-bold text-red-500 uppercase tracking-widest animate-pulse">Low Stock</span>' : ''}
+                                ${item.hidden ? '<span class="text-[8px] font-bold text-amber-500 uppercase tracking-widest border border-amber-200 px-1.5 py-0.5 rounded-md bg-amber-50">Hidden from Participants</span>' : ''}
+                            </div>
                         </div>
                     </div>
                 </td>
@@ -354,7 +357,7 @@ function renderInventoryList() {
                     </div>
                 </td>
                 <td class="px-2 py-6 text-right space-x-1">
-                    <button class="p-2 hover:bg-slate-100 rounded-xl text-bvBlue transition-all shadow-sm border border-slate-100" title="Configure" onclick="editComponent('${item.id}', '${item.name}', ${item.totalQuantity}, ${item.price}, '${item.category}', '${(item.description || '').replace(/'/g, "\\'")}')">
+                    <button class="p-2 hover:bg-slate-100 rounded-xl text-bvBlue transition-all shadow-sm border border-slate-100" title="Configure" onclick="editComponent('${item.id}', '${item.name}', ${item.totalQuantity}, ${item.price}, '${item.category}', '${(item.description || '').replace(/'/g, "\\'")}', ${item.hidden || false})">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                     </button>
                     <button class="p-2 hover:bg-red-50 rounded-xl text-red-600 transition-all shadow-sm border border-red-100" title="Purge" onclick="deleteComponent('${item.id}')">
@@ -795,6 +798,15 @@ function openModal(type, data = {}) {
                         <input type="number" id="comp-price" class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-[24px] focus:ring-4 focus:ring-bvRed/10 focus:border-bvRed outline-none transition-all font-bold text-slate-700" value="${data.price || 50}">
                     </div>
                 </div>
+                <div class="p-6 bg-slate-50 rounded-[32px] border border-slate-100">
+                    <label class="flex items-center gap-4 cursor-pointer">
+                        <div class="relative inline-block w-12 h-6 transition duration-200 ease-in-out rounded-full bg-slate-200 has-[:checked]:bg-bvBlue">
+                            <input type="checkbox" id="comp-visible" class="absolute w-6 h-6 transition duration-200 ease-in-out transform bg-white border-4 border-transparent rounded-full appearance-none cursor-pointer checked:translate-x-6 outline-none" ${data.hidden ? '' : 'checked'}>
+                        </div>
+                        <span class="text-[10px] font-black text-slate-600 uppercase tracking-widest">Visible to Participants</span>
+                    </label>
+                    <p class="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-2 ml-16 italic">If disabled, this resource will be completely hidden from the participant catalog.</p>
+                </div>
             </div>
         `;
         document.getElementById('modal-submit').onclick = saveComponent;
@@ -903,6 +915,8 @@ async function saveComponent() {
     const totalQuantity = parseInt(document.getElementById('comp-qty').value);
     const price = parseFloat(document.getElementById('comp-price').value);
     const description = document.getElementById('comp-description').value.trim();
+    const isVisible = document.getElementById('comp-visible').checked;
+    const hidden = !isVisible;
 
     try {
         if (!name) {
@@ -927,11 +941,11 @@ async function saveComponent() {
 
         if (activeId) {
             await firestore.collection('components').doc(activeId).update({
-                name, category, totalQuantity, availableQuantity: totalQuantity, price, description, ...additionalData
+                name, category, totalQuantity, availableQuantity: totalQuantity, price, description, hidden, ...additionalData
             });
         } else {
             await firestore.collection('components').add({
-                name, category, totalQuantity, availableQuantity: totalQuantity, price, description, ...additionalData
+                name, category, totalQuantity, availableQuantity: totalQuantity, price, description, hidden, ...additionalData
             });
         }
         closeModal();
@@ -1268,8 +1282,8 @@ async function deleteComponent(id) {
     } catch (e) { alert(e.message); }
 }
 
-function editComponent(id, name, qty, price, category, description) {
-    openModal('editComponent', { id, name, qty, price, category, description });
+function editComponent(id, name, qty, price, category, description, hidden) {
+    openModal('editComponent', { id, name, qty, price, category, description, hidden });
 }
 
 function modifyPoints(username, points) {

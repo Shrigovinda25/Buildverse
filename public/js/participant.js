@@ -172,7 +172,9 @@ function setupUserListener(username) {
 // 2. Listen for Components (Catalog)
 let components = [];
 firestore.collection('components').onSnapshot(snapshot => {
-    components = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    components = snapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .filter(item => !item.hidden);
     components = sortComponents(components);
     renderCatalog();
 });
