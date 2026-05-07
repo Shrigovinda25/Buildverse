@@ -52,6 +52,7 @@ const CAT_PRIORITY = {
 // ----------------------------------------------------------------------------
 let isGlobalPaused = false;
 let areImagesHidden = false;
+let eventStartTime = null;
 let eventEndTime = null;
 let timerInterval = null;
 
@@ -61,6 +62,7 @@ firestore.collection('settings').doc('system').onSnapshot(doc => {
         const data = doc.data();
         isGlobalPaused = data.orderingPaused || false;
         areImagesHidden = data.hideComponentImages || false;
+        eventStartTime = data.timerStartTime || null;
         eventEndTime = data.timerEndTime || null;
         
         // Update Pause Button
@@ -122,7 +124,9 @@ function updateTimerUI() {
     const timerBtn = document.getElementById('timer-control-btn');
     if (!timerDisplay) return;
 
-    if (!eventEndTime) {
+    const now = Date.now();
+    // No timer configured at all
+    if (!eventStartTime && !eventEndTime) {
         timerDisplay.textContent = "00:00:00";
         timerDisplay.classList.add('opacity-30');
         if (timerBtn) {
@@ -132,29 +136,47 @@ function updateTimerUI() {
         }
         return;
     }
-
-    timerDisplay.classList.remove('opacity-30');
-    if (timerBtn) {
-        timerBtn.innerHTML = '<span class="text-sm">🔄</span> Reset Timer';
-        timerBtn.classList.remove('bg-slate-100', 'text-slate-500');
-        timerBtn.classList.add('bg-bvBlue', 'text-white');
-    }
-
-    const now = Date.now();
-    const diff = eventEndTime - now;
-
-    if (diff <= 0) {
+    // Timer configured but not started yet
+    if (eventStartTime && now < eventStartTime) {
         timerDisplay.textContent = "00:00:00";
-        timerDisplay.classList.add('text-red-600', 'animate-pulse');
+        timerDisplay.classList.add('opacity-30');
+        if (timerBtn) {
+            timerBtn.innerHTML = '<span class="text-sm">⏱️</span> Start Timer';
+            timerBtn.classList.remove('bg-bvBlue', 'text-white');
+            timerBtn.classList.add('bg-slate-100', 'text-slate-500');
+        }
         return;
     }
-
-    timerDisplay.classList.remove('text-red-600', 'animate-pulse');
-    const hrs = Math.floor(diff / (1000 * 60 * 60)).toString().padStart(2, '0');
-    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
-    const secs = Math.floor((diff % (1000 * 60)) / 1000).toString().padStart(2, '0');
-    timerDisplay.textContent = `${hrs}:${mins}:${secs}`;
+    // Timer active
+    if (eventEndTime) {
+        const diff = eventEndTime - now;
+        if (diff <= 0) {
+            timerDisplay.textContent = "00:00:00";
+            timerDisplay.classList.add('text-red-600', 'animate-pulse');
+            if (timerBtn) {
+                timerBtn.innerHTML = '<span class="text-sm">🔄</span> Reset Timer';
+                timerBtn.classList.remove('bg-slate-100', 'text-slate-500');
+                timerBtn.classList.add('bg-bvBlue', 'text-white');
+            }
+            return;
+        }
+        timerDisplay.classList.remove('opacity-30', 'text-red-600', 'animate-pulse');
+        const hrs = Math.floor(diff / (1000 * 60 * 60)).toString().padStart(2, '0');
+        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
+        const secs = Math.floor((diff % (1000 * 60)) / 1000).toString().padStart(2, '0');
+        timerDisplay.textContent = `${hrs}:${mins}:${secs}`;
+        if (timerBtn) {
+            timerBtn.innerHTML = '<span class="text-sm">🔄</span> Reset Timer';
+            timerBtn.classList.remove('bg-slate-100', 'text-slate-500');
+            timerBtn.classList.add('bg-bvBlue', 'text-white');
+        }
+        return;
+    }
+    // Fallback (should not reach here)
+    timerDisplay.textContent = "00:00:00";
+    timerDisplay.classList.add('opacity-30');
 }
+
 
 async function toggleTimer() {
     try {

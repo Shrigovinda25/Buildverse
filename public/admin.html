@@ -1157,21 +1157,10 @@ async function saveTimerSettings() {
     }
 }
 
-let eventStartTime = null;
-let eventEndTime = null;
 
-firestore.collection('settings').doc('system').onSnapshot(doc => {
-    if (doc.exists) {
-        const data = doc.data();
-        isGlobalPaused = data.orderingPaused || false;
-        areImagesHidden = data.hideComponentImages || false;
-        eventStartTime = data.timerStartTime || null;
-        eventEndTime = data.timerEndTime || null;
-        
-        // Update Pause Button
-        const pauseBtn = document.getElementById('global-pause-btn');
-    }
-});
+
+
+
 
         // Sidebar Toggle Logic
         const sidebar = document.querySelector('.sidebar');
