@@ -811,7 +811,7 @@
             </div>
             <button id="timer-control-btn"
                 class="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-bvBlue/10 text-slate-500 hover:text-bvBlue rounded-xl font-black text-[10px] uppercase tracking-widest transition-all mr-2"
-                onclick="toggleTimer()">
+                onclick="openTimerModal()">
                 <span class="text-sm">⏱️</span> Start Timer
             </button>
             <button id="hide-imgs-btn"
@@ -1087,6 +1087,92 @@
     <script src="js/auth.js"></script>
     <script src="js/admin.js"></script>
     <script>
+        function openTimerModal() {
+    // Set up modal for timer configuration
+    const title = document.getElementById('modal-title');
+    title.textContent = 'Set Event Timer';
+    const content = document.getElementById('modal-content');
+    content.innerHTML = `
+        <div class="space-y-4">
+            <label class="block text-sm font-bold">Start Time</label>
+            <div class="flex gap-2">
+                <input type="number" id="start-hour" min="1" max="12" placeholder="HH" class="w-16 p-2 border rounded"/>
+                <input type="number" id="start-minute" min="0" max="59" placeholder="MM" class="w-16 p-2 border rounded"/>
+                <select id="start-ampm" class="p-2 border rounded">
+                    <option>AM</option><option>PM</option>
+                </select>
+            </div>
+            <label class="block text-sm font-bold">End Time</label>
+            <div class="flex gap-2">
+                <input type="number" id="end-hour" min="1" max="12" placeholder="HH" class="w-16 p-2 border rounded"/>
+                <input type="number" id="end-minute" min="0" max="59" placeholder="MM" class="w-16 p-2 border rounded"/>
+                <select id="end-ampm" class="p-2 border rounded">
+                    <option>AM</option><option>PM</option>
+                </select>
+            </div>
+        </div>`;
+    const submitBtn = document.getElementById('modal-submit');
+    submitBtn.textContent = 'Set Timer';
+    submitBtn.onclick = saveTimerSettings;
+    document.getElementById('modal-backdrop').classList.remove('hidden');
+}
+
+async function saveTimerSettings() {
+    const sh = parseInt(document.getElementById('start-hour').value);
+    const sm = parseInt(document.getElementById('start-minute').value);
+    const sap = document.getElementById('start-ampm').value;
+    const eh = parseInt(document.getElementById('end-hour').value);
+    const em = parseInt(document.getElementById('end-minute').value);
+    const eap = document.getElementById('end-ampm').value;
+    if (isNaN(sh) || isNaN(sm) || isNaN(eh) || isNaN(em)) {
+        alert('Please fill all time fields');
+        return;
+    }
+    const now = new Date();
+    const start = new Date(now);
+    start.setHours(sap === 'PM' ? (sh % 12) + 12 : (sh % 12));
+    start.setMinutes(sm);
+    start.setSeconds(0);
+    const end = new Date(now);
+    end.setHours(eap === 'PM' ? (eh % 12) + 12 : (eh % 12));
+    end.setMinutes(em);
+    end.setSeconds(0);
+    if (end <= start) { end.setDate(end.getDate() + 1); }
+    try {
+        await firestore.collection('settings').doc('system').set({
+            timerStartTime: start.getTime(),
+            timerEndTime: end.getTime()
+        }, { merge: true });
+        // Log transaction
+        await firestore.collection('transactions').add({
+            username: user.username || 'Admin',
+            type: 'system',
+            amount: 0,
+            reason: `Timer set from ${sh}:${sm.toString().padStart(2,'0')} ${sap} to ${eh}:${em.toString().padStart(2,'0')} ${eap}`,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        closeModal();
+    } catch (e) {
+        alert('Error saving timer: ' + e.message);
+    }
+}
+
+let eventStartTime = null;
+let eventEndTime = null;
+
+firestore.collection('settings').doc('system').onSnapshot(doc => {
+    if (doc.exists) {
+        const data = doc.data();
+        isGlobalPaused = data.orderingPaused || false;
+        areImagesHidden = data.hideComponentImages || false;
+        eventStartTime = data.timerStartTime || null;
+        eventEndTime = data.timerEndTime || null;
+        
+        // Update Pause Button
+        const pauseBtn = document.getElementById('global-pause-btn');
+    }
+});
+
         // Sidebar Toggle Logic
         const sidebar = document.querySelector('.sidebar');
         const overlay = document.getElementById('sidebar-overlay');
