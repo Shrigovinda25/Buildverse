@@ -776,10 +776,12 @@ function openModal(type, data = {}) {
                         ${PREDEFINED_COMPONENTS.map((c, i) => `<option value="${i}">${c.name}</option>`).join('')}
                     </select>
                 </div>
-        ` : '<div class="space-y-6">';
+            </div>
+        ` : '';
 
         content.innerHTML = `
-            ${selectionHtml}
+            <div class="space-y-6">
+                ${selectionHtml}
                 <!-- Main Form Fields -->
                 <div id="comp-fields-group" class="space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
