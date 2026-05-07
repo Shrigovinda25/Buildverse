@@ -1342,6 +1342,11 @@
         function openLoginModal() {
             document.getElementById('login-modal').classList.add('open');
             document.body.style.overflow = 'hidden';
+            // Auto-focus the identity field for better UX
+            setTimeout(() => {
+                const usernameField = document.getElementById('username');
+                if (usernameField) usernameField.focus();
+            }, 300);
         }
         function closeLoginModal() {
             document.getElementById('login-modal').classList.remove('open');

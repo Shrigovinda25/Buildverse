@@ -25,9 +25,28 @@ const errText = document.getElementById('error-text');
 if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        
+        const submitBtn = loginForm.querySelector('button[type="submit"]');
+        if (submitBtn && submitBtn.disabled) return;
+
         if (errContainer) errContainer.classList.add('hidden');
         const username = document.getElementById('username').value;
         const password = document.getElementById('password').value;
+
+        // Provide immediate visual feedback
+        const originalBtnText = submitBtn.innerHTML;
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `
+                <div class="flex items-center justify-center gap-2">
+                    <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Verifying Identity...</span>
+                </div>
+            `;
+        }
 
         try {
             // 1. Call Backend API for Authentication (SECURE)
@@ -79,15 +98,27 @@ if (loginForm) {
                 orderingEnabled: userData.orderingEnabled
             }));
 
-            // 6. Redirect based on role
-            if (userData.role === 'admin') {
-                window.location.href = 'admin.html';
-            } else {
-                window.location.href = 'participant.html';
+            // Success feedback
+            if (submitBtn) {
+                submitBtn.innerHTML = 'Access Granted';
+                submitBtn.classList.replace('btn-red', 'bg-emerald-500');
             }
+
+            // 6. Redirect based on role
+            setTimeout(() => {
+                if (userData.role === 'admin') {
+                    window.location.href = 'admin.html';
+                } else {
+                    window.location.href = 'participant.html';
+                }
+            }, 500);
 
         } catch (error) {
             console.error('Login Error:', error.message);
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+            }
             if (errText && errContainer) {
                 errText.textContent = error.message;
                 errContainer.classList.remove('hidden');
