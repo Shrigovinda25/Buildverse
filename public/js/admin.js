@@ -755,61 +755,100 @@ function openModal(type, data = {}) {
     }
 
     if (type === 'teamDetail') {
+        title.textContent = 'NETWORK_NODE_DASHBOARD';
         container.classList.remove('max-w-xl');
         container.classList.add('max-w-5xl');
     } else if (type === 'addComponent' || type === 'editComponent') {
+        title.textContent = type === 'addComponent' ? 'Resource Provisioning' : 'Resource Configuration';
 
         const selectionHtml = type === 'addComponent' ? `
-            <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-2">Standard Template</label>
-                <select id="comp-template" class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-[24px] focus:ring-4 focus:ring-bvRed/10 focus:border-bvRed outline-none transition-all font-bold text-slate-700" onchange="applyTemplate(this.value)">
-                    <option value="">-- CUSTOM ENTRY --</option>
-                    ${PREDEFINED_COMPONENTS.map((c, i) => `<option value="${i}">${c.name}</option>`).join('')}
-                </select>
+            <!-- Mode Toggle -->
+            <div class="flex p-1 bg-slate-100 rounded-3xl mb-8">
+                <button id="mode-new" class="flex-1 py-3 px-4 rounded-[22px] font-black text-[10px] uppercase tracking-widest transition-all bg-white shadow-sm text-bvBlue" onclick="switchAddMode('new')">Register New</button>
+                <button id="mode-restock" class="flex-1 py-3 px-4 rounded-[22px] font-black text-[10px] uppercase tracking-widest transition-all text-slate-500" onclick="switchAddMode('restock')">Restock Existing</button>
             </div>
-        ` : '';
+
+            <div id="new-resource-form" class="space-y-6">
+                <div>
+                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-2">Standard Template</label>
+                    <select id="comp-template" class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-[24px] focus:ring-4 focus:ring-bvRed/10 focus:border-bvRed outline-none transition-all font-bold text-slate-700" onchange="applyTemplate(this.value)">
+                        <option value="">-- CUSTOM ENTRY --</option>
+                        ${PREDEFINED_COMPONENTS.map((c, i) => `<option value="${i}">${c.name}</option>`).join('')}
+                    </select>
+                </div>
+        ` : '<div class="space-y-6">';
 
         content.innerHTML = `
-            <div class="space-y-6">
-                ${selectionHtml}
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-2">Resource Designation</label>
-                        <input type="text" id="comp-name" class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-[24px] focus:ring-4 focus:ring-bvRed/10 focus:border-bvRed outline-none transition-all font-bold text-slate-700" value="${data.name || ''}">
+            ${selectionHtml}
+                <!-- Main Form Fields -->
+                <div id="comp-fields-group" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-2">Resource Designation</label>
+                            <input type="text" id="comp-name" class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-[24px] focus:ring-4 focus:ring-bvRed/10 focus:border-bvRed outline-none transition-all font-bold text-slate-700" value="${data.name || ''}">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-2">Resource Type (Category)</label>
+                            <select id="comp-category" class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-[24px] focus:ring-4 focus:ring-bvRed/10 focus:border-bvRed outline-none transition-all font-bold text-slate-700">
+                                ${Object.keys(CAT_PRIORITY).map(c => `<option value="${c}" ${data.category === c ? 'selected' : ''}>${c.toUpperCase()}</option>`).join('')}
+                            </select>
+                        </div>
                     </div>
                     <div>
-                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-2">Resource Type (Category)</label>
-                        <select id="comp-category" class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-[24px] focus:ring-4 focus:ring-bvRed/10 focus:border-bvRed outline-none transition-all font-bold text-slate-700">
-                            ${Object.keys(CAT_PRIORITY).map(c => `<option value="${c}" ${data.category === c ? 'selected' : ''}>${c.toUpperCase()}</option>`).join('')}
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-2">Resource Description (Optional)</label>
+                        <input type="text" id="comp-description" class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-[24px] focus:ring-4 focus:ring-bvRed/10 focus:border-bvRed outline-none transition-all font-bold text-slate-700" value="${data.description || ''}" placeholder="e.g. 1 pack has 10 wires">
+                    </div>
+                    <div class="grid grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-2">Inventory Depth</label>
+                            <input type="number" id="comp-qty" class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-[24px] focus:ring-4 focus:ring-bvRed/10 focus:border-bvRed outline-none transition-all font-bold text-slate-700" value="${data.qty || 10}">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-2">Credit Value</label>
+                            <input type="number" id="comp-price" class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-[24px] focus:ring-4 focus:ring-bvRed/10 focus:border-bvRed outline-none transition-all font-bold text-slate-700" value="${data.price || 50}">
+                        </div>
+                    </div>
+                    <div class="p-6 bg-slate-50 rounded-[32px] border border-slate-100">
+                        <label class="flex items-center gap-4 cursor-pointer">
+                            <div class="relative inline-block w-12 h-6 transition duration-200 ease-in-out rounded-full bg-slate-200 has-[:checked]:bg-bvBlue">
+                                <input type="checkbox" id="comp-visible" class="absolute w-6 h-6 transition duration-200 ease-in-out transform bg-white border-4 border-transparent rounded-full appearance-none cursor-pointer checked:translate-x-6 outline-none" ${data.hidden ? '' : 'checked'}>
+                            </div>
+                            <span class="text-[10px] font-black text-slate-600 uppercase tracking-widest">Visible to Participants</span>
+                        </label>
+                        <p class="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-2 ml-16 italic">If disabled, this resource will be completely hidden from the participant catalog.</p>
+                    </div>
+                </div>
+
+                <!-- Restock Form -->
+                <div id="restock-resource-form" class="hidden space-y-6">
+                    <div class="p-6 bg-bvBlue/5 rounded-3xl border border-bvBlue/10 mb-6">
+                        <p class="text-[9px] font-black text-bvBlue uppercase tracking-widest leading-relaxed">Select an existing item from the inventory and specify how many units to add to the current stock level.</p>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-2">Identify Resource</label>
+                        <select id="restock-id" class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-[24px] focus:ring-4 focus:ring-bvBlue/10 focus:border-bvBlue outline-none transition-all font-bold text-slate-700">
+                            <option value="">-- SELECT FROM INVENTORY --</option>
+                            ${allComponentsData.map(c => `<option value="${c.id}">${c.name} (Stock: ${c.availableQuantity})</option>`).join('')}
                         </select>
                     </div>
-                </div>
-                <div>
-                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-2">Resource Description (Optional)</label>
-                    <input type="text" id="comp-description" class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-[24px] focus:ring-4 focus:ring-bvRed/10 focus:border-bvRed outline-none transition-all font-bold text-slate-700" value="${data.description || ''}" placeholder="e.g. 1 pack has 10 wires">
-                </div>
-                <div class="grid grid-cols-2 gap-6">
                     <div>
-                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-2">Inventory Depth</label>
-                        <input type="number" id="comp-qty" class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-[24px] focus:ring-4 focus:ring-bvRed/10 focus:border-bvRed outline-none transition-all font-bold text-slate-700" value="${data.qty || 10}">
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-2">Stock Increment</label>
+                        <input type="number" id="restock-qty" class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-[24px] focus:ring-4 focus:ring-bvBlue/10 focus:border-bvBlue outline-none transition-all font-bold text-slate-700" placeholder="e.g. 10">
                     </div>
-                    <div>
-                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 ml-2">Credit Value</label>
-                        <input type="number" id="comp-price" class="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-[24px] focus:ring-4 focus:ring-bvRed/10 focus:border-bvRed outline-none transition-all font-bold text-slate-700" value="${data.price || 50}">
-                    </div>
-                </div>
-                <div class="p-6 bg-slate-50 rounded-[32px] border border-slate-100">
-                    <label class="flex items-center gap-4 cursor-pointer">
-                        <div class="relative inline-block w-12 h-6 transition duration-200 ease-in-out rounded-full bg-slate-200 has-[:checked]:bg-bvBlue">
-                            <input type="checkbox" id="comp-visible" class="absolute w-6 h-6 transition duration-200 ease-in-out transform bg-white border-4 border-transparent rounded-full appearance-none cursor-pointer checked:translate-x-6 outline-none" ${data.hidden ? '' : 'checked'}>
-                        </div>
-                        <span class="text-[10px] font-black text-slate-600 uppercase tracking-widest">Visible to Participants</span>
-                    </label>
-                    <p class="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-2 ml-16 italic">If disabled, this resource will be completely hidden from the participant catalog.</p>
                 </div>
             </div>
         `;
-        document.getElementById('modal-submit').onclick = saveComponent;
+
+        if (type === 'addComponent') {
+            document.getElementById('modal-submit').onclick = () => {
+                const isRestock = !document.getElementById('restock-resource-form').classList.contains('hidden');
+                if (isRestock) restockComponent();
+                else saveComponent();
+            };
+        } else {
+            document.getElementById('modal-submit').onclick = saveComponent;
+        }
+
     } else if (type === 'modifyPoints') {
         title.textContent = 'CREDIT_ADJUSTMENT';
         content.innerHTML = `
@@ -897,6 +936,78 @@ function closeModal() {
     document.getElementById('modal-backdrop').classList.add('hidden');
     // Reset width on close
     document.getElementById('modal-container').className = 'bg-white w-full max-w-xl rounded-[40px] shadow-2xl overflow-hidden scale-in';
+}
+
+function switchAddMode(mode) {
+    const newForm = document.getElementById('new-resource-form');
+    const restockForm = document.getElementById('restock-resource-form');
+    const compFields = document.getElementById('comp-fields-group');
+    const btnNew = document.getElementById('mode-new');
+    const btnRestock = document.getElementById('mode-restock');
+    const submitBtn = document.getElementById('modal-submit');
+
+    if (mode === 'new') {
+        newForm.classList.remove('hidden');
+        compFields.classList.remove('hidden');
+        restockForm.classList.add('hidden');
+        btnNew.classList.add('bg-white', 'shadow-sm', 'text-bvBlue');
+        btnNew.classList.remove('text-slate-500');
+        btnRestock.classList.remove('bg-white', 'shadow-sm', 'text-bvBlue');
+        btnRestock.classList.add('text-slate-500');
+        submitBtn.textContent = 'Register Resource';
+    } else {
+        newForm.classList.add('hidden');
+        compFields.classList.add('hidden');
+        restockForm.classList.remove('hidden');
+        btnRestock.classList.add('bg-white', 'shadow-sm', 'text-bvBlue');
+        btnRestock.classList.remove('text-slate-500');
+        btnNew.classList.remove('bg-white', 'shadow-sm', 'text-bvBlue');
+        btnNew.classList.add('text-slate-500');
+        submitBtn.textContent = 'Update Inventory';
+    }
+}
+
+async function restockComponent() {
+    const compId = document.getElementById('restock-id').value;
+    const qtyToAdd = parseInt(document.getElementById('restock-qty').value);
+
+    if (!compId) {
+        alert('Please select a component to restock.');
+        return;
+    }
+    if (isNaN(qtyToAdd) || qtyToAdd <= 0) {
+        alert('Please enter a valid quantity.');
+        return;
+    }
+
+    try {
+        const compRef = firestore.collection('components').doc(compId);
+        const doc = await compRef.get();
+        if (!doc.exists) throw new Error('Component not found.');
+
+        const data = doc.data();
+        const newTotal = (data.totalQuantity || 0) + qtyToAdd;
+        const newAvailable = (data.availableQuantity || 0) + qtyToAdd;
+
+        await compRef.update({
+            totalQuantity: newTotal,
+            availableQuantity: newAvailable
+        });
+
+        // Log the action
+        await firestore.collection('transactions').add({
+            username: user.username || 'Admin',
+            type: 'system',
+            amount: 0,
+            reason: `RESTOCKED [${data.name}]: +${qtyToAdd} units. New available depth: ${newAvailable}.`,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        closeModal();
+        alert(`Successfully restocked ${data.name}.`);
+    } catch (e) {
+        alert('Error restocking: ' + e.message);
+    }
 }
 
 function applyTemplate(index) {
