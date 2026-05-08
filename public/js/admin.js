@@ -229,13 +229,13 @@ const PREDEFINED_COMPONENTS = [
     { category: "Sensor", name: "Ultrasonic Sensor", totalQuantity: 30, price: 30, maxPerTeam: 2 },
     { category: "Sensor", name: "IR Sensor", totalQuantity: 40, price: 20, maxPerTeam: 2 },
     { category: "Sensor", name: "LDR Sensor", totalQuantity: 20, price: 15, maxPerTeam: 3 },
-    { category: "Sensor", name: "DHT11 Temp/Humid Sensor", totalQuantity: 20, price: 50, maxPerTeam: 1 },
+    { category: "Sensor", name: "DHT11 Temp/Humidity Sensor", totalQuantity: 20, price: 50, maxPerTeam: 1 },
     { category: "Sensor", name: "MQ-2 Gas Sensor", totalQuantity: 10, price: 60, maxPerTeam: 1 },
     { category: "Sensor", name: "Soil Moisture Sensor", totalQuantity: 10, price: 40, maxPerTeam: 1 },
     { category: "Sensor", name: "PIR Motion Sensor", totalQuantity: 10, price: 50, maxPerTeam: 1 },
     { category: "Actuator", name: "Servo Motor", totalQuantity: 20, price: 40, maxPerTeam: 2 },
     { category: "Actuator", name: "Stepper Motor", totalQuantity: 20, price: 80, maxPerTeam: 2 },
-    { category: "Actuator", name: "ULN 2003 Driver", totalQuantity: 20, price: 30, maxPerTeam: 2 },
+    { category: "Actuator", name: "ULN2003 Driver", totalQuantity: 20, price: 30, maxPerTeam: 2 },
     { category: "Actuator", name: "30 RPM Motor", totalQuantity: 15, price: 50, maxPerTeam: 2 },
     { category: "Actuator", name: "100 RPM Motor", totalQuantity: 15, price: 40, maxPerTeam: 2 },
     { category: "Actuator", name: "60 RPM Motor", totalQuantity: 10, price: 30, maxPerTeam: 2 },
@@ -248,19 +248,19 @@ const PREDEFINED_COMPONENTS = [
     { category: "Display", name: "LCD 16x2 Display", totalQuantity: 10, price: 80, maxPerTeam: 1 },
     { category: "Input", name: "Push Buttons", totalQuantity: 60, price: 5, maxPerTeam: 2 },
     { category: "Input", name: "Potentiometer", totalQuantity: 20, price: 15, maxPerTeam: 1 },
-    { category: "Hardware", name: "Breadboard (800 pts)", totalQuantity: 20, price: 40, maxPerTeam: 2 },
-    { category: "Hardware", name: "1in L Clamp", totalQuantity: 40, price: 5, maxPerTeam: 4 },
-    { category: "Hardware", name: "3/4in L Clamp", totalQuantity: 40, price: 10, maxPerTeam: 6 },
-    { category: "Hardware", name: "Female to Female Jumper wire", totalQuantity: 20, price: 10, maxPerTeam: 2, description: "1 pack has 10 wires" },
-    { category: "Hardware", name: "Male to Female Jumper wire", totalQuantity: 20, price: 10, maxPerTeam: 2, description: "1 pack has 10 wires" },
-    { category: "Hardware", name: "Male to Male Jumper wire", totalQuantity: 20, price: 10, maxPerTeam: 2, description: "1 pack has 10 wires" },
+    { category: "Hardware", name: "Breadboard", totalQuantity: 20, price: 40, maxPerTeam: 2 },
+    { category: "Hardware", name: "1 Clamp", totalQuantity: 40, price: 10, maxPerTeam: 4 },
+    { category: "Hardware", name: "3/4 Clamp", totalQuantity: 40, price: 2, maxPerTeam: 6 },
+    { category: "Hardware", name: "Female to Female Jumper Wire", totalQuantity: 20, price: 10, maxPerTeam: 2, description: "1 pack has 10 wires" },
+    { category: "Hardware", name: "Male to Female Jumper Wire", totalQuantity: 20, price: 10, maxPerTeam: 2, description: "1 pack has 10 wires" },
+    { category: "Hardware", name: "Male to Male Jumper Wire", totalQuantity: 20, price: 10, maxPerTeam: 2, description: "1 pack has 10 wires" },
     { category: "Hardware", name: "M4 Nut & Bolts", totalQuantity: 100, price: 5, maxPerTeam: 10 },
     { category: "Hardware", name: "Resistor Pack", totalQuantity: 20, price: 10, maxPerTeam: 1 },
     { category: "Power", name: "12V Power Adapter", totalQuantity: 20, price: 100, maxPerTeam: 1 },
     { category: "Power", name: "5V Power Adapter", totalQuantity: 20, price: 80, maxPerTeam: 1 },
     { category: "Power", name: "Male & Female Jack", totalQuantity: 20, price: 20, maxPerTeam: 2 },
     { category: "Power", name: "Single Strand Wire (1m)", totalQuantity: 10, price: 5, maxPerTeam: 2 },
-    { category: "Miscellaneous", name: "5mm Foam Board (2ft x 1ft)", totalQuantity: 40, price: 60, maxPerTeam: 2, imageUrl: "assets/components/5mm%20Foam%20Board.jpg" },
+    { category: "Miscellaneous", name: "5MM Foam Board", totalQuantity: 40, price: 60, maxPerTeam: 2 },
     { category: "Miscellaneous", name: "Wire Stripper", totalQuantity: 10, price: 30, maxPerTeam: 1 }
 ];
 
@@ -281,18 +281,19 @@ function getComponentImageUrl(item) {
         return encodeURI('assets/components/ESP32 Controller + USB Cable.jpg');
     }
 
-    // Fix for Foam Board name mismatch
-    if (name.includes('5mm Foam Board')) {
+    if (name.includes('5mm Foam Board') || name.includes('5MM Foam Board')) {
         return encodeURI('assets/components/5mm Foam Board.jpg');
+    }
+
+    if (name.includes('DHT11')) {
+        return encodeURI('assets/components/DHT11 Temp Humidity Sensor.jpg');
     }
 
     // Support names with special characters by mapping to sanitized filenames
     const sanitizedName = name.replace(/\+/g, 'Plus')
                               .replace(/½/g, 'Half ')
-                              .replace(/\//g, ' ')
-                              .replace(/&/g, '%26')
-                              .replace(/ /g, '%20');
-    return `assets/components/${sanitizedName}.jpg`;
+                              .replace(/\//g, ' ');
+    return encodeURI(`assets/components/${sanitizedName}.jpg`);
 }
 
 // ----------------------------------------------------------------------------

@@ -1071,6 +1071,7 @@
         <div class="nav-links">
             <button class="nav-link" onclick="toggleSection('about')">About</button>
             <button class="nav-link" onclick="toggleSection('inventory')">Inventory</button>
+            <button class="nav-link" onclick="toggleSection('leaderboard')">Leaderboard</button>
             <button class="nav-link" onclick="toggleSection('rules')">Rules</button>
             <button class="login-btn" onclick="openLoginModal()">Login Portal →</button>
         </div>
@@ -1191,6 +1192,36 @@
             <div id="public-matrix" class="matrix-grid">
                 <!-- Loaded dynamically -->
                 <p class="text-center col-span-full py-10 font-bold text-slate-400">CONNECTING TO REPOSITORY...</p>
+            </div>
+        </section>
+    </div>
+
+    <!-- LEADERBOARD PANEL -->
+    <div id="leaderboard" class="content-panel">
+        <section class="section-container">
+            <div class="section-header">
+                <span class="section-label">Performance Analytics</span>
+                <h2 class="section-title">Engineering Leaderboard</h2>
+            </div>
+            
+            <div class="bg-white rounded-[40px] shadow-xl border border-slate-100 overflow-hidden max-w-4xl mx-auto">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-50 border-b border-slate-100">
+                        <tr>
+                            <th class="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Rank</th>
+                            <th class="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Team Identity</th>
+                            <th class="px-8 py-6 text-right text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Points Remaining</th>
+                        </tr>
+                    </thead>
+                    <tbody id="public-leaderboard-list">
+                        <!-- Loaded dynamically -->
+                        <tr>
+                            <td colspan="3" class="px-8 py-20 text-center">
+                                <p class="font-black text-slate-300 uppercase tracking-widest text-xs animate-pulse">Syncing Leaderboard Data...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </section>
     </div>
@@ -1385,19 +1416,23 @@
         // DYNAMIC INVENTORY
         if (typeof firestore !== 'undefined') {
             let lastComponentsSnapshot = null;
+            function getPublicImageUrl(name) {
+                if (!name) return 'assets/logo.png';
+                if (name.toUpperCase().includes('ESP32')) return encodeURI('assets/components/ESP32 Controller + USB Cable.jpg');
+                if (name.includes('5mm Foam Board') || name.includes('5MM Foam Board')) return encodeURI('assets/components/5mm Foam Board.jpg');
+                if (name.includes('DHT11')) return encodeURI('assets/components/DHT11 Temp Humidity Sensor.jpg');
+                // For component names with special chars: replace + with Plus, / with space, then encodeURI the whole path
+                const sanitized = name.replace(/\+/g, 'Plus').replace(/½/g, 'Half ').replace(/\//g, ' ');
+                return encodeURI('assets/components/' + sanitized + '.jpg');
+            }
+
             function renderPublicInventory(snapshot) {
                 const grid = document.getElementById('public-matrix');
                 if (!grid || !snapshot) return;
                 grid.innerHTML = '';
                 snapshot.docs.forEach((doc, index) => {
                     const comp = doc.data();
-                    const sanitizedName = comp.name
-                        .replace(/\+/g, 'Plus')
-                        .replace(/½/g, 'Half ')
-                        .replace(/\//g, ' ')
-                        .replace(/&/g, '%26')
-                        .replace(/ /g, '%20');
-                    const imgPath = `assets/components/${sanitizedName}.jpg`;
+                    const imgPath = getPublicImageUrl(comp.name);
                     const isHidden = document.body.classList.contains('hide-component-images');
                     const displayName = isHidden ? `Resource #${index + 1}` : comp.name;
                     const card = `
@@ -1431,6 +1466,60 @@
                 renderPublicInventory(snapshot);
             }).catch(err => {
                 console.error("Failed to load public inventory:", err);
+            });
+
+            // PUBLIC LEADERBOARD LOGIC
+            function renderPublicLeaderboard(snapshot) {
+                const list = document.getElementById('public-leaderboard-list');
+                if (!list || !snapshot) return;
+                list.innerHTML = '';
+                
+                let users = snapshot.docs.map(doc => doc.data());
+                // Filter to only teams that have a rankingRemaining (synced from Excel)
+                users = users.filter(u => typeof u.rankingRemaining === 'number');
+                // Sort by rankingRemaining descending (more points left = higher rank)
+                users.sort((a, b) => (b.rankingRemaining || 0) - (a.rankingRemaining || 0));
+                
+                if (users.length === 0) {
+                    list.innerHTML = '<tr><td colspan="3" class="px-8 py-20 text-center text-slate-400 font-bold uppercase tracking-widest text-xs">Ranking data not yet available</td></tr>';
+                    return;
+                }
+
+                users.forEach((team, index) => {
+                    const isTop3 = index < 3;
+                    const rankClass = index === 0 ? 'bg-yellow-400 text-yellow-900 shadow-lg shadow-yellow-200' : 
+                                      index === 1 ? 'bg-slate-300 text-slate-800 shadow-lg shadow-slate-200' : 
+                                      index === 2 ? 'bg-amber-600 text-white shadow-lg shadow-amber-200' : 
+                                      'bg-slate-100 text-slate-500';
+                    
+                    const row = `
+                        <tr class="hover:bg-slate-50 transition-colors group border-b border-slate-50 last:border-0">
+                            <td class="px-8 py-6">
+                                <div class="w-10 h-10 rounded-2xl ${rankClass} flex items-center justify-center font-black text-sm transition-transform group-hover:scale-110">
+                                    ${index + 1}
+                                </div>
+                            </td>
+                            <td class="px-8 py-6">
+                                <p class="font-black text-slate-800 text-lg uppercase tracking-tight italic">${team.username}</p>
+                                ${isTop3 ? `<span class="text-[8px] font-black text-bvBlue uppercase tracking-widest bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">ELITE_TIER</span>` : ''}
+                            </td>
+                            <td class="px-8 py-6 text-right">
+                                <span class="font-black text-bvBlue text-2xl italic">${team.rankingRemaining}</span>
+                                <span class="text-[10px] text-slate-400 not-italic uppercase ml-1">pts</span>
+                            </td>
+                        </tr>
+                    `;
+                    list.insertAdjacentHTML('beforeend', row);
+                });
+            }
+
+            // Listen for leaderboard updates
+            firestore.collection('users').where('role', '==', 'participant').onSnapshot(snapshot => {
+                renderPublicLeaderboard(snapshot);
+            }, err => {
+                console.error("Leaderboard access restricted:", err.message);
+                const list = document.getElementById('public-leaderboard-list');
+                if (list) list.innerHTML = '<tr><td colspan="3" class="px-8 py-20 text-center text-red-400 font-bold uppercase tracking-widest text-xs">Access Protocol Violation: Leaderboard Offline</td></tr>';
             });
         }
     </script>

@@ -42,18 +42,19 @@ function getComponentImageUrl(item) {
         return encodeURI('assets/components/ESP32 Controller + USB Cable.jpg');
     }
 
-    // Fix for Foam Board name mismatch
-    if (name.includes('5mm Foam Board')) {
+    if (name.includes('5mm Foam Board') || name.includes('5MM Foam Board')) {
         return encodeURI('assets/components/5mm Foam Board.jpg');
+    }
+    
+    if (name.includes('DHT11')) {
+        return encodeURI('assets/components/DHT11 Temp Humidity Sensor.jpg');
     }
 
     // Support names with special characters by mapping to sanitized filenames
     const sanitizedName = name.replace(/\+/g, 'Plus')
                               .replace(/½/g, 'Half ')
-                              .replace(/\//g, ' ')
-                              .replace(/&/g, '%26')
-                              .replace(/ /g, '%20');
-    return `assets/components/${sanitizedName}.jpg`;
+                              .replace(/\//g, ' ');
+    return encodeURI(`assets/components/${sanitizedName}.jpg`);
 }
 
 // ----------------------------------------------------------------------------
@@ -365,9 +366,10 @@ firestore.collection('users').where('role', '==', 'participant').onSnapshot(snap
     if (!list) return;
     list.innerHTML = '';
     
-    let users = snapshot.docs.map(doc => doc.data());
-    // Sort by points descending
-    users.sort((a, b) => (b.points || 0) - (a.points || 0));
+    let users = snapshot.docs.map(doc => doc.data())
+        .filter(u => typeof u.rankingRemaining === 'number');
+    // Sort by rankingRemaining descending
+    users.sort((a, b) => (b.rankingRemaining || 0) - (a.rankingRemaining || 0));
     
     users.forEach((team, index) => {
         const row = `
@@ -381,7 +383,7 @@ firestore.collection('users').where('role', '==', 'participant').onSnapshot(snap
                     <p class="font-black text-slate-800 text-lg uppercase tracking-tight italic">${team.username} ${team.username === user.username ? '<span class="text-[10px] text-bvBlue ml-2 not-italic">(YOU)</span>' : ''}</p>
                 </td>
                 <td class="px-2 py-6 text-right">
-                    <span class="font-black text-bvBlue text-xl italic">${team.points}</span>
+                    <span class="font-black text-bvBlue text-xl italic">${team.rankingRemaining || 0}</span>
                     <span class="text-[10px] text-slate-400 not-italic uppercase ml-0.5">pts</span>
                 </td>
             </tr>
