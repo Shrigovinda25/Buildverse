@@ -751,6 +751,7 @@ async function downloadTeamPDF(username) {
         doc.setFontSize(32);
         doc.text('BUILDVERSE', 20, 28);
         
+        doc.setFontSize(8);
         doc.text(`GENERATED: ${new Date().toLocaleString().toUpperCase()}`, 190, 25, { align: 'right' });
 
         // --- TEAM INFO CARD ---

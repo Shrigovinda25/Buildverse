@@ -15,7 +15,7 @@ async function syncRanking() {
     console.log('--- STARTING COMPONENT & RANKING SYNC ---');
     
     // 2. Read Excel
-    const workbook = XLSX.readFile(path.join(__dirname, '..', 'Ranking.xlsx'));
+    const workbook = XLSX.readFile(path.join(__dirname, '..', 'Rankings.xlsx'));
     const data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
     
     const teams = data.filter(item => item["Team Name"]);
