@@ -603,8 +603,11 @@ firestore.collection('users').where('role', '==', 'participant').onSnapshot(snap
                     <button class="p-2 hover:bg-slate-100 rounded-xl text-slate-400 hover:text-purple-500 transition-all" title="Return All Components" onclick="returnAllComponents('${team.username}')">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
                     </button>
-                    <button class="p-2 hover:bg-emerald-50 rounded-xl text-slate-400 hover:text-emerald-600 transition-all" title="Download Team Report" onclick="downloadTeamCSV('${team.username}')">
+                    <button class="p-2 hover:bg-emerald-50 rounded-xl text-slate-400 hover:text-emerald-600 transition-all" title="Download Team Report (CSV)" onclick="downloadTeamCSV('${team.username}')">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    </button>
+                    <button class="p-2 hover:bg-bvRed/10 rounded-xl text-slate-400 hover:text-bvRed transition-all" title="Download Team Report (PDF)" onclick="downloadTeamPDF('${team.username}')">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 9h1m0 4h1m0 4h1" /></svg>
                     </button>
                     <button class="p-2 hover:bg-bvBlue/10 rounded-xl text-slate-400 hover:text-bvBlue transition-all" title="Send Credentials Email" onclick="sendTeamEmailPrompt('${team.username}')">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
@@ -714,7 +717,7 @@ async function downloadTeamCSV(username) {
         const encodedUri = encodeURI(csvContent);
         const link = document.createElement("a");
         link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `BuildVerse_${username}_Report_${new Date().toISOString().split('T')[0]}.csv`);
+        link.setAttribute("download", `${username}_Report_${new Date().toISOString().split('T')[0]}.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -722,6 +725,272 @@ async function downloadTeamCSV(username) {
         alert("Error generating team report: " + e.message);
     }
 }
+
+async function downloadTeamPDF(username) {
+    try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        // Fetch data
+        const userDoc = await firestore.collection('users').doc(username).get();
+        const userData = userDoc.data();
+        const ordersSnap = await firestore.collection('orders').where('username', '==', username).get();
+        
+        // Design colors
+        const primaryColor = [200, 16, 46]; // bvRed (#C8102E)
+        const accentColor = [0, 71, 171];   // bvBlue (#0047AB)
+        
+        // --- HEADER ---
+        doc.setFillColor(...primaryColor);
+        doc.rect(0, 0, 210, 45, 'F');
+        
+        // Logo Text (as fallback for image)
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(32);
+        doc.text('BUILDVERSE', 20, 28);
+        
+        doc.text(`GENERATED: ${new Date().toLocaleString().toUpperCase()}`, 190, 25, { align: 'right' });
+
+        // --- TEAM INFO CARD ---
+        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(16);
+        doc.setFont('helvetica', 'bold');
+        doc.text('TEAM PROFILE', 20, 65);
+        
+        doc.setDrawColor(...primaryColor);
+        doc.setLineWidth(1);
+        doc.line(20, 68, 40, 68);
+        
+        // Info Grid
+        doc.setFontSize(10);
+        doc.setTextColor(100, 100, 100);
+        doc.text('IDENTIFIER', 20, 80);
+        doc.text('REPRESENTATIVE', 80, 80);
+        doc.text('CURRENT BALANCE', 140, 80);
+        
+        doc.setTextColor(0, 0, 0);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(12);
+        doc.text(username.toUpperCase(), 20, 87);
+        doc.text((userData.representativeName || 'NOT SPECIFIED').toUpperCase(), 80, 87);
+        doc.setTextColor(...accentColor);
+        doc.text(`${userData.points} PTS`, 140, 87);
+        
+        doc.setTextColor(100, 100, 100);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+        doc.text('ACCESS STATUS', 20, 100);
+        doc.text('TEAM ID', 80, 100);
+        
+        doc.setTextColor(0, 0, 0);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(12);
+        doc.text(userData.orderingEnabled ? 'AUTHORIZED' : 'LOCKED', 20, 107);
+        doc.text(String(userData.teamId || 'N/A'), 80, 107);
+
+        // --- COMPONENT LOG ---
+        doc.setFontSize(16);
+        doc.setTextColor(0, 0, 0);
+        doc.text('REQUISITION HISTORY', 20, 125);
+        
+        doc.setDrawColor(...primaryColor);
+        doc.line(20, 128, 40, 128);
+
+        const tableData = [];
+        let totalSpent = 0;
+        
+        ordersSnap.forEach(snap => {
+            const o = snap.data();
+            const date = o.timestamp ? o.timestamp.toDate().toLocaleDateString() : 'N/A';
+            const cost = (o.pricePerUnit || 0) * (o.quantity || 0);
+            totalSpent += cost;
+            tableData.push([
+                o.componentName || 'N/A',
+                o.quantity || 0,
+                `${o.pricePerUnit || 0} pts`,
+                `${cost} pts`,
+                (o.status || 'Pending').toUpperCase(),
+                date
+            ]);
+        });
+        
+        if (tableData.length === 0) {
+            tableData.push([{ content: 'No transactions recorded for this team.', colSpan: 6, styles: { halign: 'center', italic: true } }]);
+        }
+        
+        doc.autoTable({
+            startY: 135,
+            head: [['COMPONENT DESCRIPTION', 'QTY', 'UNIT_PRICE', 'TOTAL_COST', 'STATUS', 'DATE']],
+            body: tableData,
+            theme: 'striped',
+            headStyles: { 
+                fillColor: primaryColor, 
+                textColor: [255, 255, 255], 
+                fontSize: 9,
+                fontStyle: 'bold',
+                halign: 'center'
+            },
+            columnStyles: {
+                0: { fontStyle: 'bold', fontSize: 9 },
+                1: { halign: 'center' },
+                2: { halign: 'right' },
+                3: { halign: 'right', fontStyle: 'bold', textColor: primaryColor },
+                4: { halign: 'center' },
+                5: { halign: 'center' }
+            },
+            margin: { left: 20, right: 20 },
+            styles: { font: 'helvetica', fontSize: 8 }
+        });
+        
+        // --- SUMMARY & FOOTER ---
+        const finalY = doc.lastAutoTable.finalY + 15;
+        
+        // Draw summary box
+        doc.setFillColor(245, 245, 245);
+        doc.rect(130, finalY - 5, 60, 20, 'F');
+        doc.setTextColor(100, 100, 100);
+        doc.setFontSize(9);
+        doc.text('TOTAL EXPENDITURE:', 135, finalY + 3);
+        doc.setTextColor(...primaryColor);
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`${totalSpent} PTS`, 185, finalY + 10, { align: 'right' });
+        
+        // Bottom notice
+        doc.setTextColor(150, 150, 150);
+        doc.setFont('helvetica', 'italic');
+        doc.setFontSize(8);
+        doc.text('This is a system-generated document. Points and resource allocations are subject to event regulations.', 105, 275, { align: 'center' });
+        
+        // Page numbers
+        const pageCount = doc.internal.getNumberOfPages();
+        for(let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`PAGE ${i} OF ${pageCount}`, 105, 285, { align: 'center' });
+        }
+        
+        doc.save(`${username}_Report.pdf`);
+        
+    } catch (e) {
+        console.error("PDF Error:", e);
+        alert("Could not generate PDF: " + e.message);
+    }
+}
+
+async function exportDataPDF() {
+    try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        const usersSnap = await firestore.collection('users').where('role', '==', 'participant').get();
+        
+        const primaryColor = [200, 16, 46]; // bvRed
+        const accentColor = [0, 71, 171];   // bvBlue
+        
+        // --- HEADER ---
+        doc.setFillColor(...primaryColor);
+        doc.rect(0, 0, 210, 45, 'F');
+        
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(28);
+        doc.text('BUILDVERSE', 20, 28);
+        
+        doc.setFontSize(8);
+        doc.text(`GENERATED: ${new Date().toLocaleString().toUpperCase()}`, 190, 25, { align: 'right' });
+        doc.text(`TOTAL_TEAMS: ${usersSnap.size}`, 190, 30, { align: 'right' });
+
+        // --- SUMMARY STATS ---
+        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(16);
+        doc.setFont('helvetica', 'bold');
+        doc.text('EXECUTIVE OVERVIEW', 20, 65);
+        
+        doc.setDrawColor(...primaryColor);
+        doc.setLineWidth(1);
+        doc.line(20, 68, 40, 68);
+        
+        let activeTeams = 0;
+        let totalPointsPool = 0;
+        const tableData = [];
+        
+        usersSnap.forEach(snap => {
+            const data = snap.data();
+            if (data.orderingEnabled) activeTeams++;
+            totalPointsPool += (data.points || 0);
+            tableData.push([
+                String(data.teamId || 'N/A'),
+                data.username.toUpperCase(),
+                (data.representativeName || 'N/A').toUpperCase(),
+                `${data.points} PTS`,
+                data.orderingEnabled ? 'AUTHORIZED' : 'LOCKED'
+            ]);
+        });
+
+        // Stats boxes
+        doc.setFillColor(245, 245, 245);
+        doc.rect(20, 75, 55, 25, 'F');
+        doc.rect(80, 75, 55, 25, 'F');
+        doc.rect(140, 75, 50, 25, 'F');
+        
+        doc.setFontSize(8);
+        doc.setTextColor(100, 100, 100);
+        doc.text('REGISTERED TEAMS', 25, 82);
+        doc.text('SYSTEM ACCESS', 85, 82);
+        doc.text('TOTAL POINTS', 145, 82);
+        
+        doc.setFontSize(14);
+        doc.setTextColor(0, 0, 0);
+        doc.text(`${usersSnap.size}`, 25, 92);
+        doc.text(`${activeTeams} ACTIVE`, 85, 92);
+        doc.setTextColor(...accentColor);
+        doc.text(`${totalPointsPool} PTS`, 145, 92);
+
+        // --- ROSTER TABLE ---
+        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text('PARTICIPANT REGISTRY', 20, 115);
+        doc.line(20, 118, 40, 118);
+
+        doc.autoTable({
+            startY: 125,
+            head: [['ID', 'ENTITY_IDENTIFIER', 'REPRESENTATIVE', 'LIQUID_ASSETS', 'PROTOCOL_STATUS']],
+            body: tableData,
+            theme: 'striped',
+            headStyles: { 
+                fillColor: primaryColor, 
+                textColor: [255, 255, 255], 
+                fontStyle: 'bold',
+                halign: 'center'
+            },
+            columnStyles: {
+                0: { halign: 'center', fontStyle: 'bold' },
+                3: { fontStyle: 'bold', halign: 'right', textColor: accentColor },
+                4: { halign: 'center' }
+            },
+            styles: { fontSize: 8, font: 'helvetica' }
+        });
+
+        // Page numbers
+        const pageCount = doc.internal.getNumberOfPages();
+        for(let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            doc.setFontSize(8);
+            doc.setTextColor(150, 150, 150);
+            doc.text(`PAGE ${i} OF ${pageCount} | BuildVerse Administrative Control Report`, 105, 285, { align: 'center' });
+        }
+        
+        doc.save(`BuildVerse_Global_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+        
+    } catch (e) {
+        console.error("Global PDF Error:", e);
+        alert("System Error: " + e.message);
+    }
+}
+
 
 // ----------------------------------------------------------------------------
 // Modals & Identity
