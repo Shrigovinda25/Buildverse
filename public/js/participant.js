@@ -261,7 +261,7 @@ function renderCatalog() {
 }
 
 // 3. Listen for Order Queue (My Orders)
-firestore.collection('orders').orderBy('timestamp', 'asc').onSnapshot(snapshot => {
+firestore.collection('orders').where('username', '==', user.username).orderBy('timestamp', 'asc').onSnapshot(snapshot => {
     // Check for status changes to show toasts
     snapshot.docChanges().forEach(change => {
         if (change.type === 'modified') {

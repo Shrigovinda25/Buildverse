@@ -1405,6 +1405,7 @@
                         <div class="comp-number">${index + 1}</div>
                         <img src="${imgPath}" alt="${comp.name}" onerror="this.src='assets/logo.png'">
                         <div class="matrix-name">${displayName}</div>
+                        ${comp.maxPerTeam ? `<div class="text-[9px] font-black text-bvRed uppercase tracking-widest mt-1 opacity-80">Limit: ${comp.maxPerTeam} Per Team</div>` : ''}
                     </div>
                 `;
                     grid.insertAdjacentHTML('beforeend', card);
@@ -1424,9 +1425,12 @@
                 }
             });
 
-            firestore.collection('components').onSnapshot(snapshot => {
+            // Use get() instead of onSnapshot for public view to save Firestore reads
+            firestore.collection('components').get().then(snapshot => {
                 lastComponentsSnapshot = snapshot;
                 renderPublicInventory(snapshot);
+            }).catch(err => {
+                console.error("Failed to load public inventory:", err);
             });
         }
     </script>

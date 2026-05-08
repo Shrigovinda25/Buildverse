@@ -119,10 +119,16 @@ if (loginForm) {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = originalBtnText;
             }
+
+            let displayError = error.message;
+            if (error.message.toLowerCase().includes('quota')) {
+                displayError = "SYSTEM_QUOTA_EXHAUSTED: The platform is currently experiencing high traffic. Please try again in a few minutes or contact support.";
+            }
+
             if (errText && errContainer) {
-                errText.textContent = error.message;
+                errText.textContent = displayError;
                 errContainer.classList.remove('hidden');
-                setTimeout(() => errContainer.classList.add('hidden'), 7000);
+                setTimeout(() => errContainer.classList.add('hidden'), 10000);
             }
         }
     });
