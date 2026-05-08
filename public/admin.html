@@ -1091,61 +1091,95 @@
     <script src="js/admin.js"></script>
     <script>
         function openTimerModal() {
-    // Timer starts NOW — only ask for the end time
-    const title = document.getElementById('modal-title');
-    title.textContent = 'Start Event Timer';
-    const content = document.getElementById('modal-content');
-    content.innerHTML = `
-        <div class="space-y-5">
-            <p class="text-xs text-slate-500 bg-slate-50 p-3 rounded-xl border border-slate-100">⏱️ The countdown will begin <strong>immediately</strong> when you confirm. Just set the time the event should end.</p>
-            <div>
-                <label class="block text-sm font-bold text-slate-700 mb-2">Event End Time</label>
-                <div class="flex gap-2 items-center">
-                    <input type="number" id="end-hour" min="1" max="12" placeholder="HH" class="w-16 p-2 border border-slate-200 rounded-lg text-center font-bold"/>
-                    <span class="font-black text-slate-400">:</span>
-                    <input type="number" id="end-minute" min="0" max="59" placeholder="MM" class="w-16 p-2 border border-slate-200 rounded-lg text-center font-bold"/>
-                    <select id="end-ampm" class="p-2 border border-slate-200 rounded-lg font-bold">
-                        <option>AM</option><option selected>PM</option>
-                    </select>
-                </div>
-            </div>
-        </div>`;
-    const submitBtn = document.getElementById('modal-submit');
-    submitBtn.textContent = '🚀 Start Timer Now';
-    submitBtn.onclick = saveTimerSettings;
-    document.getElementById('modal-backdrop').classList.remove('hidden');
-}
+            const title = document.getElementById('modal-title');
+            const content = document.getElementById('modal-content');
+            const submitBtn = document.getElementById('modal-submit');
 
-async function saveTimerSettings() {
-    const eh = parseInt(document.getElementById('end-hour').value);
-    const em = parseInt(document.getElementById('end-minute').value);
-    const eap = document.getElementById('end-ampm').value;
-    if (isNaN(eh) || isNaN(em) || eh < 1 || eh > 12 || em < 0 || em > 59) {
-        alert('Please enter a valid end time.');
-        return;
-    }
-    const end = new Date();
-    end.setHours(eap === 'PM' ? (eh % 12) + 12 : (eh % 12), em, 0, 0);
-    // If end time already passed today, roll to tomorrow
-    if (end.getTime() <= Date.now()) { end.setDate(end.getDate() + 1); }
-    try {
-        const startTime = Date.now(); // Timer starts the moment admin confirms
-        await firestore.collection('settings').doc('system').set({
-            timerStartTime: startTime,
-            timerEndTime: end.getTime()
-        }, { merge: true });
-        await firestore.collection('transactions').add({
-            username: user.username || 'Admin',
-            type: 'system',
-            amount: 0,
-            reason: `Event timer STARTED — ends at ${eh}:${em.toString().padStart(2,'0')} ${eap}`,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        closeModal();
-    } catch (e) {
-        alert('Error starting timer: ' + e.message);
-    }
-}
+            // If timer is already running → show Reset UI
+            if (eventEndTime && eventEndTime > Date.now()) {
+                const remaining = eventEndTime - Date.now();
+                const hrs = Math.floor(remaining / (1000 * 60 * 60));
+                const mins = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+                const secs = Math.floor((remaining % (1000 * 60)) / 1000);
+                title.textContent = 'Event Timer — Running';
+                content.innerHTML = `
+                    <div class="space-y-5">
+                        <p class="text-xs text-emerald-700 bg-emerald-50 p-3 rounded-xl border border-emerald-200">✅ Timer is currently <strong>active</strong>. Time remaining: <strong>${hrs}h ${mins}m ${secs}s</strong></p>
+                        <p class="text-xs text-slate-500 bg-slate-50 p-3 rounded-xl border border-slate-100">⚠️ Resetting the timer will clear the countdown for <strong>all participants</strong>. You can then configure a new end time.</p>
+                    </div>`;
+                submitBtn.textContent = '🔄 Reset Timer';
+                submitBtn.className = 'btn btn-ghost-red';
+                submitBtn.style.display = '';
+                submitBtn.onclick = async () => {
+                    if (!confirm('Reset the event timer for all participants?')) return;
+                    try {
+                        await firestore.collection('settings').doc('system').set({
+                            timerStartTime: null,
+                            timerEndTime: null
+                        }, { merge: true });
+                        await firestore.collection('transactions').add({
+                            username: (typeof user !== 'undefined' && user.username) ? user.username : 'Admin',
+                            type: 'system', amount: 0,
+                            reason: 'Event timer RESET by admin',
+                            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                        closeModal();
+                    } catch (e) { alert('Reset failed: ' + e.message); }
+                };
+            } else {
+                // No active timer → show Start UI
+                title.textContent = 'Start Event Timer';
+                content.innerHTML = `
+                    <div class="space-y-5">
+                        <p class="text-xs text-slate-500 bg-slate-50 p-3 rounded-xl border border-slate-100">⏱️ The countdown will begin <strong>immediately</strong> when you confirm. Just set the time the event should end.</p>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Event End Time</label>
+                            <div class="flex gap-2 items-center">
+                                <input type="number" id="end-hour" min="1" max="12" placeholder="HH" value="5" class="w-16 p-2 border border-slate-200 rounded-lg text-center font-bold"/>
+                                <span class="font-black text-slate-400">:</span>
+                                <input type="number" id="end-minute" min="0" max="59" placeholder="MM" value="00" class="w-16 p-2 border border-slate-200 rounded-lg text-center font-bold"/>
+                                <select id="end-ampm" class="p-2 border border-slate-200 rounded-lg font-bold">
+                                    <option>AM</option><option selected>PM</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>`;
+                submitBtn.textContent = '🚀 Start Timer Now';
+                submitBtn.className = 'btn btn-yellow';
+                submitBtn.style.display = '';
+                submitBtn.onclick = saveTimerSettings;
+            }
+            document.getElementById('modal-backdrop').classList.remove('hidden');
+        }
+
+        async function saveTimerSettings() {
+            const eh = parseInt(document.getElementById('end-hour').value);
+            const em = parseInt(document.getElementById('end-minute').value);
+            const eap = document.getElementById('end-ampm').value;
+            if (isNaN(eh) || isNaN(em) || eh < 1 || eh > 12 || em < 0 || em > 59) {
+                alert('Please enter a valid end time.');
+                return;
+            }
+            const end = new Date();
+            end.setHours(eap === 'PM' ? (eh % 12) + 12 : (eh % 12), em, 0, 0);
+            if (end.getTime() <= Date.now()) { end.setDate(end.getDate() + 1); }
+            try {
+                const startTime = Date.now();
+                await firestore.collection('settings').doc('system').set({
+                    timerStartTime: startTime,
+                    timerEndTime: end.getTime()
+                }, { merge: true });
+                await firestore.collection('transactions').add({
+                    username: (typeof user !== 'undefined' && user.username) ? user.username : 'Admin',
+                    type: 'system', amount: 0,
+                    reason: `Event timer STARTED — ends at ${eh}:${em.toString().padStart(2,'0')} ${eap}`,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                closeModal();
+            } catch (e) {
+                alert('Error starting timer: ' + e.message);
+            }
+        }
 
 
 

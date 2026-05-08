@@ -12,64 +12,103 @@ if (!admin.apps.length) {
 const db = admin.firestore();
 
 async function syncRanking() {
-    console.log('--- STARTING RANKING SYNC ---');
+    console.log('--- STARTING COMPONENT & RANKING SYNC ---');
     
     // 2. Read Excel
     const workbook = XLSX.readFile(path.join(__dirname, '..', 'Ranking.xlsx'));
     const data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
     
-    // Row 0 is the price list (no "Team Name" field), skip it.
-    // Actual teams start from Row 1 onwards and have a "Team Name" field.
     const teams = data.filter(item => item["Team Name"]);
-    console.log(`Found ${teams.length} teams to sync.`);
+    console.log(`Found ${teams.length} teams to process.`);
 
-    // 3. Update Teams — write ranking data to a SEPARATE field (rankingScore)
-    //    so we do NOT overwrite the live procurement budget (points).
+    // 3. Fetch Components for Mapping
+    const componentsSnapshot = await db.collection('components').get();
+    const dbComponents = componentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+    const componentColumns = Object.keys(data[0]).filter(key => 
+        !["Team No.", "Team Name", "Total Deducted", "Remaining Points (/1000)"].includes(key)
+    );
+
+    // 4. Process Each Team
     for (const team of teams) {
         const username = team["Team Name"];
         const totalDeducted = team["Total Deducted"] || 0;
         const remainingPoints = team["Remaining Points (/1000)"] || 0;
         
-        // rankingScore = total points spent on components (higher = more active/invested)
-        console.log(`Syncing Team: ${username} | Deducted: ${totalDeducted} | Remaining: ${remainingPoints}`);
+        console.log(`\nProcessing Team: ${username}`);
         
-        await db.collection('users').doc(username).set({
-            points: remainingPoints, // Also update the live procurement budget
+        // A. Build Inventory Map & Create Order Records
+        const newInventory = {};
+        const teamOrders = [];
+
+        for (const colName of componentColumns) {
+            const qty = Number(team[colName] || 0);
+            if (qty > 0) {
+                const dbComp = dbComponents.find(c => c.name === colName);
+                if (dbComp) {
+                    newInventory[dbComp.id] = qty;
+                    teamOrders.push({
+                        username: username,
+                        componentId: dbComp.id,
+                        componentName: dbComp.name,
+                        quantity: qty,
+                        pricePerUnit: dbComp.price || 0,
+                        totalCost: qty * (dbComp.price || 0),
+                        status: 'Given', // Mark as already taken
+                        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+                        syncedFromExcel: true // Marker for future syncs
+                    });
+                }
+            }
+        }
+
+        // B. Clear existing synced orders for this team to avoid duplicates
+        const existingSyncedOrders = await db.collection('orders')
+            .where('username', '==', username)
+            .where('syncedFromExcel', '==', true)
+            .get();
+        
+        const batch = db.batch();
+        existingSyncedOrders.forEach(doc => batch.delete(doc.ref));
+        
+        // C. Add new orders from Excel
+        teamOrders.forEach(order => {
+            const newOrderRef = db.collection('orders').doc();
+            batch.set(newOrderRef, order);
+        });
+
+        // D. Update User Profile (Points + Inventory)
+        const userRef = db.collection('users').doc(username);
+        batch.set(userRef, {
+            points: remainingPoints,
+            inventory: newInventory,
             rankingScore: totalDeducted,
             rankingRemaining: remainingPoints
         }, { merge: true });
+
+        await batch.commit();
+        console.log(`- Updated budget to ${remainingPoints} pts`);
+        console.log(`- Synced ${teamOrders.length} component types to inventory`);
     }
 
-    // 4. Update Components (Available Quantities)
-    // We need to sum up usage for every component column
-    const componentNames = Object.keys(data[0]).filter(key => 
-        !["Team No.", "Team Name", "Total Deducted", "Remaining Points (/1000)"].includes(key)
-    );
-
-    console.log(`Analyzing ${componentNames.length} components for stock reconciliation...`);
-
-    const componentsSnapshot = await db.collection('components').get();
-    const dbComponents = componentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-    for (const name of componentNames) {
+    // 5. Update Global Component Stock Levels
+    console.log('\nReconciling global stock levels...');
+    for (const dbComp of dbComponents) {
         let totalUsed = 0;
         teams.forEach(team => {
-            totalUsed += (team[name] || 0);
+            totalUsed += Number(team[dbComp.name] || 0);
         });
 
-        const dbComp = dbComponents.find(c => c.name === name);
-        if (dbComp) {
-            const newAvailable = Math.max(0, (dbComp.totalQuantity || 0) - totalUsed);
-            console.log(`Updating ${name}: Total=${dbComp.totalQuantity}, Used=${totalUsed}, Available=${newAvailable}`);
+        const newAvailable = Math.max(0, (dbComp.totalQuantity || 0) - totalUsed);
+        if (dbComp.availableQuantity !== newAvailable) {
+            console.log(`- ${dbComp.name}: Available ${dbComp.availableQuantity} -> ${newAvailable}`);
             await db.collection('components').doc(dbComp.id).update({
                 availableQuantity: newAvailable
             });
-        } else {
-            console.warn(`Warning: Component "${name}" not found in Firestore.`);
         }
     }
 
-    console.log('--- SYNC COMPLETE ---');
+    console.log('\n--- SYNC COMPLETE ---');
 }
 
 syncRanking().catch(err => {
