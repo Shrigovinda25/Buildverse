@@ -2159,3 +2159,72 @@ firestore.collection('users').where('role', '==', 'participant').onSnapshot(snap
         list.insertAdjacentHTML('beforeend', row);
     });
 });
+async function returnAllComponents(username) {
+    if (!confirm(`RECLAMATION_PROTOCOL: Are you sure you want to return ALL components held by ${username}? This will refund 50% of the original cost to their pool.`)) return;
+
+    try {
+        const ordersSnap = await firestore.collection('orders').where('username', '==', username).where('status', '==', 'Given').get();
+        if (ordersSnap.empty) {
+            alert('No held resources detected for this entity.');
+            return;
+        }
+
+        let totalRefund = 0;
+        let count = 0;
+
+        await firestore.runTransaction(async (t) => {
+            const userRef = firestore.collection('users').doc(username);
+            const userDoc = await t.get(userRef);
+            if (!userDoc.exists) throw new Error('User not found');
+            const userData = userDoc.data();
+            const currentInventory = userData.inventory || {};
+
+            for (const doc of ordersSnap.docs) {
+                const orderData = doc.data();
+                const qty = orderData.quantity || 0;
+                const unitPrice = orderData.pricePerUnit || 0;
+                const refund = Math.round((unitPrice * qty) * 0.5);
+                
+                totalRefund += refund;
+                count++;
+
+                // Update Component Stock
+                const compRef = firestore.collection('components').doc(orderData.componentId);
+                const compDoc = await t.get(compRef);
+                if (compDoc.exists) {
+                    const compData = compDoc.data();
+                    t.update(compRef, { availableQuantity: Number(compData.availableQuantity || 0) + qty });
+                }
+
+                // Update Order Status
+                t.update(doc.ref, { status: 'Returned' });
+
+                // Update Local Inventory Copy
+                if (currentInventory[orderData.componentId]) {
+                    currentInventory[orderData.componentId] = Math.max(0, currentInventory[orderData.componentId] - qty);
+                }
+            }
+
+            // Update User Points and Inventory
+            t.update(userRef, {
+                points: Number(userData.points || 0) + totalRefund,
+                inventory: currentInventory
+            });
+
+            // Log the action
+            const transRef = firestore.collection('transactions').doc();
+            t.set(transRef, {
+                username,
+                type: 'credit',
+                amount: totalRefund,
+                reason: `Bulk Return: ${count} resource types reclaimed by admin`,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        });
+
+        alert(`SUCCESS: Reclaimed ${count} resource types. Total Refund: ${totalRefund} PTS.`);
+    } catch (e) {
+        console.error(e);
+        alert('ERR: Bulk return failed: ' + e.message);
+    }
+}
