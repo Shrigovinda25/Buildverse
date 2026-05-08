@@ -59,7 +59,8 @@ if (loginForm) {
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.message || 'Login failed');
+                const errorMsg = data.error ? `${data.message}: ${data.error}` : (data.message || 'Login failed');
+                throw new Error(errorMsg);
             }
 
             // 2. Authenticate with Firebase using Custom Token (Secure Firestore Access)
