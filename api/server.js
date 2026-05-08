@@ -131,11 +131,21 @@ app.post('/auth/login', async (req, res) => {
   } catch (error) {
     console.error(`[AUTH_ERROR] Exception for ${username}:`, error);
     res.status(500).json({ 
-      message: 'Login failed', 
+      message: 'Login failed (v3)', 
       error: error.message || 'Unknown server error',
       code: error.code || 'NO_CODE'
     });
   }
+});
+
+// Global Error Handler
+app.use((err, req, res, next) => {
+  console.error('GLOBAL_ERROR:', err);
+  res.status(500).json({ 
+    message: 'Global Server Error', 
+    error: err.message || 'Internal Server Error',
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+  });
 });
 
 // ----------------------------------------------------------------------------
