@@ -80,17 +80,29 @@ const isAdmin = (req, res, next) => {
 app.post('/auth/login', async (req, res) => {
   const { username, password } = req.body;
   
+  if (!username || !password) {
+    return res.status(400).json({ message: 'Username and password are required' });
+  }
+
   try {
+    console.log(`[AUTH] Login attempt for: ${username}`);
     const userDoc = await db.collection('users').doc(username).get();
 
     if (!userDoc.exists) {
+      console.log(`[AUTH] User not found: ${username}`);
       return res.status(401).json({ message: 'Invalid username or password' });
     }
 
     const userData = userDoc.data();
+    if (!userData.password) {
+      console.error(`[AUTH] User document missing password field: ${username}`);
+      return res.status(500).json({ message: 'Account configuration error. Contact admin.' });
+    }
+
     const isMatch = await bcrypt.compare(password, userData.password);
 
     if (!isMatch) {
+      console.log(`[AUTH] Password mismatch: ${username}`);
       return res.status(401).json({ message: 'Invalid username or password' });
     }
 
@@ -101,9 +113,11 @@ app.post('/auth/login', async (req, res) => {
       { expiresIn: '24h' }
     );
 
-    // Generate Firebase Custom Token for frontend Firestore listeners
+    // Generate Firebase Custom Token
+    console.log(`[AUTH] Generating custom token for: ${username}`);
     const firebaseToken = await admin.auth().createCustomToken(username);
 
+    console.log(`[AUTH] Login successful: ${username}`);
     res.json({
       token,
       firebaseToken,
@@ -115,7 +129,12 @@ app.post('/auth/login', async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ message: 'Login failed', error: error.message });
+    console.error(`[AUTH_ERROR] Exception for ${username}:`, error);
+    res.status(500).json({ 
+      message: 'Login failed', 
+      error: error.message || 'Unknown server error',
+      code: error.code || 'NO_CODE'
+    });
   }
 });
 
