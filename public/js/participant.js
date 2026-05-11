@@ -39,7 +39,7 @@ function getComponentImageUrl(item) {
     let name = item.name || '';
 
     if (name.toUpperCase().includes('ESP32')) {
-        return encodeURI('assets/components/ESP32 Controller + USB Cable.jpg');
+        return encodeURI('assets/components/ESP32 Controller Plus USB Cable.jpg');
     }
 
     if (name.includes('5mm Foam Board') || name.includes('5MM Foam Board')) {

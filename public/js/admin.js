@@ -225,7 +225,7 @@ function sortComponents(array) {
 }
 
 const PREDEFINED_COMPONENTS = [
-    { category: "Controller", name: "ESP32 Controller + USB Cable", totalQuantity: 25, price: 200, maxPerTeam: 1, imageUrl: "assets/components/ESP32%20Controller%20%2B%20USB%20Cable.jpg" },
+    { category: "Controller", name: "ESP32 Controller + USB Cable", totalQuantity: 25, price: 200, maxPerTeam: 1, imageUrl: "assets/components/ESP32%20Controller%20Plus%20USB%20Cable.jpg" },
     { category: "Sensor", name: "Ultrasonic Sensor", totalQuantity: 30, price: 30, maxPerTeam: 2 },
     { category: "Sensor", name: "IR Sensor", totalQuantity: 40, price: 20, maxPerTeam: 2 },
     { category: "Sensor", name: "LDR Sensor", totalQuantity: 20, price: 15, maxPerTeam: 3 },
@@ -278,7 +278,7 @@ function getComponentImageUrl(item) {
     
     // Use the specific ESP32 image file (encoded for URL safety)
     if (name.toUpperCase().includes('ESP32')) {
-        return encodeURI('assets/components/ESP32 Controller + USB Cable.jpg');
+        return encodeURI('assets/components/ESP32 Controller Plus USB Cable.jpg');
     }
 
     if (name.includes('5mm Foam Board') || name.includes('5MM Foam Board')) {

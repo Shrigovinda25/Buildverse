@@ -1418,7 +1418,7 @@
             let lastComponentsSnapshot = null;
             function getPublicImageUrl(name) {
                 if (!name) return 'assets/logo.png';
-                if (name.toUpperCase().includes('ESP32')) return encodeURI('assets/components/ESP32 Controller + USB Cable.jpg');
+                if (name.toUpperCase().includes('ESP32')) return encodeURI('assets/components/ESP32 Controller Plus USB Cable.jpg');
                 if (name.includes('5mm Foam Board') || name.includes('5MM Foam Board')) return encodeURI('assets/components/5mm Foam Board.jpg');
                 if (name.includes('DHT11')) return encodeURI('assets/components/DHT11 Temp Humidity Sensor.jpg');
                 // For component names with special chars: replace + with Plus, / with space, then encodeURI the whole path
